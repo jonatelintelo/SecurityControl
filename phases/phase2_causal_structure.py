@@ -29,7 +29,6 @@ from core.model_io import load_model
 PHASE_NAME = "phase2_causal_structure"
 UPSTREAM_PHASE = "phase1_geometry"
 CONCEPTS = ["role", "harm", "control"]
-STEER_ALPHA = 3.0
 
 
 def run(cfg: Config) -> None:
@@ -78,7 +77,7 @@ def run(cfg: Config) -> None:
             # L_src == L_tgt both hooks land on the same module, and forward hooks
             # fire in registration order — capture-before-steer would read the
             # pre-steering value and silently zero out every cos_delta column.
-            steer_handle = InterventionEngine.steer_subspace(hooks.layers[L_src], direction, STEER_ALPHA)
+            steer_handle = InterventionEngine.steer_subspace(hooks.layers[L_src], direction, cfg.steer_alpha, relative=cfg.steer_relative)
             hooks.hook_residual_stream([L_tgt])
             with torch.no_grad():
                 out = model(**probe_inputs)
@@ -91,7 +90,8 @@ def run(cfg: Config) -> None:
             row = {
                 "source_layer": L_src,
                 "source_concept": concept,
-                "alpha": STEER_ALPHA,
+                "alpha": cfg.steer_alpha,
+                "steer_relative": cfg.steer_relative,
                 "target_layer": L_tgt,
                 "behavior_margin_delta": steered_margin - baseline_margin,
             }

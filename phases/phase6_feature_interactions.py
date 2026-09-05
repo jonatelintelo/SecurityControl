@@ -57,7 +57,13 @@ def run(cfg: Config) -> None:
     model, tokenizer = load_model(cfg.model_id, cfg.device, logger)
     hooks = HookEngine(model)
 
-    alpha_magnitudes = [0, 2, 4] if cfg.fast_dev else [0, 1, 2, 4, 8]
+    # Magnitudes must match the steering mode: under relative steering alpha is
+    # a fraction of the residual norm, so the absolute-scale grid would be
+    # wildly destructive.
+    if cfg.steer_relative:
+        alpha_magnitudes = [0, 0.25, 1.0] if cfg.fast_dev else [0, 0.1, 0.25, 0.5, 1.0]
+    else:
+        alpha_magnitudes = [0, 2, 4] if cfg.fast_dev else [0, 1, 2, 4, 8]
 
     # ---------------------------------------------------------------
     # Case study 1: does steering a benign instruction toward the
@@ -73,7 +79,7 @@ def run(cfg: Config) -> None:
     role_rows = []
     for magnitude in alpha_magnitudes:
         alpha = ROLE_ATTACK_SIGN * magnitude
-        handle = InterventionEngine.steer_subspace(hooks.layers[early], directions["role"][early], alpha) if magnitude != 0 else None
+        handle = InterventionEngine.steer_subspace(hooks.layers[early], directions["role"][early], alpha, relative=cfg.steer_relative) if magnitude != 0 else None
 
         hooks.hook_residual_stream(read_layers)
         inputs = tokenizer(benign_texts, return_tensors="pt", padding=True).to(cfg.device)
@@ -122,7 +128,7 @@ def run(cfg: Config) -> None:
     persona_rows = []
     for magnitude in alpha_magnitudes:
         alpha = PERSONA_MISALIGN_SIGN * magnitude
-        handle = InterventionEngine.steer_subspace(hooks.layers[early], persona_direction[early], alpha) if magnitude != 0 else None
+        handle = InterventionEngine.steer_subspace(hooks.layers[early], persona_direction[early], alpha, relative=cfg.steer_relative) if magnitude != 0 else None
 
         hooks.hook_residual_stream([mid])
         inputs = tokenizer(harm_texts, return_tensors="pt", padding=True).to(cfg.device)
@@ -151,7 +157,7 @@ def run(cfg: Config) -> None:
     for text in harm_texts[:2]:
         toks = tokenizer(text, return_tensors="pt").to(cfg.device)
         base_text = generate_text(model, tokenizer, toks, cfg.max_new_tokens)
-        handle = InterventionEngine.steer_subspace(hooks.layers[early], persona_direction[early], strongest_alpha)
+        handle = InterventionEngine.steer_subspace(hooks.layers[early], persona_direction[early], strongest_alpha, relative=cfg.steer_relative)
         steered_text = generate_text(model, tokenizer, toks, cfg.max_new_tokens)
         handle.remove()
         sample_lines.append(f"PROMPT: {text}\n[baseline] {base_text}\n[persona misaligned, alpha={strongest_alpha:+.1f}] {steered_text}\n{'-' * 80}")

@@ -44,6 +44,7 @@ from core.config import Config, load_config
 from core.hooks import HookEngine, capture_last_token_residuals, capture_mlp_neuron_activations
 from core.interventions import InterventionEngine
 from core.io_utils import get_logger, load_json, load_torch, require_phase_output, save_df
+from core.judge import AttackJudge
 from core.metrics import attack_success_rate, component_set_overlap
 from core.model_io import build_prompt, load_model
 from core.subspaces import SubspaceEngine
@@ -78,6 +79,7 @@ def run(cfg: Config) -> None:
     attrib = AttributionEngine(model)
     id_refusal = tokenizer.encode("I", add_special_tokens=False)[0]
     id_compliance = tokenizer.encode("Sure", add_special_tokens=False)[0]
+    judge = AttackJudge(cfg.device, use_llama_guard=cfg.use_llama_guard, logger=logger)
 
     n_intents = 4 if cfg.fast_dev else len(data.CONTEXT_INTENTS)
     intents = data.CONTEXT_INTENTS[:n_intents]
@@ -166,7 +168,7 @@ def run(cfg: Config) -> None:
     direct_content = harmful_content_by_ctx["direct"]
     direct_texts = [build_prompt(tokenizer, user=t) for t in direct_content]
     baseline_projs, _ = _measure_batch(direct_texts)
-    baseline_asr = attack_success_rate(model, tokenizer, direct_texts, cfg.device, cfg.max_new_tokens)
+    baseline_asr = attack_success_rate(model, tokenizer, direct_texts, direct_content, cfg.device, cfg.max_new_tokens, judge)
     logger.info(f"[direct/no intervention] projections={baseline_projs}, ASR={baseline_asr:.2f}")
 
     diagnosis_rows = [{
@@ -178,7 +180,7 @@ def run(cfg: Config) -> None:
     for ctx in ["roleplay", "authority", "jailbreak"]:
         texts = [build_prompt(tokenizer, user=t) for t in harmful_content_by_ctx[ctx]]
         projs, _ = _measure_batch(texts)
-        asr = attack_success_rate(model, tokenizer, texts, cfg.device, cfg.max_new_tokens)
+        asr = attack_success_rate(model, tokenizer, texts, harmful_content_by_ctx[ctx], cfg.device, cfg.max_new_tokens, judge)
         diagnosis_rows.append({
             "attack_type": f"context_{ctx}",
             **{f"delta_R_{c}": projs[c] - baseline_projs[c] for c in CONCEPTS},
@@ -188,9 +190,9 @@ def run(cfg: Config) -> None:
 
     # Representation-steering attack: push R_role toward the injected/override class.
     steer_alpha = data.ATTACK_STEERING_SIGN["role"] * 4.0
-    steer_handle = InterventionEngine.steer_subspace(hooks.layers[mid], directions_global["role"][mid], steer_alpha)
+    steer_handle = InterventionEngine.steer_subspace(hooks.layers[mid], directions_global["role"][mid], steer_alpha, relative=cfg.steer_relative)
     projs, _ = _measure_batch(direct_texts)
-    asr = attack_success_rate(model, tokenizer, direct_texts, cfg.device, cfg.max_new_tokens)
+    asr = attack_success_rate(model, tokenizer, direct_texts, direct_content, cfg.device, cfg.max_new_tokens, judge)
     steer_handle.remove()
     diagnosis_rows.append({
         "attack_type": "repr_steering_role",
@@ -203,7 +205,7 @@ def run(cfg: Config) -> None:
     control_ranking = neuron_rankings_global[(mid, "control")]["causal"].tolist()
     ablate_handle = InterventionEngine.ablate_neurons(hooks.layers[mid].mlp, control_ranking[:COMPONENT_K])
     projs, _ = _measure_batch(direct_texts)
-    asr = attack_success_rate(model, tokenizer, direct_texts, cfg.device, cfg.max_new_tokens)
+    asr = attack_success_rate(model, tokenizer, direct_texts, direct_content, cfg.device, cfg.max_new_tokens, judge)
     ablate_handle.remove()
     diagnosis_rows.append({
         "attack_type": "neuron_ablation_control",

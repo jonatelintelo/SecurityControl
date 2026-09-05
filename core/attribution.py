@@ -41,12 +41,16 @@ class AttributionEngine:
         active_w = w_down * mean_acts
         return raw_contributions, active_w.float().cpu()
 
-    def compute_activation_diff_ranking(self, pos_acts: torch.Tensor, neg_acts: torch.Tensor) -> torch.Tensor:
-        """NeuroStrike-style neuron ranking: |mean(|act|) on positive prompts - mean(|act|)
-        on negative prompts| per neuron, using ONLY activation contrasts (no weight
-        geometry at all). Serves as the independent ground-truth ranking that
-        compute_static_weight_alignment and compute_neuron_attributions are compared
-        against in phase 3."""
+    def compute_activation_contrast_ranking(self, pos_acts: torch.Tensor, neg_acts: torch.Tensor) -> torch.Tensor:
+        """Unsupervised activation-contrast ranking: |mean(|act|) on positive prompts -
+        mean(|act|) on negative prompts| per neuron, using ONLY activation contrasts
+        (no weight geometry).
+
+        NOT NeuroStrike's method — that is a supervised logistic probe over gate/up
+        activations and lives in core/neurostrike.py. This is kept as the cheap
+        unsupervised ablation of that probe: same input signal (activations), no
+        training, so phase 3 can separate "activations carry the signal" from
+        "supervised fitting is what finds it"."""
         pos_flat = pos_acts.reshape(-1, pos_acts.shape[-1])
         neg_flat = neg_acts.reshape(-1, neg_acts.shape[-1])
         diff = torch.mean(torch.abs(pos_flat), dim=0) - torch.mean(torch.abs(neg_flat), dim=0)

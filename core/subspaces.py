@@ -12,9 +12,49 @@ class SubspaceEngine:
 
     @staticmethod
     def extract_subspace(centered_diffs: torch.Tensor, k: int = 3) -> torch.Tensor:
-        """Calculates an orthonormal basis for a k-dimensional subspace using SVD."""
+        """Orthonormal basis for a k-dimensional subspace of the per-pair
+        difference vectors (columns are basis vectors).
+
+        RQ1 asks about the *dimensionality* of each security variable, and the
+        motivation notes refusal may be mediated by several directions rather
+        than one axis. The 1-D diff-of-means direction cannot address that, so
+        phase 1 reports subspace dimensionality separately.
+        """
         _, _, Vh = torch.linalg.svd(centered_diffs, full_matrices=False)
         return Vh[:k, :].T
+
+    @staticmethod
+    def spectrum_effective_rank(centered_diffs: torch.Tensor) -> dict:
+        """Participation-ratio effective rank of the difference-vector spectrum,
+        plus the variance share of the leading direction.
+
+        r_eff near 1 means the concept really is a single axis; substantially
+        greater than 1 means the 1-D direction used downstream is a projection
+        of something higher-dimensional, which is itself an RQ1 result.
+        """
+        s = torch.linalg.svdvals(centered_diffs.float())
+        lam = s**2
+        total = lam.sum()
+        if total <= 0:
+            return {"r_eff_spectrum": float("nan"), "top1_variance_share": float("nan")}
+        return {
+            "r_eff_spectrum": float(((lam.sum() ** 2) / (lam**2).sum()).item()),
+            "top1_variance_share": float((lam[0] / total).item()),
+        }
+
+    @staticmethod
+    def principal_angles(basis_A: torch.Tensor, basis_B: torch.Tensor) -> torch.Tensor:
+        """Principal canonical angles (radians) between two subspaces — the
+        multi-dimensional generalization of cosine similarity, used to compare
+        concept subspaces once they are >1-D."""
+        if basis_A.ndim == 1:
+            basis_A = basis_A.unsqueeze(1)
+        if basis_B.ndim == 1:
+            basis_B = basis_B.unsqueeze(1)
+        Qa, _ = torch.linalg.qr(basis_A)
+        Qb, _ = torch.linalg.qr(basis_B)
+        _, S, _ = torch.linalg.svd(torch.matmul(Qa.T, Qb))
+        return torch.acos(torch.clamp(S, -1.0, 1.0))
 
     @staticmethod
     def get_orthogonal_projector(basis: torch.Tensor) -> torch.Tensor:
@@ -38,19 +78,6 @@ class SubspaceEngine:
         v1_n = v1.view(-1) / torch.norm(v1, p=2)
         v2_n = v2.view(-1) / torch.norm(v2, p=2)
         return torch.dot(v1_n, v2_n).item()
-
-    @staticmethod
-    def canonical_subspace_angles(basis_A: torch.Tensor, basis_B: torch.Tensor) -> torch.Tensor:
-        """Calculates principal canonical angles (radians) between two subspaces."""
-        if basis_A.ndim == 1:
-            basis_A = basis_A.unsqueeze(1)
-        if basis_B.ndim == 1:
-            basis_B = basis_B.unsqueeze(1)
-        Qa, _ = torch.linalg.qr(basis_A)
-        Qb, _ = torch.linalg.qr(basis_B)
-        M = torch.matmul(Qa.T, Qb)
-        _, S, _ = torch.linalg.svd(M)
-        return torch.acos(torch.clamp(S, -1.0, 1.0))
 
     @staticmethod
     def probe_validation_accuracy(direction: torch.Tensor, pos_acts: torch.Tensor, neg_acts: torch.Tensor) -> float:

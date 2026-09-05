@@ -9,14 +9,29 @@ class InterventionEngine:
     """Manages causal steering, NeuroStrike-style neuron ablation, and subspace causal rescue."""
 
     @staticmethod
-    def steer_subspace(layer_module: nn.Module, direction: torch.Tensor, alpha: float) -> torch.utils.hooks.RemovableHandle:
-        """Residual steering: h' = h + alpha * unit(direction)."""
+    def steer_subspace(layer_module: nn.Module, direction: torch.Tensor, alpha: float, relative: bool = False) -> torch.utils.hooks.RemovableHandle:
+        """Residual steering.
+
+        relative=False: h' = h + alpha * unit(direction)   (absolute magnitude)
+        relative=True:  h' = h + alpha * ||h|| * unit(direction)
+
+        Use relative=True whenever alpha is compared ACROSS LAYERS. Residual
+        norms grow strongly with depth (measured ~8x from layer 10 to 21 on
+        Qwen3.5-9B), so a fixed absolute alpha is a much larger perturbation
+        early than late, and an apparent "early layers are more vulnerable"
+        result would be a norm artifact rather than a property of the safety
+        architecture.
+        """
         unit_dir = (direction / torch.norm(direction, p=2)).detach()
 
         def hook(module, args, output):
             h = output[0] if isinstance(output, tuple) else output
-            steer_vec = (alpha * unit_dir).to(h.device).type_as(h)
-            h_steered = h + steer_vec
+            unit = unit_dir.to(h.device).type_as(h)
+            if relative:
+                scale = h.norm(dim=-1, keepdim=True)  # (batch, seq, 1)
+                h_steered = h + alpha * scale * unit
+            else:
+                h_steered = h + alpha * unit
             return (h_steered,) + output[1:] if isinstance(output, tuple) else h_steered
 
         return layer_module.register_forward_hook(hook)

@@ -3,3 +3,4 @@ transformers>=4.55,<6.0
 accelerate>=1.0
 pandas>=2.0
 numpy>=1.26
+scipy>=1.10

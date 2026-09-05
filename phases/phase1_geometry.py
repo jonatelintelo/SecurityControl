@@ -21,7 +21,6 @@ import pandas as pd
 import torch
 
 from core import data
-from core.attribution import AttributionEngine  # noqa: F401 (re-exported for phase2 convenience imports)
 from core.config import Config, load_config
 from core.hooks import HookEngine, capture_last_token_residuals
 from core.io_utils import get_logger, save_df, save_json, save_torch
@@ -37,6 +36,13 @@ def _shrink(pairs: List, cfg: Config, n: int) -> List:
 
 
 def _concept_pairs(cfg: Config):
+    """Factorial design by default: each direction is a main effect with the
+    other two factors balanced, so cross-concept geometry cannot be driven by
+    template differences. Legacy per-concept templates remain available via
+    USE_FACTORIAL_DESIGN=0 for comparison."""
+    if cfg.use_factorial_design:
+        n_topics = 3 if cfg.fast_dev else None
+        return {c: data.factorial_pairs(c, n_topics=n_topics) for c in CONCEPTS}
     return {
         "role": _shrink(data.ROLE_PAIRS, cfg, 4),
         "harm": _shrink(data.HARM_PAIRS, cfg, 6),
@@ -59,6 +65,7 @@ def run(cfg: Config) -> None:
 
     directions = {}          # concept -> {layer: tensor}
     probe_acc_rows = []       # layer, concept, accuracy
+    dimensionality_rows = []  # layer, concept, r_eff_spectrum, top1_variance_share
     concept_texts = {}        # concept -> (pos_texts, neg_texts) over the FULL pair set (for projections)
 
     for concept, pairs in pairs_by_concept.items():
@@ -74,6 +81,14 @@ def run(cfg: Config) -> None:
             l: SubspaceEngine.extract_direction(pos_acts[l], neg_acts[l]) for l in all_layers
         }
 
+        # RQ1 dimensionality: is this concept really a single axis, or is the
+        # diff-of-means direction a 1-D projection of something higher-rank?
+        for l in all_layers:
+            diffs = (pos_acts[l] - neg_acts[l]).float()
+            diffs = diffs - diffs.mean(dim=0, keepdim=True)
+            spectrum = SubspaceEngine.spectrum_effective_rank(diffs)
+            dimensionality_rows.append({"layer": l, "concept": concept, "n_pairs": diffs.shape[0], **spectrum})
+
         if heldout_pairs:
             held_pos = [p for p, _ in data.materialize_pairs(tokenizer, heldout_pairs)]
             held_neg = [n for _, n in data.materialize_pairs(tokenizer, heldout_pairs)]
@@ -86,8 +101,32 @@ def run(cfg: Config) -> None:
         full_pos, full_neg = zip(*data.materialize_pairs(tokenizer, pairs))
         concept_texts[concept] = (list(full_pos), list(full_neg))
 
+    # R_control transfer test. R_control is estimated from prompts whose ONLY
+    # difference is a forced final token ("I" vs "Sure"), so it could be a
+    # token-identity direction rather than a refusal-control variable — and
+    # held-out validation on the same construction cannot detect that. Here we
+    # project *unforced* prompts (containing neither token) that the model
+    # should refuse vs. comply with. If R_control were token identity, it would
+    # not separate them.
+    transfer_rows = []
+    unforced_harmful = [build_prompt(tokenizer, user=p.positive.user) for p in data.HARM_PAIRS[:8]]
+    unforced_benign = [build_prompt(tokenizer, user=p.negative.user) for p in data.HARM_PAIRS[:8]]
+    h_acts = capture_last_token_residuals(model, hooks, tokenizer, unforced_harmful, cfg.device, all_layers)
+    b_acts = capture_last_token_residuals(model, hooks, tokenizer, unforced_benign, cfg.device, all_layers)
+    for l in all_layers:
+        acc = SubspaceEngine.probe_validation_accuracy(directions["control"][l], h_acts[l], b_acts[l])
+        transfer_rows.append({"layer": l, "concept": "control", "transfer_accuracy_unforced": acc})
+    df_transfer = pd.DataFrame(transfer_rows)
+    save_df(out_dir / "control_transfer_test.csv", df_transfer)
+    best = df_transfer.loc[df_transfer["transfer_accuracy_unforced"].idxmax()]
+    logger.info(f"R_control transfer to UNFORCED prompts: mean={df_transfer['transfer_accuracy_unforced'].mean():.3f}, best={best['transfer_accuracy_unforced']:.3f} @L{int(best['layer'])} (0.5 = chance => token-identity artifact)")
+
     save_torch(out_dir / "directions.pt", directions)
     save_df(out_dir / "probe_accuracy.csv", pd.DataFrame(probe_acc_rows))
+    df_dim = pd.DataFrame(dimensionality_rows)
+    save_df(out_dir / "concept_dimensionality.csv", df_dim)
+    if not df_dim.empty:
+        logger.info(f"Concept dimensionality (r_eff of the difference spectrum; ~1 means a genuine single axis):\n{df_dim.groupby('concept')[['r_eff_spectrum', 'top1_variance_share']].mean().to_string()}")
     if probe_acc_rows:
         mean_acc = pd.DataFrame(probe_acc_rows).groupby("concept")["accuracy"].mean()
         logger.info(f"Mean held-out probe accuracy per concept:\n{mean_acc.to_string()}")
