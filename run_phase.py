@@ -21,6 +21,7 @@ if os.environ.get("CUDA_VISIBLE_DEVICES", "") == "" and not os.environ.get("SLUR
     os.environ.setdefault("MKL_NUM_THREADS", "8")
 
 from core.config import load_config
+from core.io_utils import write_run_manifest
 from phases import (
     phase1_geometry,
     phase2_causal_structure,
@@ -46,7 +47,10 @@ def main() -> None:
     args = parser.parse_args()
 
     cfg = load_config()
-    PHASES[args.phase].run(cfg)
+    module = PHASES[args.phase]
+    # Provenance first, so outputs are traceable even if the phase later fails.
+    write_run_manifest(cfg, module.PHASE_NAME)
+    module.run(cfg)
 
 
 if __name__ == "__main__":

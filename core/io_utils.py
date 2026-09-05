@@ -5,9 +5,10 @@ phases can load an earlier phase's frozen outputs instead of recomputing them.
 """
 import json
 import logging
+import os
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import pandas as pd
 import torch
@@ -59,6 +60,41 @@ def save_df(path: Path, df: pd.DataFrame) -> None:
 
 def load_df(path: Path) -> pd.DataFrame:
     return pd.read_csv(path)
+
+
+def write_run_manifest(cfg, phase_name: str) -> Path:
+    """Record the exact code state and configuration that produced a phase's
+    outputs, alongside those outputs.
+
+    Phases run as separate Slurm jobs and can therefore be produced under
+    different code states; mixing them silently is a real failure mode (it has
+    already caused stale numbers to be quoted as current). A per-phase manifest
+    makes any figure traceable to the run and commit that produced it.
+    """
+    import subprocess
+    from dataclasses import asdict
+    from datetime import datetime, timezone
+
+    def _git(*args: str) -> Optional[str]:
+        try:
+            return subprocess.run(["git", *args], capture_output=True, text=True, timeout=10,
+                                  cwd=Path(__file__).resolve().parent.parent).stdout.strip() or None
+        except Exception:
+            return None
+
+    cfg_dict = {k: (str(v) if isinstance(v, Path) else v) for k, v in asdict(cfg).items()}
+    manifest = {
+        "phase": phase_name,
+        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "git_commit": _git("rev-parse", "HEAD"),
+        "git_dirty": bool(_git("status", "--porcelain")),
+        "slurm_job_id": os.environ.get("SLURM_JOB_ID"),
+        "hostname": os.environ.get("HOSTNAME") or os.uname().nodename,
+        "config": cfg_dict,
+    }
+    path = cfg.phase_dir(phase_name) / "run_manifest.json"
+    save_json(path, manifest)
+    return path
 
 
 def require_phase_output(path: Path, phase_name: str) -> Path:
