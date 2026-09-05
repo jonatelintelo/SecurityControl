@@ -98,8 +98,14 @@ def load_config() -> Config:
     # either no-op or destructive interventions.
     if steer_relative:
         default_alpha = [0.1, 0.5, 1.5] if fast_dev else [0.05, 0.1, 0.2, 0.35, 0.5, 0.75, 1.0, 1.5, 2.0]
+        # Phase 2's single-magnitude probe must also be on the relative scale.
+        # 0.25 sits in the range measured to preserve capability (utility ~0.96
+        # at 0.5); the legacy absolute default of 3.0 would be 3x the residual
+        # norm and produce collapse rather than a causal effect.
+        default_steer_alpha = 0.25
     else:
         default_alpha = [1, 4, 12] if fast_dev else [0.5, 1, 2, 3, 4, 6, 8, 12, 16, 24]
+        default_steer_alpha = 3.0
     return Config(
         model_id=os.environ.get("MODEL_ID", "Qwen/Qwen3.5-9B"),
         device="cuda" if torch.cuda.is_available() else "cpu",
@@ -114,7 +120,7 @@ def load_config() -> Config:
         k_grid=_env_int_list("K_GRID", [1, 10, 50] if fast_dev else [1, 5, 10, 20, 50, 100, 250, 500, 1000, 2000, 4000]),
         alpha_magnitudes=_env_float_list("ALPHA_GRID", default_alpha),
         layer_prefix_fractions=_env_float_list("LAYER_PREFIX_FRACTIONS", [0.5, 1.0] if fast_dev else [0.25, 0.5, 0.75, 1.0]),
-        steer_alpha=_env_float("STEER_ALPHA", 3.0),
+        steer_alpha=_env_float("STEER_ALPHA", default_steer_alpha),
         steer_relative=steer_relative,
         layer_stride=(_env_int("LAYER_STRIDE", 0) or None),
         neurostrike_z_threshold=_env_float("NEUROSTRIKE_Z_THRESHOLD", 3.0),
