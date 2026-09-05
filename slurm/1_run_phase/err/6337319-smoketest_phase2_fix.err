@@ -1,0 +1,29 @@
+[2026-09-05 13:18:56] [INFO] ================================================================================
+[2026-09-05 13:18:56] [INFO] PHASE 2: CROSS-LAYER CAUSAL STRUCTURE (RQ2)
+[2026-09-05 13:18:56] [INFO] ================================================================================
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:52: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu")
+[2026-09-05 13:18:56] [INFO] Loaded directions from phase1_geometry. early=10, mid=10, late=21
+[2026-09-05 13:18:56] [INFO] Loading checkpoint: Qwen/Qwen3.5-9B on cuda...
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files: 100%|██████████| 4/4 [00:00<00:00, 1678.73it/s]
+Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:   3%|▎         | 12/427 [00:00<00:04, 98.54it/s]Loading weights:   9%|▊         | 37/427 [00:00<00:02, 155.24it/s]Loading weights:  12%|█▏        | 53/427 [00:00<00:03, 118.82it/s]Loading weights:  16%|█▌        | 67/427 [00:00<00:02, 125.18it/s]Loading weights:  22%|██▏       | 95/427 [00:00<00:02, 161.75it/s]Loading weights:  31%|███       | 133/427 [00:00<00:01, 218.93it/s]Loading weights:  37%|███▋      | 156/427 [00:00<00:01, 217.03it/s]Loading weights:  44%|████▍     | 188/427 [00:00<00:00, 241.08it/s]Loading weights:  52%|█████▏    | 220/427 [00:01<00:00, 262.65it/s]Loading weights:  58%|█████▊    | 249/427 [00:01<00:00, 269.33it/s]Loading weights:  65%|██████▌   | 278/427 [00:01<00:00, 269.80it/s]Loading weights:  72%|███████▏  | 306/427 [00:01<00:00, 269.88it/s]Loading weights:  78%|███████▊  | 334/427 [00:01<00:00, 263.43it/s]Loading weights:  85%|████████▍ | 361/427 [00:01<00:00, 260.59it/s]Loading weights:  93%|█████████▎| 398/427 [00:01<00:00, 286.41it/s]Loading weights: 100%|██████████| 427/427 [00:01<00:00, 277.81it/s]Loading weights: 100%|██████████| 427/427 [00:01<00:00, 233.43it/s]
+[2026-09-05 13:19:10] [INFO] Model successfully loaded. Parameter count: 8,953,803,264
+[2026-09-05 13:19:10] [INFO] (source_layer, target_layer) pairs: [(10, 10), (10, 21)]
+[2026-09-05 13:19:11] [INFO] Baseline refusal-margin (mean over probes): 21.2500
+[2026-09-05 13:19:11] [INFO] steer[role@L10] -> read@L10: behavior_delta=+0.0000  cos_delta_role=0.1455, cos_delta_harm=-0.0410, cos_delta_control=-0.0115
+[2026-09-05 13:19:11] [INFO] steer[harm@L10] -> read@L10: behavior_delta=+0.2500  cos_delta_role=-0.0381, cos_delta_harm=0.1348, cos_delta_control=0.0339
+[2026-09-05 13:19:11] [INFO] steer[control@L10] -> read@L10: behavior_delta=+1.2500  cos_delta_role=-0.0092, cos_delta_harm=0.0337, cos_delta_control=0.1387
+[2026-09-05 13:19:11] [INFO] steer[role@L10] -> read@L21: behavior_delta=+0.0000  cos_delta_role=0.0378, cos_delta_harm=-0.0566, cos_delta_control=-0.0160
+[2026-09-05 13:19:12] [INFO] steer[harm@L10] -> read@L21: behavior_delta=+0.2500  cos_delta_role=-0.0085, cos_delta_harm=0.0349, cos_delta_control=0.0065
+[2026-09-05 13:19:12] [INFO] steer[control@L10] -> read@L21: behavior_delta=+1.2500  cos_delta_role=0.0179, cos_delta_harm=0.0004, cos_delta_control=0.0280
+[2026-09-05 13:19:12] [INFO] Full cross-intervention matrix:
+   source_layer source_concept  alpha  target_layer  behavior_margin_delta  cos_delta_role  cos_delta_harm  cos_delta_control
+0            10           role    3.0            10                   0.00        0.145508       -0.041016          -0.011536
+1            10           harm    3.0            10                   0.25       -0.038086        0.134766           0.033936
+2            10        control    3.0            10                   1.25       -0.009216        0.033691           0.138672
+3            10           role    3.0            21                   0.00        0.037842       -0.056641          -0.015991
+4            10           harm    3.0            21                   0.25       -0.008545        0.034912           0.006500
+5            10        control    3.0            21                   1.25        0.017944        0.000406           0.027954
+[2026-09-05 13:19:12] [INFO] ================================================================================
+[2026-09-05 13:19:12] [INFO] Phase 2 complete. Outputs written to results/phase2_causal_structure
+[2026-09-05 13:19:12] [INFO] ================================================================================

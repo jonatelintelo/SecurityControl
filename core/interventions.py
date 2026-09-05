@@ -1,15 +1,16 @@
 import torch
 import torch.nn as nn
 from typing import List
-from subspaces import SubspaceEngine
+
+from core.subspaces import SubspaceEngine
 
 
-class QwenInterventionEngine:
-    """Manages causal steering, NeuroStrike neuron ablation, and subspace causal rescue."""
+class InterventionEngine:
+    """Manages causal steering, NeuroStrike-style neuron ablation, and subspace causal rescue."""
 
     @staticmethod
     def steer_subspace(layer_module: nn.Module, direction: torch.Tensor, alpha: float) -> torch.utils.hooks.RemovableHandle:
-        """Residual steering: h' = h + alpha * r."""
+        """Residual steering: h' = h + alpha * unit(direction)."""
         unit_dir = (direction / torch.norm(direction, p=2)).detach()
 
         def hook(module, args, output):
@@ -22,6 +23,8 @@ class QwenInterventionEngine:
 
     @staticmethod
     def ablate_neurons(mlp_module: nn.Module, neuron_indices: List[int]) -> torch.utils.hooks.RemovableHandle:
+        """NeuroStrike-style intervention: zero the selected neurons' contribution
+        right before down_proj (i.e. force their output column's contribution to 0)."""
         idx_tensor = torch.tensor(neuron_indices, dtype=torch.long)
 
         def pre_hook(module, args):
@@ -34,19 +37,24 @@ class QwenInterventionEngine:
 
     @staticmethod
     def install_causal_rescue(layer_module: nn.Module, r_control_basis: torch.Tensor, delta_h: torch.Tensor) -> torch.utils.hooks.RemovableHandle:
-        """
-        Executes Causal Rescue:
-        h'_l = h_l + P_{R_control} * \Delta h_l
-        Restores missing refusal representation downstream while neurons remain ablated.
-        """
+        """Executes causal rescue specifically at the prompt boundary to avoid corrupting
+        single-token generation steps: re-injects delta_h (projected onto r_control_basis)
+        into the last prefill position's residual stream."""
         P_R = SubspaceEngine.get_orthogonal_projector(r_control_basis).detach()
 
         def hook(module, args, output):
             h = output[0] if isinstance(output, tuple) else output
-            P_R_dev = P_R.to(h.device).type_as(h)
-            delta_dev = delta_h.to(h.device).type_as(h)
-            rescue_signal = torch.matmul(delta_dev, P_R_dev.T)
-            h_rescued = h + rescue_signal
-            return (h_rescued,) + output[1:] if isinstance(output, tuple) else h_rescued
+
+            # Guard: only apply rescue injection during prefill (prompt processing), not single-token generation
+            if h.shape[1] > 1:
+                P_R_dev = P_R.to(h.device).type_as(h)
+                delta_dev = delta_h.to(h.device).type_as(h)
+                rescue_signal = torch.matmul(delta_dev, P_R_dev.T)
+
+                h_rescued = h.clone()
+                h_rescued[:, -1, :] += rescue_signal.squeeze()
+                return (h_rescued,) + output[1:] if isinstance(output, tuple) else h_rescued
+
+            return output
 
         return layer_module.register_forward_hook(hook)

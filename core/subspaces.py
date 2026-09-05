@@ -2,7 +2,7 @@ import torch
 
 
 class SubspaceEngine:
-    """Handles subspace extraction, projection operators, and geometric alignments."""
+    """Handles direction/subspace extraction, projection operators, and geometric alignments."""
 
     @staticmethod
     def extract_direction(pos_acts: torch.Tensor, neg_acts: torch.Tensor) -> torch.Tensor:
@@ -51,3 +51,17 @@ class SubspaceEngine:
         M = torch.matmul(Qa.T, Qb)
         _, S, _ = torch.linalg.svd(M)
         return torch.acos(torch.clamp(S, -1.0, 1.0))
+
+    @staticmethod
+    def probe_validation_accuracy(direction: torch.Tensor, pos_acts: torch.Tensor, neg_acts: torch.Tensor) -> float:
+        """Sign-based classification accuracy of the diff-of-means direction on held-out
+        activations: threshold at the midpoint between the two training-set class means'
+        projections, then score how often held-out pos/neg projections fall on the
+        correct side. Serves as the "probe accuracy" baseline referenced in RQ5."""
+        d = direction.view(-1) / torch.norm(direction, p=2)
+        pos_proj = pos_acts @ d
+        neg_proj = neg_acts @ d
+        threshold = 0.5 * (pos_proj.mean() + neg_proj.mean())
+        correct = (pos_proj > threshold).sum() + (neg_proj <= threshold).sum()
+        total = pos_proj.numel() + neg_proj.numel()
+        return (correct / total).item()

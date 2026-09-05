@@ -1,0 +1,35 @@
+[2026-09-04 19:27:30] [INFO] ================================================================================
+[2026-09-04 19:27:30] [INFO] STARTING ICLR PHASE 1: CAUSAL ARCHITECTURE OF LLM SAFETY
+[2026-09-04 19:27:30] [INFO] ================================================================================
+[2026-09-04 19:27:31] [INFO] Loading checkpoint: Qwen/Qwen3.5-9B on cuda...
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files:  25%|██▌       | 1/4 [00:19<00:59, 19.87s/it]Fetching 4 files:  50%|█████     | 2/4 [00:23<00:20, 10.17s/it]Fetching 4 files:  75%|███████▌  | 3/4 [00:23<00:05,  5.58s/it]Fetching 4 files: 100%|██████████| 4/4 [00:24<00:00,  3.63s/it]Fetching 4 files: 100%|██████████| 4/4 [00:24<00:00,  6.00s/it]
+Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:  10%|▉         | 41/427 [00:00<00:01, 364.06it/s]Loading weights:  19%|█▊        | 80/427 [00:00<00:00, 363.79it/s]Loading weights:  27%|██▋       | 117/427 [00:00<00:00, 345.16it/s]Loading weights:  36%|███▌      | 152/427 [00:00<00:00, 327.41it/s]Loading weights:  44%|████▍     | 187/427 [00:00<00:00, 326.29it/s]Loading weights:  52%|█████▏    | 220/427 [00:00<00:00, 321.33it/s]Loading weights:  59%|█████▉    | 253/427 [00:00<00:00, 314.52it/s]Loading weights:  67%|██████▋   | 285/427 [00:00<00:00, 305.64it/s]Loading weights:  74%|███████▍  | 316/427 [00:01<00:00, 289.52it/s]Loading weights:  82%|████████▏ | 352/427 [00:01<00:00, 304.29it/s]Loading weights:  90%|████████▉ | 384/427 [00:01<00:00, 307.25it/s]Loading weights:  97%|█████████▋| 415/427 [00:01<00:00, 289.24it/s]Loading weights: 100%|██████████| 427/427 [00:01<00:00, 312.08it/s]
+[2026-09-04 19:28:13] [INFO] Model successfully loaded. Parameter count: 8,953,803,264
+[2026-09-04 19:28:13] [INFO] --------------------------------------------------------------------------------
+[2026-09-04 19:28:13] [INFO] STAGE 1: EXTRACTING LATENT VARIABLES (RQ1)
+[2026-09-04 19:28:13] [INFO] --------------------------------------------------------------------------------
+[2026-09-04 19:28:13] [INFO] Extracting residual stream activations for R_role...
+[2026-09-04 19:28:14] [INFO] Extracting residual stream activations for R_harm...
+[2026-09-04 19:28:14] [INFO] Extracting residual stream activations for R_control...
+[2026-09-04 19:28:15] [INFO] Target selected: Layer 1 exhibits maximum alignment between R_harm and R_control.
+[2026-09-04 19:28:15] [INFO] Layer Geometry Summary:
+           layer  cos_role_harm  cos_harm_control  cos_role_control
+count  32.000000      32.000000         32.000000         32.000000
+mean   15.500000       0.000889          0.023669         -0.005432
+std     9.380832       0.063715          0.020307          0.063282
+min     0.000000      -0.078125         -0.039307         -0.218750
+25%     7.750000      -0.034790          0.015152         -0.042908
+50%    15.500000      -0.012451          0.023682         -0.008354
+75%    23.250000       0.006424          0.031586          0.038086
+max    31.000000       0.259766          0.062988          0.093262
+[2026-09-04 19:28:15] [INFO] --------------------------------------------------------------------------------
+[2026-09-04 19:28:15] [INFO] STAGE 2: COMPONENT ATTRIBUTION (RQ3, RQ5)
+[2026-09-04 19:28:15] [INFO] --------------------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/1_run_phase.py", line 242, in <module>
+    run_phase1_pipeline()
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/1_run_phase.py", line 152, in run_phase1_pipeline
+    metrics = attrib_engine.compute_architectural_quantities(raw_attribs, active_w)
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/attribution.py", line 55, in compute_architectural_quantities
+    evals = torch.linalg.eigvalsh(gram)
+RuntimeError: "linalg_eigh_cpu" not implemented for 'BFloat16'

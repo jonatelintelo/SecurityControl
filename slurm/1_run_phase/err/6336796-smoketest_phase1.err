@@ -1,0 +1,20 @@
+[2026-09-05 12:41:43] [INFO] ================================================================================
+[2026-09-05 12:41:43] [INFO] PHASE 1: LATENT VARIABLE EXTRACTION & GEOMETRY (RQ1)
+[2026-09-05 12:41:43] [INFO] ================================================================================
+[2026-09-05 12:41:43] [INFO] Loading checkpoint: Qwen/Qwen3.5-9B on cuda...
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files: 100%|██████████| 4/4 [00:00<00:00, 1665.23it/s]
+Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:   3%|▎         | 13/427 [00:00<00:03, 118.23it/s]Loading weights:   8%|▊         | 36/427 [00:00<00:02, 140.40it/s]Loading weights:  12%|█▏        | 50/427 [00:00<00:02, 133.51it/s]Loading weights:  15%|█▌        | 66/427 [00:00<00:02, 130.26it/s]Loading weights:  22%|██▏       | 92/427 [00:00<00:01, 170.32it/s]Loading weights:  28%|██▊       | 120/427 [00:00<00:01, 199.14it/s]Loading weights:  35%|███▍      | 149/427 [00:00<00:01, 221.38it/s]Loading weights:  44%|████▎     | 186/427 [00:00<00:00, 260.19it/s]Loading weights:  50%|████▉     | 213/427 [00:01<00:00, 260.07it/s]Loading weights:  58%|█████▊    | 249/427 [00:01<00:00, 285.89it/s]Loading weights:  65%|██████▌   | 279/427 [00:01<00:00, 287.30it/s]Loading weights:  72%|███████▏  | 308/427 [00:01<00:00, 281.77it/s]Loading weights:  81%|████████  | 345/427 [00:01<00:00, 306.58it/s]Loading weights:  88%|████████▊ | 376/427 [00:01<00:00, 305.05it/s]Loading weights:  96%|█████████▋| 412/427 [00:01<00:00, 311.91it/s]Loading weights: 100%|██████████| 427/427 [00:01<00:00, 248.57it/s]
+[2026-09-05 12:41:54] [INFO] Model successfully loaded. Parameter count: 8,953,803,264
+[2026-09-05 12:41:54] [INFO] [role] 4 pairs total -> 3 train / 1 held-out
+[2026-09-05 12:41:56] [INFO] [harm] 6 pairs total -> 4 train / 2 held-out
+[2026-09-05 12:41:57] [INFO] [control] 6 pairs total -> 4 train / 2 held-out
+[2026-09-05 12:41:58] [INFO] Mean held-out probe accuracy per concept:
+concept
+control    1.000000
+harm       0.882812
+role       1.000000
+[2026-09-05 12:41:58] [INFO] Selected layers: {'mid_layer': 17, 'early_layer': 10, 'late_layer': 21, 'num_layers': 32} (mid_layer = argmax|cos(R_harm, R_control)| = 0.1357)
+[2026-09-05 12:41:58] [INFO] Projecting 16 probe prompts onto 3 concepts across 32 layers...
+[2026-09-05 12:41:58] [INFO] ================================================================================
+[2026-09-05 12:41:58] [INFO] Phase 1 complete. Outputs written to results/phase1_geometry
+[2026-09-05 12:41:58] [INFO] ================================================================================
