@@ -42,8 +42,11 @@ current numbers are **dev-scale unless noted** (`FAST_DEV=1`: 3–4 intents,
 | **Components reorganize across contexts; representations do not** | `S_repr` 0.957/0.954 vs `S_comp` 0.491/0.538 against a matched-n within-context floor of 0.750/0.757. Gaps **+0.259 [0.187, 0.322]** (harm) and **+0.219 [0.138, 0.292]** (control); both CIs exclude 0. **Full-scale run.** | **strongest result** |
 | The three variables are separately decodable | held-out probe accuracy 1.00 / 0.984 / 1.00 under the factorial design | good |
 | `R_control` is a control variable, not token identity | transfers to *unforced* prompts at 0.783 mean / 0.938 best vs 0.5 chance | good |
-| Neuron ranking carries real information | ablating top-50 ranked leaves `A_R` at 0.89–0.95; **50 random neurons leave it at ~1.000** | good |
+| Neuron ranking carries real information | ablating top-50 ranked leaves `A_R` at 0.89–0.95; **50 random neurons leave it at ~1.000**. At k=4000 (32.6% of a layer) ranked removes 19–28% vs random 6–11% | good, full scale |
 | `R_control` is the most read/write integrated | transformer-neuron counts: control 39.0, harm 27.3, role 14.7 (chance ≈ 1.9), monotone across 3 layers | suggestive |
+| **Our NeuroStrike implementation is validated** | attack path and probe path each reach 0.727 [0.65, 0.79] on their model, containing their 76.9%; our probe weights correlate r=+0.55 with theirs | **good, full scale** |
+| **Neuron pruning does not work by breaking the model** | utility flat at 0.920 across all pruning depths, above the 0.880 baseline | good, full scale |
+| Qwen3.5-9B resists this attack far more than Qwen2.5-7B | 0.287 vs 0.727 at 75% depth, non-overlapping CIs, comparable prune budgets | suggestive — see confound |
 
 ### Open — no evidence either way
 
@@ -51,12 +54,9 @@ current numbers are **dev-scale unless noted** (`FAST_DEV=1`: 3–4 intents,
   `prediction_correlations` entry is NaN at dev scale. The sweep grids stop at
   k=50, where `A_R` has only fallen to ~0.89. Not a negative result — an
   unrun one.
-- **NeuroStrike connection uninterpretable.** Overlap ~0.0007; their probe had
-  12 training prompts against thousands in the reference.
-- **Neuron-level attacks unvalidated.** NeuroStrike's own full-depth attack
-  (5485 neurons, all 32 layers) yields ASR 0.0 against their reported 76.9%,
-  almost certainly because the probe is data-starved. Until this positive
-  control passes, no neuron-level RQ5 number is reportable.
+- **Whether Qwen3.5's low ASR reflects robustness or an under-tuned attack.**
+  See the reproduction section — the `|z|>3` threshold was never calibrated for
+  this model.
 
 ### Stale — needs re-run
 
@@ -67,6 +67,72 @@ dirty working tree, where the commit hash cannot distinguish code states —
 **check the timestamps, not just the commit.**
 
 ---
+
+## NeuroStrike reproduction and the two-model comparison
+
+A result track that was not in the original plan but is now among the
+strongest things we have. It also validates every neuron-level claim in the
+pipeline, so read it before trusting any of them.
+
+### The validation chain
+
+Our own NeuroStrike-style attack initially gave ASR 0.0 while the reference
+reports 76.9%. Rather than assume a cause, we separated the candidates:
+
+| link tested | how | result |
+|---|---|---|
+| our **attack path** (prune hooks, prune site, judge) | their shipped weights, their model | **0.727** [0.65, 0.79] — contains their 76.9% |
+| our **probe path** (activation capture, logistic fit, \|z\|>3) | our probe, same model | **0.727** — identical |
+| probe **equivalence** | our weights vs theirs, same model | r=+0.55 median; neuron overlap 0.176 vs 0.0018 chance (~100x) |
+| ASR is not **collapse** | capability retention under identical hooks | **utility flat at 0.920**, vs 0.880 unpruned |
+
+Only after all four does a low ASR elsewhere become attributable to the model.
+The original ASR 0.0 was purely a data-starved probe: **12 training prompts
+against the reference's ~15,000**, for a logistic regression over ~19k
+features.
+
+### Two-model result (n=150 StrongREJECT, Llama-Guard, utility-controlled)
+
+| pruning | Qwen2.5-7B ASR | utility | Qwen3.5-9B ASR | utility |
+|---|---|---|---|---|
+| baseline | 0.040 [0.02, 0.08] | 0.880 | 0.000 [0.00, 0.02] | 0.880 |
+| 25% | 0.080 [0.05, 0.13] | 0.920 | 0.000 [0.00, 0.02] | 0.920 |
+| 50% | 0.340 [0.27, 0.42] | 0.920 | 0.140 [0.09, 0.20] | 0.920 |
+| 75% | **0.727** [0.65, 0.79] | 0.920 | 0.287 [0.22, 0.36] | 0.920 |
+| 100% | 0.720 [0.64, 0.79] | 0.920 | `[TODO: run pending]` | |
+
+At matched pruning depth the CIs do not overlap, so the gap is statistically
+real. Pruning budgets are comparable — Qwen3.5 actually prunes a slightly
+*larger* fraction of all MLP neurons (0.98% vs 0.797%).
+
+**Utility never moves**, and is *higher* under pruning than at baseline. That
+is a useful internal check: our utility score counts "coherent and not
+refused", so removing safety neurons also reduces over-refusal on benign
+prompts. The attack does what it claims.
+
+### The open confound — do not skip this
+
+We applied the reference's `|z|>3` threshold to Qwen3.5 **without tuning**. It
+was calibrated on their model set, which never included Qwen3.5. So
+"Qwen3.5 is more robust" and "we under-tuned the attack on Qwen3.5" are
+currently **indistinguishable**. Three live explanations:
+
+1. **Threshold miscalibration** — cheap to test by sweeping z.
+2. **Genuine robustness** — Qwen3.5 postdates every model they evaluated.
+3. **Reasoning-mode blind spot** — the probe was trained with
+   `enable_thinking=False`, so if part of Qwen3.5's safety lives in its
+   reasoning pass, our probe never observed it. Specific to comparing a
+   reasoning model against non-reasoning ones.
+
+The defensible claim is *"we tried harder on Qwen3.5 and it still resisted"*,
+not *"our defaults did not work on it."*
+
+### Methodological note on the reference
+
+Their `2_prune_and_get_asr.py` reports success rate only — there is **no
+capability, coherence, or benign-task measurement anywhere in their
+evaluation**. Our utility numbers show their attack does preserve capability,
+so their claim stands; but the guarantee was absent from the original work.
 
 ## Five things you must know before touching the code
 
@@ -137,7 +203,9 @@ Scaling should require only these variables plus larger prompt pools in
 ```
 core/           shared library — all real logic lives here
 phases/         one script per phase, each exposing run(cfg)
-tools/          report_key_numbers.py — re-derives every quoted number
+tools/          report_key_numbers.py       re-derives every quoted number
+                reproduce_neurostrike.py    their weights, their model — validates our attack path
+                train_probe_and_attack.py   our probe on any model — validates our probe path
 run_phase.py    CLI: python run_phase.py <1-6>
 results/        per-phase outputs + run_manifest.json (gitignored)
 ```
@@ -297,21 +365,49 @@ not quote the ordering until sample sizes are equal or the ceiling is slack.
 
 ## Next steps
 
-**The binding constraint is phase 4.** Per-phase dev-scale wall time: phases 1/2/5/6
-are 10–95 s, phase 3 ~3 min, **phase 4 ~72 min (96% of total)**. Scaling phase 4
-naively is ~576× that — roughly **29 GPU-days**.
+### Scaling prompt sets: which, and which not
 
-**Track A — run full-scale phases 1, 2, 3, 5, 6 now.** Minutes each, and they
-carry four of five contributions. Full-scale phase 3 also *de-risks* phase 4: its
-k-grid runs to 4000, so it establishes whether `k_50` is findable at all before
-GPU-weeks are spent.
+The probe starvation has a *specific* cause — logistic regression over ~19k
+features on 12 samples, i.e. `p >> n`. That reasoning does **not** generalise
+to every pool, and scaling uniformly would be wasted effort.
 
-**Track B — make phase 4 affordable first.** In leverage order: batch generation
-(`attack_success_rate` currently loops one prompt at a time; ~8×), early
-termination when ASR at max budget < τ (~3×), binary search over the budget grid
-(~2.8×), and subsampling the control arms. Together: ~29 days → ~10 hours.
+| pool | current | verdict |
+|---|---|---|
+| NeuroStrike probe corpus | ~15k (fixed) | **done** — `data.load_neurostrike_probe_datasets()` |
+| `ATTACK_PROBE_PROMPTS` | 15 | **replace with StrongREJECT.** Drives every `k*`/`alpha*`; at n=15 ASR CIs are ~±0.2. Biggest single limiter on RQ5. |
+| `CONTEXT_INTENTS` | 10 | **expand, don't replace.** RQ6 already yields CIs excluding zero; more only tightens. |
+| factorial pairs | 24/24/48 | **cannot be replaced.** StrongREJECT has no topic-matched benign counterparts, no role manipulation, no crossed factors — our directions need a *designed* contrast. Held-out probe accuracy is already 0.98-1.00, so directions are not the bottleneck. |
+| `r_eff_spectrum` sample size | 4-9 pairs | **starved** — the estimator is capped at `n_pairs - 1`. Needs more factorial *topics*, not a different dataset. |
 
----
+**Hard constraint:** the freeze-then-attack protocol requires the architecture
+pool and the attack pool to be topically disjoint. If StrongREJECT becomes the
+attack pool, the architecture pools must not draw from it, and
+`check_disjoint_topics()` must be updated to enforce it. Violating this turns
+RQ5 from a prediction into a retrospective correlation.
+
+### Priority order
+
+1. **Swap the attack pool to StrongREJECT**, preserving disjointness.
+2. **Phase 4 efficiency work** — batch generation (~8x), early termination when
+   ASR at max budget < tau (~3x), binary search over the budget grid (~2.8x).
+   Without this RQ5 costs ~29 GPU-days; with it, ~10 hours.
+3. **Run RQ5 at scale** using `A_R_at_k` as the redundancy predictor. `k_50` is
+   undefined everywhere (see Known limitations), so it cannot serve as a
+   predictor; `A_R` at a fixed budget carries the same construct and is always
+   defined.
+4. **Threshold sweep on Qwen3.5** to close the under-tuning confound above.
+
+### The paper now has two independent result tracks
+
+Worth stating plainly, because it changes the risk profile:
+
+- **RQ6 context reorganization** — full scale, both functions, CIs excluding
+  zero. The plan's "strongest possible result."
+- **Two-model robustness comparison** — a reproduction of NeuroStrike, extended
+  to a model they never tested, with a capability control they never ran.
+
+Neither depends on RQ5 landing. RQ5 remains the central claim and is still
+untested, but it is no longer the only thing carrying the paper.
 
 ## Revision history — conclusions the controls overturned
 
@@ -328,4 +424,5 @@ keeping the controls in the loop.
 | 5 | `R_control` @ L21 is a real vulnerability | **Capability retention** — utility 0.133; that was model destruction |
 | 6 | `R_harm` is the most multi-dimensional variable | **Ceiling artifact** — `r_eff` capped at `n_pairs−1` (3/3/8) |
 | 7 | "`R_control` reorganizes, `R_harm` does not" | **Full-scale run** — harm's gap moved 0.041 → 0.259 (6×); both reorganize equally |
+| 9 | "Our NeuroStrike attack does not work" (ASR 0.0) | **Reproduction** — with their weights our attack reaches 0.727. The failure was a probe trained on 12 prompts vs their ~15,000, not the attack path |
 | 8 | `k_50` = 50 and 1 for `R_role` | **Offset bug** — `A_R` divided by a near-zero baseline (+0.078), exploding the ratio. Now uses class separation; all `k_50` correctly NaN at k≤50 |

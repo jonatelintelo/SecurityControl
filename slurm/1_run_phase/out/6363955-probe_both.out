@@ -1,0 +1,4 @@
+########## VALIDATION: our probe on their model (expect ~0.70) ##########
+VALIDATION EXIT: 0
+########## THE QUESTION: our probe on Qwen3.5-9B ##########
+QWEN35 EXIT: 0

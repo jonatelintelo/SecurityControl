@@ -1,0 +1,82 @@
+[2026-09-06 17:35:59] [INFO] ================================================================================
+[2026-09-06 17:35:59] [INFO] PHASE 1: LATENT VARIABLE EXTRACTION & GEOMETRY (RQ1)
+[2026-09-06 17:35:59] [INFO] ================================================================================
+[2026-09-06 17:35:59] [INFO] Loading checkpoint: Qwen/Qwen3.5-9B on cuda...
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files: 100%|██████████| 4/4 [00:00<00:00, 1678.73it/s]
+Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:   3%|▎         | 13/427 [00:00<00:03, 125.28it/s]Loading weights:   8%|▊         | 34/427 [00:00<00:02, 147.05it/s]Loading weights:  11%|█▏        | 49/427 [00:00<00:02, 126.61it/s]Loading weights:  15%|█▌        | 66/427 [00:00<00:02, 121.78it/s]Loading weights:  22%|██▏       | 95/427 [00:00<00:02, 163.61it/s]Loading weights:  30%|███       | 130/427 [00:00<00:01, 215.46it/s]Loading weights:  36%|███▌      | 153/427 [00:00<00:01, 214.65it/s]Loading weights:  44%|████▍     | 187/427 [00:00<00:00, 246.61it/s]Loading weights:  52%|█████▏    | 222/427 [00:01<00:00, 275.06it/s]Loading weights:  59%|█████▉    | 253/427 [00:01<00:00, 284.62it/s]Loading weights:  66%|██████▋   | 283/427 [00:01<00:00, 284.53it/s]Loading weights:  73%|███████▎  | 312/427 [00:01<00:00, 277.89it/s]Loading weights:  81%|████████  | 346/427 [00:01<00:00, 285.93it/s]Loading weights:  89%|████████▉ | 381/427 [00:01<00:00, 292.02it/s]Loading weights:  97%|█████████▋| 413/427 [00:01<00:00, 287.98it/s]Loading weights: 100%|██████████| 427/427 [00:01<00:00, 243.30it/s]
+[2026-09-06 17:36:11] [INFO] Model successfully loaded. Parameter count: 8,953,803,264
+[2026-09-06 17:36:11] [INFO] [role] 24 pairs total -> 18 train / 6 held-out
+[2026-09-06 17:36:13] [INFO] [harm] 24 pairs total -> 18 train / 6 held-out
+[2026-09-06 17:36:14] [INFO] [control] 48 pairs total -> 36 train / 12 held-out
+[2026-09-06 17:36:16] [INFO] R_control transfer to UNFORCED prompts: mean=0.775, best=0.938 @L19 (0.5 = chance => token-identity artifact)
+[2026-09-06 17:36:16] [INFO] Concept dimensionality (r_eff of the difference spectrum; ~1 means a genuine single axis):
+         r_eff_spectrum  top1_variance_share
+concept                                     
+control        4.689974             0.427287
+harm           6.717627             0.266761
+role           5.214914             0.378686
+[2026-09-06 17:36:16] [INFO] Mean held-out probe accuracy per concept:
+concept
+control    1.000000
+harm       0.875000
+role       0.984375
+[2026-09-06 17:36:16] [INFO] Selected layers: {'mid_layer': 23, 'early_layer': 10, 'late_layer': 21, 'num_layers': 32} (mid_layer = argmax|cos(R_harm, R_control)| = 0.2119)
+[2026-09-06 17:36:16] [INFO] Projecting 197 probe prompts onto 3 concepts across 32 layers...
+[2026-09-06 17:36:17] [INFO] ================================================================================
+[2026-09-06 17:36:17] [INFO] Phase 1 complete. Outputs written to results/phase1_geometry
+[2026-09-06 17:36:17] [INFO] ================================================================================
+[2026-09-06 17:36:36] [INFO] ================================================================================
+[2026-09-06 17:36:36] [INFO] PHASE 3: COMPONENT ATTRIBUTION, NEUROSTRIKE RECOVERY, MEDIATION & RESCUE (RQ3)
+[2026-09-06 17:36:36] [INFO] ================================================================================
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:53: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu")
+[2026-09-06 17:36:36] [INFO] Target layers for component attribution: [10, 21, 23] (mid_layer=23)
+[2026-09-06 17:36:36] [INFO] Loading checkpoint: Qwen/Qwen3.5-9B on cuda...
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files: 100%|██████████| 4/4 [00:00<00:00, 1733.54it/s]
+Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:  10%|▉         | 42/427 [00:00<00:01, 376.02it/s]Loading weights:  19%|█▉        | 81/427 [00:00<00:00, 367.95it/s]Loading weights:  28%|██▊       | 119/427 [00:00<00:00, 366.66it/s]Loading weights:  37%|███▋      | 156/427 [00:00<00:00, 341.55it/s]Loading weights:  47%|████▋     | 200/427 [00:00<00:00, 368.51it/s]Loading weights:  56%|█████▌    | 238/427 [00:00<00:00, 368.06it/s]Loading weights:  64%|██████▍   | 275/427 [00:00<00:00, 357.31it/s]Loading weights:  73%|███████▎  | 311/427 [00:00<00:00, 348.71it/s]Loading weights:  81%|████████▏ | 347/427 [00:00<00:00, 349.70it/s]Loading weights:  90%|█████████ | 385/427 [00:01<00:00, 351.68it/s]Loading weights:  99%|█████████▊| 421/427 [00:01<00:00, 340.42it/s]Loading weights: 100%|██████████| 427/427 [00:01<00:00, 355.64it/s]
+[2026-09-06 17:36:45] [INFO] Model successfully loaded. Parameter count: 8,953,803,264
+[2026-09-06 17:36:45] [WARNING] NeuroStrike probe training set is small (35+25 prompts vs. thousands in the reference) — scale core/data.py pools before trusting these weights.
+[2026-09-06 17:36:45] [INFO] NeuroStrike probe: 35 harmful / 25 benign prompts
+[2026-09-06 17:40:06] [INFO] NeuroStrike probe: 6855 safety neurons across 64 modules (|z|>3.0, w>0)
+[2026-09-06 17:41:12] [INFO] [L10/role] C_R=0.0003 N_eff=3370.1 r_eff=15.9 k_50=nan
+[2026-09-06 17:42:17] [INFO] [L10/harm] C_R=0.0011 N_eff=909.4 r_eff=16.4 k_50=nan
+[2026-09-06 17:43:23] [INFO] [L10/control] C_R=0.0003 N_eff=3088.2 r_eff=55.5 k_50=nan
+[2026-09-06 17:44:28] [INFO] [L21/role] C_R=0.0002 N_eff=4175.1 r_eff=89.7 k_50=nan
+[2026-09-06 17:45:34] [INFO] [L21/harm] C_R=0.0004 N_eff=2241.7 r_eff=53.8 k_50=nan
+[2026-09-06 17:46:39] [INFO] [L21/control] C_R=0.0003 N_eff=3182.1 r_eff=63.9 k_50=nan
+[2026-09-06 17:47:44] [INFO] [L23/role] C_R=0.0024 N_eff=417.3 r_eff=4.1 k_50=nan
+[2026-09-06 17:48:50] [INFO] [L23/harm] C_R=0.0005 N_eff=2098.6 r_eff=5.1 k_50=nan
+[2026-09-06 17:49:56] [INFO] [L23/control] C_R=0.0005 N_eff=1946.0 r_eff=4.6 k_50=nan
+[2026-09-06 17:49:56] [INFO] NeuroStrike neurons by best-matching security function:
+layer  best_concept
+10     control          37
+       harm            100
+       role            115
+21     control          54
+       harm             59
+       role             60
+23     control          47
+       harm             81
+       role             58
+[2026-09-06 17:49:56] [INFO] Mean top-k neuron ranking overlap (Jaccard, averaged over layers/concepts/k):
+comparison
+activation_contrast_vs_neurostrike    0.036836
+causal_vs_activation_contrast         0.180546
+causal_vs_input_alignment             0.101931
+causal_vs_neurostrike                 0.019469
+causal_vs_static                      0.278491
+input_alignment_vs_neurostrike        0.025492
+static_vs_activation_contrast         0.115345
+static_vs_input_alignment             0.168607
+static_vs_neurostrike                 0.016894
+[2026-09-06 17:49:56] [INFO] --------------------------------------------------------------------------------
+[2026-09-06 17:49:56] [INFO] Mediation & causal rescue at mid layer
+[2026-09-06 17:49:56] [INFO] --------------------------------------------------------------------------------
+[2026-09-06 17:49:56] [INFO] Baseline projections={'role': -0.03515625, 'harm': 0.365234375, 'control': 0.22265625}, margin=19.7500
+[2026-09-06 17:49:56] [INFO] Ablate top-50 'role' neurons -> delta_projections={'role': -0.01513671875, 'harm': -0.013671875, 'control': -0.0009765625}, margin_delta=-0.1250
+[2026-09-06 17:49:57] [INFO] Ablate top-50 'harm' neurons -> delta_projections={'role': -0.013427734375, 'harm': -0.037109375, 'control': -0.0078125}, margin_delta=-0.2500
+[2026-09-06 17:49:57] [INFO] Ablate top-50 'control' neurons -> delta_projections={'role': -0.0107421875, 'harm': -0.0234375, 'control': -0.01171875}, margin_delta=+0.2500
+[2026-09-06 17:49:57] [INFO] Rescue (R_control reinjected, neurons still ablated) -> margin=20.2500 (recovered +0.2500 vs ablated)
+[2026-09-06 17:52:13] [INFO] ================================================================================
+[2026-09-06 17:52:13] [INFO] Phase 3 complete. Outputs written to results/phase3_components
+[2026-09-06 17:52:13] [INFO] ================================================================================

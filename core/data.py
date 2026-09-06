@@ -404,6 +404,38 @@ def attack_steering_sign(concept: str, use_factorial_design: bool) -> int:
     return table[concept]
 
 
+def load_neurostrike_probe_datasets(limit: Optional[int] = None, seed: int = 0) -> Tuple[List[str], List[int]]:
+    """The reference's probe-training corpus, downloaded from the HF hub.
+
+    NeuroStrike's safety probe is trained on ~7.5k harmful prompts against an
+    equal number of benign ones. Our curated in-repo pools are three orders of
+    magnitude smaller, which leaves a logistic probe over ~19k features badly
+    underdetermined — the probe then selects near-random neurons and the attack
+    does nothing. This is the one place the pipeline genuinely needs external
+    data; everything else stays offline and curated.
+
+    Returns (texts, labels) with 1 = harmful, 0 = benign.
+    """
+    from datasets import load_dataset
+
+    harmful: List[str] = []
+    harmful += list(load_dataset("walledai/CatHarmfulQA")["en"]["prompt"])
+    harmful += list(load_dataset("declare-lab/HarmfulQA")["train"]["question"])
+    harmful += list(load_dataset("LLM-LAT/harmful-dataset")["train"]["prompt"])
+
+    if limit is not None:
+        rng = random.Random(seed)
+        rng.shuffle(harmful)
+        harmful = harmful[:limit]
+
+    benign_ds = load_dataset("facebook/natural_reasoning")["train"]
+    benign = list(benign_ds.select(range(min(len(harmful), len(benign_ds))))["question"])
+
+    texts = harmful + benign
+    labels = [1] * len(harmful) + [0] * len(benign)
+    return texts, labels
+
+
 def all_topic_pools() -> Dict[str, List[str]]:
     return {
         "harm_pairs": [p.topic for p in HARM_PAIRS],

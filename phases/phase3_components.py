@@ -47,7 +47,8 @@ from core.config import Config, load_config
 from core.hooks import HookEngine, capture_last_token_residuals, capture_mlp_neuron_activations
 from core.interventions import InterventionEngine
 from core.io_utils import get_logger, load_json, load_torch, require_phase_output, save_df, save_json, save_torch
-from core.metrics import component_ablation_curve, component_set_overlap, find_k50, make_separation_score_fn, refusal_margin_score
+from core.judge import AttackJudge
+from core.metrics import component_ablation_curve, component_set_overlap, find_k50, make_behavioral_score_fn, make_separation_score_fn, refusal_margin_score
 from core.model_io import build_prompt, generate_text, load_model
 from core.subspaces import SubspaceEngine
 
@@ -136,6 +137,17 @@ def run(cfg: Config) -> None:
     id_refusal = tokenizer.encode("I", add_special_tokens=False)[0]
     id_compliance = tokenizer.encode("Sure", add_special_tokens=False)[0]
 
+    # Behavioral A_R (opt-in: costs generation at every ablation grid point).
+    # Uses the SAME harmful requests the representational probes are built from,
+    # so the two A_R variants are measured on comparable inputs.
+    behavioral_judge = None
+    if cfg.measure_behavioral_ar:
+        behavioral_judge = AttackJudge(cfg.device, use_llama_guard=cfg.use_llama_guard, logger=logger)
+        n_beh = 3 if cfg.fast_dev else 8
+        beh_questions = [p.positive.user for p in data.CONTROL_PAIRS[:n_beh]]
+        beh_prompts = [build_prompt(tokenizer, user=q) for q in beh_questions]
+        logger.info(f"Behavioral A_R enabled: {len(beh_prompts)} judged prompts per ablation grid point.")
+
     architecture_rows = []
     overlap_rows = []
     classification_rows = []
@@ -187,6 +199,9 @@ def run(cfg: Config) -> None:
                 "A_R": make_separation_score_fn(hooks, layer, directions[concept][layer]),
                 "refusal_margin": refusal_margin_score,
             }
+            if behavioral_judge is not None:
+                score_fns["A_R_behavioral"] = make_behavioral_score_fn(
+                    behavioral_judge, beh_questions, beh_prompts, cfg.max_new_tokens)
             curve_df = component_ablation_curve(
                 model, tokenizer, cfg.device, mlp_module, causal_ranking.tolist(),
                 _concept_probe_toks(concept, "pos"), _concept_probe_toks(concept, "neg"),
@@ -198,6 +213,16 @@ def run(cfg: Config) -> None:
             metrics["k_50"] = k50 if k50 is not None else float("nan")
             metrics["k_50_behavioral"] = find_k50(curve_df, column="ratio_refusal_margin") or float("nan")
             metrics["k_50_random_control"] = find_k50(curve_df, column="ratio_A_R", ablation="random") or float("nan")
+            # Redundancy is reported two ways. k_50 inverts the curve ("what k
+            # halves the function?") and is undefined when the curve never
+            # halves -- which is what we observe. A_R at a fixed budget is
+            # always defined and carries the same information, so it is the
+            # usable RQ5 predictor.
+            for fixed_k in (cfg.a_r_report_k,):
+                sel = curve_df[(curve_df.ablation == "ranked") & (curve_df.k == fixed_k)]
+                metrics[f"A_R_at_k{fixed_k}"] = float(sel["ratio_A_R"].iloc[0]) if not sel.empty else float("nan")
+                if "ratio_A_R_behavioral" in curve_df.columns and not sel.empty:
+                    metrics[f"A_R_behavioral_at_k{fixed_k}"] = float(sel["ratio_A_R_behavioral"].iloc[0])
             metrics["layer"] = layer
             metrics["concept"] = concept
             architecture_rows.append(metrics)

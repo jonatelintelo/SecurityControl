@@ -80,6 +80,11 @@ class Config:
     # legacy per-concept templates, which differ structurally from each other.
     use_factorial_design: bool
     min_utility: float
+    # Behavioral A_R requires generation+judging at every ablation grid point,
+    # so it is opt-in. a_r_report_k is the fixed budget at which A_R is reported
+    # as an RQ5 predictor, since k_50 is undefined when the curve never halves.
+    measure_behavioral_ar: bool
+    a_r_report_k: int
 
     def phase_dir(self, name: str) -> Path:
         d = self.results_root / name
@@ -130,4 +135,6 @@ def load_config() -> Config:
         gram_top_k=_env_int("GRAM_TOP_K", 256),
         use_factorial_design=_env_bool("USE_FACTORIAL_DESIGN", True),
         min_utility=_env_float("MIN_UTILITY", 0.5),
+        measure_behavioral_ar=_env_bool("MEASURE_BEHAVIORAL_AR", False),
+        a_r_report_k=_env_int("A_R_REPORT_K", 50 if fast_dev else 1000),
     )
