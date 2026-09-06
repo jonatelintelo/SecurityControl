@@ -98,7 +98,9 @@ def refusal_logit_margin(model, tokenizer, toks, device, refusal_token: str = "I
         logits = model(**toks).logits[:, -1, :]
     id_refusal = tokenizer.encode(refusal_token, add_special_tokens=False)[0]
     id_compliance = tokenizer.encode(compliance_token, add_special_tokens=False)[0]
-    return (logits[0, id_refusal] - logits[0, id_compliance]).item()
+    # Mean over the batch rather than silently reporting element 0 as if it
+    # were the batch statistic.
+    return (logits[:, id_refusal] - logits[:, id_compliance]).mean().item()
 
 
 def generate_text(model, tokenizer, toks, max_new_tokens: int) -> str:

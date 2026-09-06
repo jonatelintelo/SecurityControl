@@ -37,7 +37,6 @@ from core.subspaces import SubspaceEngine
 
 PHASE_NAME = "phase6_feature_interactions"
 PHASE1 = "phase1_geometry"
-ROLE_ATTACK_SIGN = data.ATTACK_STEERING_SIGN["role"]
 PERSONA_MISALIGN_SIGN = -1  # PERSONA_PAIRS positive=aligned, negative=misaligned -> misalignment is the negative direction
 
 
@@ -73,12 +72,13 @@ def run(cfg: Config) -> None:
     logger.info("Case study 1: role -> harm interaction")
     logger.info("-" * 80)
 
+    role_attack_sign = data.attack_steering_sign("role", cfg.use_factorial_design)
     benign_texts = [build_prompt(tokenizer, user=p) for p in data.BENIGN_REFERENCE_PROMPTS]
     read_layers = sorted({mid, late})
 
     role_rows = []
     for magnitude in alpha_magnitudes:
-        alpha = ROLE_ATTACK_SIGN * magnitude
+        alpha = role_attack_sign * magnitude
         handle = InterventionEngine.steer_subspace(hooks.layers[early], directions["role"][early], alpha, relative=cfg.steer_relative) if magnitude != 0 else None
 
         hooks.hook_residual_stream(read_layers)

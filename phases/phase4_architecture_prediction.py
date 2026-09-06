@@ -128,7 +128,7 @@ def run(cfg: Config) -> None:
                 # control on A_R(k): ablating any k neurons degrades the model
                 # somewhat, so k* only means something relative to this.
                 n_pool = neuron_rankings[(layer, concept)]["causal"].numel()
-                ranking = [int(i) for i in np.random.default_rng(cfg.seed + layer).permutation(n_pool)]
+                ranking = [int(i) for i in np.random.default_rng(cfg.seed + 1000 * layer + CONCEPTS.index(concept)).permutation(n_pool)]
             else:
                 ranking_t = neuron_rankings[(layer, concept)].get(source)
                 if ranking_t is None:
@@ -140,7 +140,7 @@ def run(cfg: Config) -> None:
             k_star_by_source[source] = ks
         k_star = k_star_by_source.get("causal")
 
-        sign = data.ATTACK_STEERING_SIGN[concept]
+        sign = data.attack_steering_sign(concept, cfg.use_factorial_design)
         alpha_grid = [sign * m for m in alpha_magnitudes]
         direction = directions[concept][layer]
         alpha_star, alpha_curve = find_min_alpha_for_asr(model, tokenizer, cfg.device, hooks.layers[layer], direction, attack_prompts, attack_questions, alpha_grid, tau, cfg.max_new_tokens, judge, relative=cfg.steer_relative, benign_prompts=benign_prompts, min_utility=cfg.min_utility)
@@ -178,7 +178,7 @@ def run(cfg: Config) -> None:
     val_df = validate_margin_vs_judge(
         model, tokenizer, cfg.device, hooks.layers[mid_layer], directions["control"][mid_layer],
         attack_prompts, attack_questions, margin_probe_toks,
-        [data.ATTACK_STEERING_SIGN["control"] * m for m in alpha_magnitudes], cfg.max_new_tokens, judge,
+        [data.attack_steering_sign("control", cfg.use_factorial_design) * m for m in alpha_magnitudes], cfg.max_new_tokens, judge,
     )
     save_df(out_dir / "proxy_validation.csv", val_df)
     r_margin, rho_margin = simple_correlation(val_df["refusal_margin"].tolist(), val_df["ASR"].tolist())

@@ -3,8 +3,9 @@ sweeps, attack-success-rate sweeps (k*/alpha*/layer-prefix search), and
 stability metrics (component-set overlap, correlation).
 
 Three signals are used deliberately, and are not interchangeable:
-  - make_projection_score_fn (per-security-function, representational) defines
-    A_R(k) and therefore k_50, as the research plan specifies
+  - make_separation_score_fn (per-security-function, representational) defines
+    A_R(k) and therefore k_50: the class SEPARATION the direction achieves,
+    which is offset-free, unlike a raw one-class projection
   - refusal_margin_score (cheap, continuous, behavioral) is recorded alongside
     A_R at the same grid points as a cross-check, never as A_R itself
   - AttackJudge (Llama-Guard + refusal keywords) defines reported ASR
@@ -25,23 +26,31 @@ from core.utility import capability_retention
 # ---------------------------------------------------------------------------
 # Causal redundancy: A_R(k) ablation curves and k_50 (phase 3)
 # ---------------------------------------------------------------------------
-def make_projection_score_fn(hook_engine, layer: int, direction: torch.Tensor) -> Callable[..., float]:
-    """Score = mean projection of the last-token residual at `layer` onto R.
+def make_separation_score_fn(hook_engine, layer: int, direction: torch.Tensor) -> Callable[..., float]:
+    """Score = (mean positive projection) - (mean negative projection) onto R.
 
-    This is what the plan's A_R(k) actually calls for: "the fraction of the
-    original *security function* remaining". It must be measured per security
-    function — scoring R_role or R_harm ablations by the refusal margin would
-    measure their effect on R_control instead, which is a different quantity.
+    This, not the raw positive-class projection, is the right operationalization
+    of the plan's A_R ("the fraction of the original security function
+    remaining"). A raw residual projection carries the stream's large mean
+    offset, so it can be negative or near-zero: measured that way `role` had
+    baselines of -1.34 and +0.078, and dividing by 0.078 made A_R explode
+    (2.34, -2.44) and spuriously trip k_50. The class *separation* is
+    offset-free and is positive at baseline by construction, since the
+    direction is fit to maximize exactly it. A_R -> 0 means the function is
+    gone; A_R < 0 means it reversed.
     """
     unit = (direction / torch.norm(direction)).detach().cpu().float()
 
-    def score_fn(model, tokenizer, toks, device) -> float:
+    def _mean_proj(model, toks) -> float:
         hook_engine.hook_residual_stream([layer])
         with torch.no_grad():
             _ = model(**toks)
         resid = hook_engine.residual_cache[layer][:, -1, :].detach().cpu().float()
         hook_engine.remove_all_hooks()
         return float((resid @ unit).mean().item())
+
+    def score_fn(model, tokenizer, pos_toks, neg_toks, device) -> float:
+        return _mean_proj(model, pos_toks) - _mean_proj(model, neg_toks)
 
     return score_fn
 
@@ -52,7 +61,8 @@ def component_ablation_curve(
     device: str,
     mlp_module,
     ranked_indices: Sequence[int],
-    probe_toks_list: List[dict],
+    probe_pos_list: List[dict],
+    probe_neg_list: List[dict],
     score_fns: dict,
     k_grid: Sequence[int],
     n_neurons: Optional[int] = None,
@@ -70,7 +80,10 @@ def component_ablation_curve(
 
     Columns: k, ablation ("ranked"/"random"), base_<name>, ablated_<name>, ratio_<name>.
     """
-    base = {name: float(np.mean([fn(model, tokenizer, toks, device) for toks in probe_toks_list])) for name, fn in score_fns.items()}
+    def _eval(fn) -> float:
+        return float(np.mean([fn(model, tokenizer, p, n, device) for p, n in zip(probe_pos_list, probe_neg_list)]))
+
+    base = {name: _eval(fn) for name, fn in score_fns.items()}
 
     pool = n_neurons if n_neurons is not None else len(ranked_indices)
     rng = np.random.default_rng(seed)
@@ -82,7 +95,7 @@ def component_ablation_curve(
             handle = InterventionEngine.ablate_neurons(mlp_module, [int(i) for i in order[:k]])
             row = {"k": k, "ablation": condition}
             for name, fn in score_fns.items():
-                ablated = float(np.mean([fn(model, tokenizer, toks, device) for toks in probe_toks_list]))
+                ablated = _eval(fn)
                 row[f"base_{name}"] = base[name]
                 row[f"ablated_{name}"] = ablated
                 row[f"ratio_{name}"] = ablated / (base[name] + 1e-9) if abs(base[name]) > 1e-9 else float("nan")
@@ -103,8 +116,10 @@ def find_k50(curve_df: pd.DataFrame, column: str = "ratio_A_R", threshold: float
     return None if hit.empty else int(hit.iloc[0]["k"])
 
 
-def refusal_margin_score(model, tokenizer, toks, device) -> float:
-    return refusal_logit_margin(model, tokenizer, toks, device)
+def refusal_margin_score(model, tokenizer, pos_toks, neg_toks, device) -> float:
+    """Behavioral cross-check. Only the positive (function-engaged) probes are
+    relevant here; neg_toks is accepted so every score_fn shares one signature."""
+    return refusal_logit_margin(model, tokenizer, pos_toks, device)
 
 
 # ---------------------------------------------------------------------------
@@ -241,6 +256,32 @@ def component_set_overlap(ranking_a: Sequence[int], ranking_b: Sequence[int], k:
     if not set_a and not set_b:
         return 1.0
     return len(set_a & set_b) / len(set_a | set_b)
+
+
+def jaccard_difference_ci(
+    within_values: Sequence[float], across_values: Sequence[float], n_boot: int = 5000, seed: int = 0
+) -> dict:
+    """Bootstrap CI for (mean within-context overlap) - (mean across-context overlap).
+
+    The reorganization gap is a difference of two noisy Jaccard means, each
+    estimated from very few context pairs. A bare point estimate cannot say
+    whether a gap of +0.24 is distinguishable from one of +0.04, which is
+    exactly the comparison the RQ6 claim rests on. Resampling both groups
+    independently gives an interval; if it straddles 0, the gap is not evidence
+    of reorganization.
+    """
+    w, a = np.asarray(within_values, dtype=float), np.asarray(across_values, dtype=float)
+    w, a = w[~np.isnan(w)], a[~np.isnan(a)]
+    out = {"gap": float("nan"), "ci_low": float("nan"), "ci_high": float("nan"),
+           "n_within": len(w), "n_across": len(a)}
+    if len(w) == 0 or len(a) == 0:
+        return out
+    out["gap"] = float(w.mean() - a.mean())
+    rng = np.random.default_rng(seed)
+    boots = [rng.choice(w, len(w), replace=True).mean() - rng.choice(a, len(a), replace=True).mean()
+             for _ in range(n_boot)]
+    out["ci_low"], out["ci_high"] = float(np.percentile(boots, 2.5)), float(np.percentile(boots, 97.5))
+    return out
 
 
 def wilson_interval(successes: int, n: int, z: float = 1.96) -> Tuple[float, float]:

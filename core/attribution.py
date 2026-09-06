@@ -21,6 +21,42 @@ class AttributionEngine:
         v_norm = (target_direction / torch.clamp(torch.norm(target_direction, p=2), min=1e-9)).to(w_down.device).type_as(w_down)
         return torch.abs(torch.matmul(v_norm, w_norm)).float().cpu()
 
+    def compute_input_direction_alignment(self, layer_idx: int, target_direction: torch.Tensor, which: str = "gate") -> torch.Tensor:
+        """Alignment between each neuron's READ direction and R.
+
+        down_proj columns are how a neuron *writes* into the residual stream;
+        gate_proj/up_proj rows are the residual-space direction a neuron *reads*
+        from. The plan asks which components "detect, transform, write, or read"
+        each security function, and asks explicitly whether "input/output
+        directions of relevant neurons align with any of the above vectors" —
+        neither is answerable from output directions alone.
+
+        Returns |cos| per neuron, shape (intermediate_size,).
+        """
+        if which not in {"gate", "up"}:
+            raise ValueError(f"which must be 'gate' or 'up', got {which!r}")
+        w_in = getattr(self.layers[layer_idx].mlp, f"{which}_proj").weight.detach()  # (intermediate, hidden)
+        w_norm = w_in / torch.clamp(torch.norm(w_in, p=2, dim=1, keepdim=True), min=1e-9)
+        v_norm = (target_direction / torch.clamp(torch.norm(target_direction, p=2), min=1e-9)).to(w_in.device).type_as(w_in)
+        return torch.abs(torch.matmul(w_norm, v_norm)).float().cpu()
+
+    @staticmethod
+    def classify_read_write_role(input_alignment: torch.Tensor, output_alignment: torch.Tensor, quantile: float = 0.99) -> Dict[str, torch.Tensor]:
+        """Split neurons into reader / writer / transformer / neither for one R.
+
+        A neuron high on the input side reads R, high on the output side writes
+        R, and high on both transforms it — the plan's "detect, transform,
+        write, read" taxonomy. Thresholds are per-tensor quantiles, so this is
+        a relative classification within a layer, not an absolute one.
+        """
+        in_hi = input_alignment >= torch.quantile(input_alignment.float(), quantile)
+        out_hi = output_alignment >= torch.quantile(output_alignment.float(), quantile)
+        return {
+            "reader": in_hi & ~out_hi,
+            "writer": out_hi & ~in_hi,
+            "transformer": in_hi & out_hi,
+        }
+
     def compute_neuron_attributions(self, layer_idx: int, neuron_activations: torch.Tensor, subspace_basis: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Projects each MLP neuron's output column into residual subspace R and scales
         by the neuron's mean |activation| on the probe batch (causal/activation-weighted

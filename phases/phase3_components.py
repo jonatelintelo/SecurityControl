@@ -6,6 +6,7 @@ neuron set:
   1. causal attribution     — activation-weighted projection onto the concept subspace
   2. static alignment       — pure down_proj weight-direction cosine alignment (no activations)
   3. activation contrast    — |mean act on positive prompts - mean on negative| (unsupervised)
+  4. input alignment        — gate/up ROW alignment, i.e. what a neuron READS from R
   vs. NeuroStrike           — their supervised gate/up logistic probe (core/neurostrike.py)
 
 and measures top-k overlap between them (RQ3: "can we recover the same safety
@@ -28,6 +29,8 @@ Outputs (results/phase3_components/):
   neurostrike_neurons.pt             {module_name: selected neuron indices} (|z|>3 & w>0) — phase 4's prefix attack
   neuron_ranking_overlap.csv         layer, concept, k, comparison, jaccard
   neuron_functional_classification.csv  layer, neuron_idx, best_concept, score_role, score_harm, score_control
+  neuron_read_write_roles.csv        layer, concept, n_reader, n_writer, n_transformer
+                                     (read side = gate/up rows, write side = down_proj columns)
   mediation_rescue_results.json
   mediation_rescue_samples.txt
 """
@@ -44,7 +47,7 @@ from core.config import Config, load_config
 from core.hooks import HookEngine, capture_last_token_residuals, capture_mlp_neuron_activations
 from core.interventions import InterventionEngine
 from core.io_utils import get_logger, load_json, load_torch, require_phase_output, save_df, save_json, save_torch
-from core.metrics import component_ablation_curve, component_set_overlap, find_k50, make_projection_score_fn, refusal_margin_score
+from core.metrics import component_ablation_curve, component_set_overlap, find_k50, make_separation_score_fn, refusal_margin_score
 from core.model_io import build_prompt, generate_text, load_model
 from core.subspaces import SubspaceEngine
 
@@ -116,9 +119,14 @@ def run(cfg: Config) -> None:
 
     # A_R(k) must be probed on prompts where that security function is actually
     # engaged: role-injected prompts for R_role, harmful ones for R_harm/R_control.
-    def _concept_probe_toks(concept: str):
+    def _concept_probe_toks(concept: str, side: str = "pos"):
         n = 3 if cfg.fast_dev else 6
-        if concept == "role":
+        # Probes must come from the same design the direction was fit on,
+        # otherwise A_R is measured on a different prompt distribution.
+        if cfg.use_factorial_design:
+            mats = data.materialize_pairs(tokenizer, data.factorial_pairs(concept)[:n])
+            texts = [pos for pos, _ in mats] if side == "pos" else [neg for _, neg in mats]
+        elif concept == "role":
             texts = [n_ for _, n_ in data.materialize_pairs(tokenizer, data.ROLE_PAIRS[:n])]
         elif concept == "harm":
             texts = [build_prompt(tokenizer, user=p.positive.user) for p in data.HARM_PAIRS[:n]]
@@ -133,6 +141,7 @@ def run(cfg: Config) -> None:
     classification_rows = []
     ns_function_rows = []
     ablation_curve_frames = []
+    role_counts_rows = []
     neuron_rankings = {}  # (layer, concept) -> {"causal":.., "static":.., "neurostrike":..}
 
     for layer in target_layers:
@@ -154,6 +163,12 @@ def run(cfg: Config) -> None:
 
             raw_contrib, active_w = attrib.compute_neuron_attributions(layer, pos_acts, directions[concept][layer].to(cfg.device))
             static_align = attrib.compute_static_weight_alignment(layer, directions[concept][layer])
+            # Read-side (input) directions: gate/up rows, i.e. what each neuron
+            # reads FROM the residual stream, vs down_proj columns which are what
+            # it writes INTO it. Needed for the plan's read/write/transform taxonomy.
+            in_align_gate = attrib.compute_input_direction_alignment(layer, directions[concept][layer], which="gate")
+            in_align_up = attrib.compute_input_direction_alignment(layer, directions[concept][layer], which="up")
+            input_align = torch.maximum(in_align_gate, in_align_up)
             contrast_rank = attrib.compute_activation_contrast_ranking(pos_acts, neg_acts)
 
             raw_by_concept[concept] = raw_contrib
@@ -169,10 +184,14 @@ def run(cfg: Config) -> None:
             # refusal_margin recorded at the same grid points as the behavioral
             # cross-check, never as the definition of A_R.
             score_fns = {
-                "A_R": make_projection_score_fn(hooks, layer, directions[concept][layer]),
+                "A_R": make_separation_score_fn(hooks, layer, directions[concept][layer]),
                 "refusal_margin": refusal_margin_score,
             }
-            curve_df = component_ablation_curve(model, tokenizer, cfg.device, mlp_module, causal_ranking.tolist(), _concept_probe_toks(concept), score_fns, k50_grid, n_neurons=raw_contrib.numel(), seed=cfg.seed)
+            curve_df = component_ablation_curve(
+                model, tokenizer, cfg.device, mlp_module, causal_ranking.tolist(),
+                _concept_probe_toks(concept, "pos"), _concept_probe_toks(concept, "neg"),
+                score_fns, k50_grid, n_neurons=raw_contrib.numel(),
+                seed=cfg.seed + 1000 * layer + CONCEPTS.index(concept))
             curve_df["layer"], curve_df["concept"] = layer, concept
             ablation_curve_frames.append(curve_df)
             k50 = find_k50(curve_df, column="ratio_A_R")
@@ -186,18 +205,29 @@ def run(cfg: Config) -> None:
 
             static_ranking = torch.argsort(static_align, descending=True)
             contrast_ranking = torch.argsort(contrast_rank, descending=True)
+            input_ranking = torch.argsort(input_align, descending=True)
             neuron_rankings[(layer, concept)] = {
                 "causal": causal_ranking,
                 "static": static_ranking,
+                "input_alignment": input_ranking,
                 "activation_contrast": contrast_ranking,
                 "neurostrike": torch.tensor(ns_ranking) if ns_ranking is not None else None,
             }
 
             # RQ3: can our geometric route recover the neurons NeuroStrike's
             # supervised probe finds? "*_vs_neurostrike" are the rows that answer it.
-            candidates = {"causal": causal_ranking.tolist(), "static": static_ranking.tolist(), "activation_contrast": contrast_ranking.tolist()}
+            candidates = {"causal": causal_ranking.tolist(), "static": static_ranking.tolist(),
+                          "activation_contrast": contrast_ranking.tolist(), "input_alignment": input_ranking.tolist()}
+            roles = attrib.classify_read_write_role(input_align, static_align)
+            role_counts_rows.append({
+                "layer": layer, "concept": concept,
+                **{f"n_{name}": int(mask.sum().item()) for name, mask in roles.items()},
+            })
+
             for k in OVERLAP_K_GRID:
-                for a, b in [("causal", "static"), ("causal", "activation_contrast"), ("static", "activation_contrast")]:
+                for a, b in [("causal", "static"), ("causal", "activation_contrast"),
+                             ("static", "activation_contrast"), ("static", "input_alignment"),
+                             ("causal", "input_alignment")]:
                     overlap_rows.append({"layer": layer, "concept": concept, "k": k, "comparison": f"{a}_vs_{b}", "jaccard": component_set_overlap(candidates[a], candidates[b], k)})
                 if ns_ranking is not None:
                     for name, ranking in candidates.items():
@@ -234,6 +264,7 @@ def run(cfg: Config) -> None:
     save_df(out_dir / "architecture_metrics.csv", pd.DataFrame(architecture_rows))
     save_df(out_dir / "neuron_ranking_overlap.csv", pd.DataFrame(overlap_rows))
     save_df(out_dir / "neuron_functional_classification.csv", pd.DataFrame(classification_rows))
+    save_df(out_dir / "neuron_read_write_roles.csv", pd.DataFrame(role_counts_rows))
     save_df(out_dir / "ablation_curves.csv", pd.concat(ablation_curve_frames, ignore_index=True) if ablation_curve_frames else pd.DataFrame())
     save_torch(out_dir / "neuron_rankings.pt", neuron_rankings)
 

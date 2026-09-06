@@ -384,6 +384,25 @@ def factorial_pairs(concept: str, n_topics: Optional[int] = None) -> List[Contra
 # ---------------------------------------------------------------------------
 ATTACK_STEERING_SIGN: Dict[str, int] = {"role": -1, "harm": 1, "control": -1}
 
+# The map above is correct only for the LEGACY pair sets. The factorial design
+# flips role's polarity: FACTORIAL_LEVELS["role"] = ("untrusted", "trusted"),
+# so factorial R_role points untrusted-minus-trusted and the attack direction
+# is +1, whereas legacy ROLE_PAIRS put the trusted class on the positive side
+# (attack -1). harm and control keep the same polarity in both designs.
+_FACTORIAL_ATTACK_SIGN: Dict[str, int] = {"role": 1, "harm": 1, "control": -1}
+
+
+def attack_steering_sign(concept: str, use_factorial_design: bool) -> int:
+    """Sign of alpha that *compromises* safety for `concept`, under the active design.
+
+    Always derive the sign from the design rather than hardcoding it. Getting it
+    wrong is silent and severe: steering the opposite way searches the defensive
+    direction while reporting it as an attack, which makes "no attack effect"
+    unfalsifiable rather than false.
+    """
+    table = _FACTORIAL_ATTACK_SIGN if use_factorial_design else ATTACK_STEERING_SIGN
+    return table[concept]
+
 
 def all_topic_pools() -> Dict[str, List[str]]:
     return {
