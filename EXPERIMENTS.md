@@ -326,12 +326,103 @@ The probe's `w_i − w_j` is the softmax decision boundary and should agree with
 diff-of-means contrast. Agreement means the role signal is not an artefact of the
 estimator; disagreement is itself a finding.
 
-### Role classes
+### Role classes and how they are actually rendered
 
 PLAN-EXTRACT names **system, user, assistant, tool, untrusted external content**.
-We use `system / user / tool / assistant`; CoT is dropped (`enable_thinking=False`)
-and "untrusted external" is realised as the `tool` class, the injection-relevant
-one.
+We use `system / user / tool / assistant`, with "untrusted external" realised as
+`tool`, the injection-relevant class.
+
+**Three facts about the real chat templates, verified against both models, that
+change how the corpus must be built.**
+
+**1. `tool` is not a role tag on either model.** Both templates render a tool
+message as a **user** turn wrapped in `<tool_response>`:
+
+```
+<|im_start|>user\n<tool_response>\n{content}\n</tool_response><|im_end|>
+```
+
+There is no `<|im_start|>tool`. Hand-building one would feed the model a token
+sequence it never saw in training, so we would be measuring its response to an
+out-of-distribution string rather than its role representation. The tool/user
+contrast is therefore a **structural wrapper inside a user turn**, not a different
+tag — which is exactly the real injection surface, and a sharper contrast for our
+purposes than an invented tag would be.
+
+**2. `enable_thinking=False` does not remove thinking on Qwen3.5; it inserts an
+empty think block.** The prompt ends
+`<|im_start|>assistant\n<think>\n\n</think>\n\n` rather than
+`<|im_start|>assistant\n`. Consequences: `t_post-inst` sits in a different textual
+context on the two models (acceptable — directions are never compared across
+models, only quantities), and an assistant-role instruction on Qwen3.5 carries
+this block ahead of it while the other classes do not. Qwen2.5 accepts the kwarg
+and ignores it.
+
+**3. Roles do not share a conversational position.** Each role's *natural* slot
+differs: system opens the conversation, user follows it, assistant follows a user
+turn, tool follows an assistant turn. Left uncontrolled, a role probe can separate
+the classes by **turn position and context length** without representing role at
+all.
+
+### Two role designs, run as a contrast
+
+The role paper achieved constant content by writing one turn per role in a raw
+format. A real chat template will not permit that, so:
+
+- **Fixed-slot (primary).** A constant frame — fixed system turn, fixed carrier
+  user turn — with the instruction-bearing turn in the *same message slot* for
+  every role, then the generation prompt. Only the role marking of that turn
+  varies, using the authentic surface form.
+- **Natural-slot (secondary).** Each role in its natural conversational position,
+  which is what the model encounters in deployment.
+
+**Two limits on how constant "fixed-slot" can be, both verified and neither
+avoidable:**
+
+- **Qwen3.5 forces system to position 0** (`"System message must be at the
+  beginning"`). The system class therefore cannot occupy the common slot on that
+  model; user/assistant/tool can. System is rendered in its natural position and
+  the deviation is reported.
+- **Length is not constant across roles even in fixed-slot**, because the
+  authentic markup differs: the `<tool_response>` wrapper adds ~9 tokens, and
+  Qwen3.5's empty think block adds more ahead of an assistant turn. Measured at
+  n=36 baseline: Qwen2.5 tool = 45; Qwen3.5 user = 40, assistant = 44, tool = 44.
+
+**Required control: a length-only baseline for the role probe, and a
+length-matched rerun.** Fit a classifier on sequence length alone; the direction
+must beat it. Where it does not, refit on a length-matched subset (equal counts
+per class within length bins) so the confound is removed rather than merely
+reported.
+
+This is not hypothetical. Measured on Qwen2.5-7B:
+
+| contrast | raw AUC | raw length-only | **matched AUC** | matched length-only |
+|---|---|---|---|---|
+| `tool` vs `user` | 0.879 | **0.95** | **0.802** | 0.574 |
+| `system` vs `user` | 0.935 | 0.22 | 0.856 | 0.50 |
+| `assistant` vs `user` | 0.938 | 0.70 | 0.933 | 0.50 |
+
+Raw, **length alone beats the role direction on the injection-relevant `tool` vs
+`user` contrast** (0.95 vs 0.879) — the `<tool_response>` wrapper adds ~9 tokens
+deterministically. After matching, the length baseline falls to 0.574 and the
+direction still reaches **0.802**: role is represented beyond sequence length, but
+only the matched number may be reported. `system` vs `user` has a length baseline
+*below* chance (0.22 — system turns are shorter), so length there works against
+the direction rather than for it.
+
+Reading at `t_inst` — the last token of the instruction — helps: the instruction
+content is byte-identical across roles, so what differs is the surrounding markup
+rather than the token being read.
+
+Agreement between the two designs means role is carried by the marking.
+Disagreement means position and context carry part of it — itself a result, and
+the representational counterpart of the role paper's finding that **style
+dominates tags**. This is the Level-1 metadata-vs-style test of E1.7, for the cost
+of rendering the corpus twice.
+
+**Rendering goes through each model's own `apply_chat_template`,** never a
+hand-built ChatML string. Uniformity across roles is preserved because every role
+goes through the same call; what varies is exactly what we intend to measure.
 
 ### Harm must be separable from refusal *by construction*
 
@@ -407,6 +498,32 @@ instructions × {harmful, harmless} × {system, user, tool, assistant}
 | `R_control` | diff-of-means | `t_post-inst` | **refused vs complied**, pooled over role |
 | `R_control_pos` | diff-of-means | `t_post-inst` | harmful vs harmless — *control condition* |
 
+### `R_control` must be fitted WITHIN a harm label, never pooled
+
+Measured in Stage 1 on Qwen2.5-7B (3,200 items). The two sides of a pooled
+refuse/comply contrast have almost disjoint source composition:
+
+| | `complied` | `refused` |
+|---|---|---|
+| harmless sources (Alpaca, XSTest) | **1,538** | 62 |
+| harmful sources (AdvBench, JBB, Sorry-Bench) | 102 | **1,180** |
+
+Pooled, `refused vs complied` is **93%/95% the same partition as harmful vs
+harmless** — so a pooled `R_control` is `R_harm` under another name, and the
+plan's central claim that harm and refusal are separate would be untestable by
+construction.
+
+**Therefore `R_control` is estimated within-harm-label**, primarily *within
+harmful*: refused (1,180) vs complied (102), where harm is held constant and the
+direction can only be about refusal. This is exactly what PLAN-EXTRACT's
+"examples in which a model recognizes harmfulness but nevertheless complies" is
+for; the harmless-side contrast (62 vs 1,538) is reported as a secondary check.
+
+**A residual source confound survives even within harmful.** The complied side is
+Sorry-Bench (69) and JBB (33) only — **AdvBench never gets complied with at all**
+(0/497). So `R_control` is additionally reported per source, and on the subset of
+sources present on both sides (JBB + Sorry-Bench) as the confound-free version.
+
 **On behavioural labelling of `R_control`.** Not circular: it is measured at
 `t_post-inst`, before any token is generated, so "the state already encodes whether
 the model will refuse" is a substantive predictive claim. The narrower hazard is
@@ -453,7 +570,7 @@ result. They are for E1.1 only — later experiments get their own at design tim
 | Check | Threshold | If it fails |
 |---|---|---|
 | Held-out separation, best layer, each concept | **AUC ≥ 0.75 with CI excluding the matched random direction** | the variable is not recoverable; fix extraction before proceeding |
-| Layer-0 separation | **AUC < 0.90** | the classifier is reading token identity, not a representation — rebuild the contrast |
+| Layer-0 separation | *descriptive, not a gate* — see below | — |
 | Harmful-and-complied cell | **≥ 50 items** (≥ 30 after the split), counted **after** degeneracy exclusion and the Llama-Guard cross-check | `R_control` is not identifiable; widen the corpus in the order above |
 | `undetermined` rate | **< 30%** of generations | the refusal budget is too short or the labeller too brittle; raise `REFUSAL_MAX_NEW_TOKENS` before touching the contrast |
 | Role probe, held-out, 4 classes | **accuracy CI excludes chance (0.25)** | role is not decodable on our substrate |
@@ -464,6 +581,15 @@ result. They are for E1.1 only — later experiments get their own at design tim
 `R_control`'s AUC is reported on a **balanced** test subset, since the
 refused/complied split is not 50/50 by construction and AUC on a heavily skewed
 set is easy to misread.
+
+**The layer-0 criterion was mis-specified and is withdrawn as a gate.** It assumed
+index 0 was the embedding layer, so that near-perfect separation there would mean
+the classifier was reading token identity. But our layer indices are decoder-block
+**outputs** — attention has already run at index 0 — so high separation there is
+expected, not diagnostic. Measured: `R_harm_at_post` reaches AUC 0.924 at layer 0,
+which the old rule would have wrongly flagged as an artefact. The **length-only
+baseline** and the **matched random direction** are the meaningful lexical-shortcut
+controls; layer-0 separation is now reported descriptively.
 
 ### Produces
 
@@ -919,10 +1045,21 @@ Relative steering: utility ≈ 0.96 at `α = 0.5`; collapse to utility 0.0 at
 
 # Build order
 
-**Stage 0 — corpus and positions.** No model, no GPU, fully checkable offline:
-composition, source balance, disjointness, the split, and token-position
-resolution across all four role tags. Everything downstream inherits these, so
-they are verified first and independently.
+**Stage 0 — corpus and positions. `settled` 2026-09-08.** No model, no GPU, fully
+checkable offline. `experiments/e0_corpus.py`, **10/10 checks pass**, corpus frozen
+to `results/e0_corpus/` and shared by both models.
+
+| | |
+|---|---|
+| Fitting set | 400 instructions — harmful 67/67/66 AdvBench/JBB/Sorry-Bench, harmless 100/100 Alpaca/XSTest-safe |
+| Split | 300 train / 100 test, by instruction, stratified by (label, source); 0 leakage, max source-share drift 0.007 |
+| Attack pool | 150 StrongREJECT, disjoint by construction — 0 exact, 0 near-duplicate |
+| Crossing | 400 × 4 roles × 2 designs = **3,200 rendered items per model** |
+| Rendering | **3,200 renders per model** swept: 0 errors, 0 bad `t_inst`, 0 bad content spans; cross-role tokenisation mismatch 0.50% (Qwen2.5) / 0.00% (Qwen3.5), affected uids recorded |
+| Length confound | fixed-slot frame spread 20 tokens (Qwen2.5) / 15 (Qwen3.5); harmful/harmless median-word ratio 1.56× — both require length-only baselines |
+| Integrity | no near-duplicate train/test leakage (Jaccard ≥ 0.6); **no chat special tokens** in any instruction, so no template-injection risk; build is byte-identical across runs; save→load→save round-trips exactly |
+| Batch positions | verified against **real padded batches**, 200 mixed-role items per model: zero pad-token hits, every `t_inst`/`t_post-inst`/content span exact |
+| Provenance | `source_provenance` in the frozen metadata records dataset id, config, split, filter and available count for all six sources — the Sorry-Bench `base` filter and the XSTest `label`-vs-`type` decision are invisible in the resulting text and would otherwise be unrecoverable |
 
 **Stage 1 — refusal labelling, on one model, before any extraction.** Generate,
 calibrate the degeneracy thresholds against real outputs, apply the Llama-Guard
@@ -933,6 +1070,75 @@ harmful-and-complied cell of ≥ 50 and an `undetermined` rate under 30% — are
 knowable from this stage alone, and both can require a corpus rebuild or a longer
 generation budget. Discovering either *after* a full-layer, two-model extraction
 wastes the expensive part of the run.
+
+**Stage 1 result — Qwen2.5-7B, `passed` 2026-09-08.** 3,200 items, 48-token
+budget, ~5 min on 2 GPUs.
+
+| | |
+|---|---|
+| Labels | complied 1,958 · refused 1,242 · **undetermined 9.9%** (threshold <30%) |
+| Harmful-and-complied | **102** (threshold ≥50); **31 in the test split** (threshold ≥30) — passes, but thin, so expect wide CIs on `R_control` |
+| Degeneracy gate | 0/3,200 excluded — no degenerate generations at this budget |
+| Guard cross-check | **318/420 (76%)** of raw harmful-and-complied reclassified to `undetermined`; the survivors are genuine compliances on inspection ("Certainly! The FIM-92 Stinger is…") |
+| Levers confirmed | refusal by source: AdvBench **1.00**, JBB 0.93, Sorry-Bench **0.79**; `system` framing lowers refusal vs `user`/`assistant` |
+| Truncation | **100% of the surviving cell** is truncated at 48 tokens. The label rests on the response *opening*, which is Zhao's own premise (refusal is decided in the first tokens) — but it must be stated, and no completed response is ever observed |
+
+### RQ1 results — E1.1–E1.5, both models, 2026-09-08
+
+**Every direction clears a proper null and is not driven by length.** `p ≤ 0.01`
+against a 200-draw random-direction null; length-matched AUCs essentially
+unchanged.
+
+| concept | model | AUC | null p95 | **matched AUC** | matched length-only |
+|---|---|---|---|---|---|
+| `R_harm` | Q2.5 / Q3.5 | 0.982 / 0.984 | 0.721 / 0.780 | **0.979 / 0.983** | 0.502 / 0.501 |
+| `R_control` | Q2.5 | 0.995 | **0.905** | **0.997** | 0.492 |
+| `R_harm_at_post` | Q2.5 / Q3.5 | 0.991 / 0.995 | 0.826 / 0.845 | 0.987 / 0.996 | 0.502 / 0.501 |
+| `R_control_harmless` | Q2.5 / Q3.5 | 0.970 / 0.929 | 0.882 / 0.742 | 0.925 / 0.920 | 0.502 / 0.499 |
+
+**The nulls, not length, were the real risk.** Random directions reach AUC 0.905
+at p95 for `R_control` (max 0.975) — activations are anisotropic enough that a
+lucky draw separates that contrast at 0.90. A single-draw control, which the first
+implementation used, was uninformative. `R_control_harmless` on Qwen2.5 is the
+weakest: null **max 0.990** against an observed 0.970, `p = 0.010`.
+
+**E1.2 geometry.** Null band p97.5 = 0.032 / 0.029, matching analytic `1/sqrt(d)`.
+Strongest role-vs-safety cosines: `R_control_harmless` vs `role tool-vs-user`
+**+0.56** (Q2.5), `vs assistant-vs-user` **+0.49** (Q3.5) — far beyond the null,
+but far below the split-half floor (0.94–0.99). **The variables are related but
+clearly distinct, not collinear.** `R_harm` vs `R_harm_user` sits at +0.99, i.e.
+at the split-half floor, as it must by construction — a sanity check that passes.
+
+**E1.3 projections.** Correlation null p95 is **0.44 / 0.41**, again not zero.
+`r(R_control, R_harm_at_post) = +0.876`: much of the late-position control signal
+is harm carried forward, which is what `R_harm_at_post` exists to quantify.
+`r(R_control, R_control_harmless) = +0.934` — the under-refusal and over-refusal
+control directions are nearly the same axis, which matters because Qwen3.5 only
+has the latter.
+
+**E1.4 dimensionality.** `r_eff` over stratified directions is 2.8–3.6 for
+`R_harm`/`R_control`, **but projecting out the top-1 direction collapses
+separation to chance (0.487–0.527) for every concept**. Reading: functionally
+one-dimensional for classification, with ~3 dimensions of estimation variability
+across strata. (`R_harm_user`'s r_eff of ~15 is a noise artefact — restricting to
+one role leaves few items per stratum.)
+
+**E1.5 emergence — the clearest result.** Depth at which separation reaches 99% of
+its peak:
+
+| concept | Qwen2.5-7B | Qwen3.5-9B |
+|---|---|---|
+| `R_harm` | **d = 0.11** | **d = 0.19** |
+| `R_role` (probe) | d = 0.70 | d = 0.97 |
+| `R_control` | d = 0.63 | — |
+| `R_control_harmless` | **d = 0.93** | **d = 0.90** |
+
+**The three variables resolve at clearly different depths, in the same order on
+both models: harm early, role mid, control late.** Note this ordering is
+`harm → role → control`, *not* the plan's hypothesised `role → harm → control`.
+That is a concrete prediction for RQ2's causal test, and a case where the
+descriptive stage has something to say about the architecture before any
+intervention is run.
 
 **Stage 2 — capture and estimators.** Residual-stream capture at per-example
 positions, `pre_mlp` for the fidelity check, then diff-of-means, the role probe,
@@ -954,6 +1160,9 @@ list, and any code predating it is evidence at best, never a specification.
 
 **Corpus**
 - [ ] Crossed corpus `instructions × {harmful, harmless} × {system, user, tool, assistant}`, one instruction under every role
+- [ ] Rendered through the **model's own `apply_chat_template`**, never a hand-built ChatML string
+- [ ] **Both role designs**: fixed-slot (primary, position controlled) and natural-slot (secondary)
+- [ ] Corpus **frozen once and shared by both models** — instructions, labels, roles, sources and the split are model-independent, so sampling differences cannot confound the cross-model comparison. Only tokenisation and positions are resolved per model
 - [ ] Source-balanced sampling across all harmful and all harmless sources
 - [ ] Attack intents held out and disjoint by construction, exact and near-duplicate
 - [ ] **`source` recorded per instruction**, separately from the role tag — Level 1 of the metadata-vs-style test (Level 2 is a separate corpus, built at E1.7)
@@ -998,6 +1207,36 @@ designed. Code removed from this repo is recoverable from git history as
 
 ---
 
+# Code layout — one script per research question
+
+The playbook holds ~30 experiments across RQ1–RQ7. A script each would be ~30
+entry points differing mainly in which cached artifact they read, and activation
+capture — the expensive step — would be repeated between them.
+
+Each RQ is therefore **one script composed of stages** (`core/stages.py`). A stage
+declares what it `produces`, what it `requires`, and whether it `needs_gpu`; a
+completed stage is skipped unless `--force`, so re-running an analysis never
+re-runs a capture. `--only`, `--from`, `--list` and `--dry-run` address individual
+stages, and `run_experiment.sh` forwards them to Slurm.
+
+| File | Role |
+|---|---|
+| `core/stages.py` | the stage runner |
+| `experiments/e0_corpus.py` | Stage 0 — model-independent, shared by every RQ |
+| `experiments/rq1.py` | **all of RQ1** — `labels`, `extract` (GPU), then `nulls`, `geometry`, `projections`, `dimensionality`, `emergence` (CPU) |
+
+Measured: RQ1's five CPU stages run in **41 seconds** for both models once
+`extract` has cached `activations.pt` (1.2–1.6 GB per model). Migrating the first
+E1.1 artifacts into this layout let both GPU stages be detected as complete,
+saving ~25 minutes of recapture. `e1_stage1_refusal.py`, `e1_1_directions.py` and
+`e1_1_analysis.py` are superseded and removed.
+
+**Login nodes cannot run the CPU stages either** — loading 2.8 GB of cached
+activations is enough to trigger a policy `SIGKILL`. Everything goes through
+Slurm.
+
+---
+
 # Data status
 
 Availability and schemas verified against the Hub, 2026-09-08.
@@ -1006,15 +1245,89 @@ Availability and schemas verified against the Hub, 2026-09-08.
 |---|---|---|
 | AdvBench | harmful | **OK** — 520, cols `prompt`, `target` |
 | JBB-Behaviors | harmful | **OK** — config `behaviors`; columns are **capitalised** (`Goal`, not `goal`), so case-sensitive matching drops the source silently |
-| Sorry-Bench | harmful | **OK** — config `default`, 9,240 |
+| Sorry-Bench | harmful | **OK** — config `default`, 9,240 = 440 base × 21 styles. **Use `prompt_style == "base"` only** (see below); the rest are jailbreak/multilingual/encoded mutations |
 | Alpaca | harmless | **OK** — 52,002; only `input == ""` rows, so each is standalone |
-| XSTest | benign-but-**sensitive** | **OK via mirror** `natolambert/xstest-v2-copy`, split `prompts`, 450. Official `walledai/XSTest` is **gated**. Safe subset = `type` not prefixed `contrast_` |
+| XSTest | benign-but-**sensitive** | **OK, official** `walledai/XSTest` (access granted), split `test`, 450 with an explicit `label` column — 250 safe / 200 unsafe, read rather than inferred. Mirror `natolambert/xstest-v2-copy` remains a fallback, where safety is derived from `type` (the eight `contrast_*` types are the unsafe ones — verified equivalent) |
 | StrongREJECT | held-out attack eval | **OK** — 313 |
 | C4 | role constant-content | **OK** — config `en` (passing `en` as a *split* is the error that made it look unavailable), streamed |
 | Dolma3 | second role source | not checked; C4 suffices to start |
 | persona / emotion | optional (E1.8) | not built |
 
-### Two sampling traps, both found by running it
+### Sorry-Bench must be filtered to `prompt_style == "base"`
+
+Its 9,240 rows are **440 base prompts × 21 mutation styles**, and taking them
+indiscriminately is wrong three times over:
+
+- `role_play`, `authority_endorsement`, `expert_endorsement`, `logical_appeal`,
+  `evidence-based_persuasion`, `misrepresentation` are **jailbreak framings**.
+  Fitting `R_harm`/`R_control` on them makes RQ4's jailbreak family partly
+  circular and violates "completely disjoint attack intents" — the exact leak the
+  corpus-widening rule was written to prevent, arriving through the front door.
+- `translate-fr|ml|mr|ta|zh-cn` are **multilingual**, which the plan lists as
+  explicitly out of scope.
+- `ascii`, `atbash`, `caesar`, `morse` are **encoded strings**, not natural
+  harmful instructions — the model may not even parse them as harmful.
+
+It also destroyed the length distribution: harmful averaged **95 tokens against
+11 for harmless (8.4×), with a 3,053-token maximum**, so `R_harm` would have
+substantially encoded *length*. After filtering to `base`: ratio 1.56×, max 71
+tokens.
+
+**The 20 excluded styles are a resource, not waste.** They are held-out,
+already paired with their base prompt, and are the natural material for RQ4/E4.2's
+jailbreak family and RQ6/E6.1's controlled context variants.
+
+### A check that samples one item can never fail
+
+The cross-role tokenisation invariant was originally checked on a *single* sample
+instruction, so it passed vacuously. Sweeping the real corpus — 3,200 renders per
+model — showed it is **false, at a small rate**: on Qwen2.5, 4 of 800
+(instruction, design) pairs tokenise the instruction to a different length under
+`tool` than under the other roles (**0.50%**; Qwen3.5: 0.00%).
+
+Cause: in the tool rendering the content is followed by `\n</tool_response>`
+rather than `<|im_end|>`, so the final token can merge differently — both affected
+items end in punctuation that merges with a newline (`…the word "moon".`).
+
+The invariant is therefore **measured, not asserted**: mismatch rate must stay
+≤ 1%, and the affected `uid`s are written to `tokenisation_mismatches.csv` so any
+analysis needing exact token-level matching can exclude them. The general lesson:
+**every corpus-wide invariant is checked corpus-wide.**
+
+### The harmful class is deliberately heterogeneous — report per source and category
+
+Even filtered to `base`, Sorry-Bench spans **44 categories across a wide severity
+range**. Sampling 12: grooming, death threats, phishing and illegal hunting sit
+beside 401(k) allocation advice, song lyrics and zombie fiction — it is built to
+probe *over*-refusal as much as refusal.
+
+**This is not a defect to filter away.** Those borderline items are what populate
+the harmful-and-complied cell; without them the model refuses every harmful prompt
+and `R_control` is unidentifiable. But it does mean the positive class of `R_harm`
+is not uniform, so `category` is recorded per instruction (JBB `Category`,
+Sorry-Bench `cat*` — 37 distinct in the sample, XSTest `type`) and **separation is
+reported per source and per category, never only pooled**. If Sorry-Bench items
+separate less well than AdvBench, that is a severity gradient — a finding, not a
+bug.
+
+### Residual length asymmetry — a second length-only baseline
+
+Even on `base`, harmful instructions run longer than harmless (median 14 vs 9
+words; per-source token means 12.7 AdvBench / 15.6 JBB / 25.8 Sorry-Bench vs 12.4
+Alpaca / 10.3 XSTest). **`R_harm` therefore needs the same length-only baseline
+the role probe needs**: fit a classifier on length alone and require the direction
+to beat it. Length-matching instead would discard data and distort the sources.
+
+### Four sampling traps, all found by running it
+
+**Stratify the split by (label, source), not by label alone.** The sources differ
+in character — AdvBench is terse imperatives, Sorry-Bench spans a wide severity
+range, XSTest is benign-but-sensitive — so a label-only split lets source
+proportions drift between the sides. Measured: AdvBench was **28% of train-harmful
+but 50% of test-harmful**. Held-out AUC would then partly measure a distribution
+shift rather than generalisation, and `source` is also the Level-1 style proxy, so
+the drift would contaminate E1.7 too. Stratifying by (label, source) cut the
+maximum share drift from **0.22 to 0.007**.
 
 **Source imbalance destroys the hard negatives.** Pooling all sources and
 shuffling is proportional-to-size, so a 200-prompt harmless pool came out **197
