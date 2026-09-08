@@ -62,7 +62,7 @@ def load_df(path: Path) -> pd.DataFrame:
     return pd.read_csv(path)
 
 
-def write_run_manifest(cfg, phase_name: str) -> Path:
+def write_run_manifest(cfg, experiment_name: str) -> Path:
     """Record the exact code state and configuration that produced a phase's
     outputs, alongside those outputs.
 
@@ -82,9 +82,11 @@ def write_run_manifest(cfg, phase_name: str) -> Path:
         except Exception:
             return None
 
-    cfg_dict = {k: (str(v) if isinstance(v, Path) else v) for k, v in asdict(cfg).items()}
+    cfg_dict = cfg.as_dict() if hasattr(cfg, "as_dict") else {
+        k: (str(v) if isinstance(v, Path) else v) for k, v in asdict(cfg).items()
+    }
     manifest = {
-        "phase": phase_name,
+        "experiment": experiment_name,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": _git("rev-parse", "HEAD"),
         "git_dirty": bool(_git("status", "--porcelain")),
@@ -92,7 +94,8 @@ def write_run_manifest(cfg, phase_name: str) -> Path:
         "hostname": os.environ.get("HOSTNAME") or os.uname().nodename,
         "config": cfg_dict,
     }
-    path = cfg.phase_dir(phase_name) / "run_manifest.json"
+    out_dir = cfg.dir(experiment_name) if hasattr(cfg, "dir") else cfg.phase_dir(experiment_name)
+    path = out_dir / "run_manifest.json"
     save_json(path, manifest)
     return path
 

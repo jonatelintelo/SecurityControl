@@ -12,6 +12,27 @@ budget needed to disable it.
 
 ---
 
+> ## ⚠ ALL RESULTS BELOW ARE QUARANTINED (2026-09-07)
+>
+> We have restarted the experimental programme from scratch. Every number in
+> this file was produced before the current design review and is to be treated
+> as **not valid** until re-derived. The old outputs are preserved, unmodified,
+> in `results_ARCHIVED_v1_invalid/`; `results/` is empty.
+>
+> Reasons for the reset, in brief: attack evaluation ran on 10–15 prompts;
+> harmfulness and refusal were read at the same token position rather than
+> `t_inst`/`t_post-inst`; `late_layer` (21) was earlier than `mid_layer` (23),
+> so part of the cross-intervention matrix read upstream of its own
+> intervention; `k_50` is undefined in every row; and the RQ5 phase only ever
+> ran under `FAST_DEV`.
+>
+> **The live plan is [EXPERIMENTS.md](EXPERIMENTS.md).** Experiments are being
+> rebuilt one at a time, RQ by RQ. Read that first; treat the sections below as
+> a record of the previous attempt, useful for its retractions and its
+> methodological invariants rather than for its numbers.
+
+---
+
 ## Start here (new co-author, 10 minutes)
 
 1. Read **Status at a glance** below — what is established, open, and retracted.
