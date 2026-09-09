@@ -1,5 +1,4 @@
 results/
-results_ARCHIVED_v1_invalid/
 __pycache__/
 *.pyc
 .venv/

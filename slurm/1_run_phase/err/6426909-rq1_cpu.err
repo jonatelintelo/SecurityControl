@@ -1,0 +1,67 @@
+[2026-09-09 07:50:09] [INFO] pipeline rq1: ['nulls', 'geometry', 'projections', 'dimensionality', 'emergence']
+[2026-09-09 07:50:09] [INFO] ------------------------------------------------------------------------------
+[2026-09-09 07:50:09] [INFO] [nulls/qwen2.5-7b] E1.1 validation — random-direction nulls + length-matched reruns
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:53: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu")
+[2026-09-09 07:50:11] [INFO]   R_harm               AUC 0.981 | null p95 0.769 max 0.911 | p=0.0010 PASS | matched 0.979 (len 0.502)
+[2026-09-09 07:50:12] [INFO]   R_harm_user          AUC 0.982 | null p95 0.769 max 0.917 | p=0.0010 PASS | matched 0.975 (len 0.501)
+[2026-09-09 07:50:13] [INFO]   R_control            AUC 0.986 | null p95 0.886 max 0.975 | p=0.0010 PASS | matched 0.989 (len 0.498)
+[2026-09-09 07:50:14] [INFO]   R_harm_at_post       AUC 0.992 | null p95 0.832 max 0.947 | p=0.0010 PASS | matched 0.987 (len 0.502)
+[2026-09-09 07:50:15] [INFO]   R_control_harmless   AUC 0.944 | null p95 0.875 max 0.985 | p=0.0120 PASS | matched 0.953 (len 0.507)
+[2026-09-09 07:50:16] [INFO]   R_control_unbalanced AUC 0.985 | null p95 0.886 max 0.975 | p=0.0010 PASS | matched 0.989 (len 0.498)
+[2026-09-09 07:50:17] [INFO]   R_control_preguard   AUC 0.975 | null p95 0.856 max 0.949 | p=0.0010 PASS | matched 0.968 (len 0.501)
+[2026-09-09 07:50:17] [INFO] ------------------------------------------------------------------------------
+[2026-09-09 07:50:17] [INFO] [geometry/qwen2.5-7b] E1.2 — pairwise cosines vs null band and split-half floor
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:53: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu")
+[2026-09-09 07:50:17] [INFO]   null band: mean +0.0002 sd 0.0164 p97.5 +0.0318 (analytic 1/sqrt(d) = 0.0167)
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:53: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu")
+[2026-09-09 07:50:17] [INFO]   strongest ROLE vs safety-variable cosines (RQ1's headline question):
+[2026-09-09 07:50:17] [INFO]     R_harm_user vs R_role_tool_vs_user@t_inst @L27: +0.485 (null p97.5 0.032)
+[2026-09-09 07:50:17] [INFO]     R_harm_user vs R_role_tool_vs_user@t_inst @L26: +0.450 (null p97.5 0.032)
+[2026-09-09 07:50:17] [INFO]     R_control_unbalanced vs R_role_system_vs_user@t_post_inst @L8: -0.412 (null p97.5 0.032)
+[2026-09-09 07:50:17] [INFO]     R_harm_user vs R_role_tool_vs_user@t_inst @L1: +0.397 (null p97.5 0.032)
+[2026-09-09 07:50:17] [INFO]     R_control_unbalanced vs R_role_system_vs_user@t_post_inst @L7: -0.395 (null p97.5 0.032)
+[2026-09-09 07:50:17] [INFO]     R_harm_user vs R_role_system_vs_user@t_inst @L26: +0.391 (null p97.5 0.032)
+[2026-09-09 07:50:17] [INFO]   strongest safety-variable pairs:
+[2026-09-09 07:50:17] [INFO]     R_control vs R_control_unbalanced @L24: +0.999 (split-half floor 0.984)
+[2026-09-09 07:50:17] [INFO]     R_control vs R_control_unbalanced @L23: +0.999 (split-half floor 0.985)
+[2026-09-09 07:50:17] [INFO]     R_control vs R_control_unbalanced @L25: +0.999 (split-half floor 0.983)
+[2026-09-09 07:50:17] [INFO]     R_control vs R_control_unbalanced @L26: +0.999 (split-half floor 0.979)
+[2026-09-09 07:50:17] [INFO] ------------------------------------------------------------------------------
+[2026-09-09 07:50:17] [INFO] [projections/qwen2.5-7b] E1.3 — projections and correlations between them
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:53: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu")
+[2026-09-09 07:50:17] [INFO]   projection-correlation null p95 = 0.448
+[2026-09-09 07:50:17] [INFO]     r(R_control, R_control_unbalanced) = +1.000 beyond null
+[2026-09-09 07:50:17] [INFO]     r(R_harm, R_harm_user) = +0.997 beyond null
+[2026-09-09 07:50:17] [INFO]     r(R_control, R_control_preguard) = +0.989 beyond null
+[2026-09-09 07:50:17] [INFO]     r(R_control_preguard, R_control_unbalanced) = +0.989 beyond null
+[2026-09-09 07:50:17] [INFO]     r(R_control_harmless, R_control_preguard) = +0.958 beyond null
+[2026-09-09 07:50:17] [INFO] ------------------------------------------------------------------------------
+[2026-09-09 07:50:17] [INFO] [dimensionality/qwen2.5-7b] E1.4 — stratified directions -> r_eff
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:53: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu")
+[2026-09-09 07:50:18] [INFO]   R_harm               r_eff(stratified) 3.30 over 24 strata | AUC after removing top-1: 0.491
+[2026-09-09 07:50:19] [INFO]   R_harm_user          r_eff(stratified) 15.14 over 21 strata | AUC after removing top-1: 0.473
+[2026-09-09 07:50:19] [INFO]   R_control            r_eff(stratified) 4.65 over 26 strata | AUC after removing top-1: 0.509
+[2026-09-09 07:50:20] [INFO]   R_harm_at_post       r_eff(stratified) 2.80 over 24 strata | AUC after removing top-1: 0.502
+[2026-09-09 07:50:20] [INFO]   R_control_harmless   r_eff(stratified) 3.88 over 26 strata | AUC after removing top-1: 0.602
+[2026-09-09 07:50:21] [INFO]   R_control_unbalanced r_eff(stratified) 4.65 over 26 strata | AUC after removing top-1: 0.499
+[2026-09-09 07:50:21] [INFO]   R_control_preguard   r_eff(stratified) 3.58 over 27 strata | AUC after removing top-1: 0.602
+[2026-09-09 07:50:21] [INFO] ------------------------------------------------------------------------------
+[2026-09-09 07:50:21] [INFO] [emergence/qwen2.5-7b] E1.5 — separation vs relative depth
+[2026-09-09 07:50:21] [INFO]   peak separation by concept (relative depth):
+Traceback (most recent call last):
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/experiments/rq1.py", line 1319, in <module>
+    main()
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/experiments/rq1.py", line 1314, in main
+    PIPELINE.run(cfg, log, only=args.only, start=args.start,
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/core/stages.py", line 114, in run
+    stage.fn(ctx)
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/experiments/rq1.py", line 825, in stage_emergence
+    b = s.loc[s.train_auc.idxmax()]
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/pandas/core/generic.py", line 6321, in __getattr__
+    return object.__getattribute__(self, name)
+AttributeError: 'DataFrame' object has no attribute 'train_auc'

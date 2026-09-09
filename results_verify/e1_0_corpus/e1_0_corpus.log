@@ -1,0 +1,43 @@
+[2026-09-09 09:35:13] [INFO] ==============================================================================
+[2026-09-09 09:35:13] [INFO] E1.0 — build, verify and freeze the corpus (candidate until E1.1 Stage 1)
+[2026-09-09 09:35:13] [INFO] ==============================================================================
+[2026-09-09 09:35:13] [INFO] Building: 200 harmful + 200 harmless, 150 attack intents, seed=0
+[2026-09-09 09:35:26] [INFO]   harmful   200  {'advbench': 67, 'jbb': 67, 'sorry-bench': 66}
+[2026-09-09 09:35:26] [INFO]   harmless  200  {'alpaca': 100, 'xstest_safe': 100}
+[2026-09-09 09:35:26] [INFO]   attacks   150  {'strongreject': 150}
+[2026-09-09 09:35:26] [INFO] Building E1.0b transfer corpus: 150 C4 passages
+[2026-09-09 09:35:29] [INFO]   transfer  150  {'c4': 150}
+[2026-09-09 09:35:29] [INFO] Crossing: 400 instructions x 4 roles x 2 designs = 3200 rendered items per model
+[2026-09-09 09:35:30] [INFO] ------------------------------------------------------------------------------
+[2026-09-09 09:35:30] [INFO]   [ok  ] no_duplicate_instructions: {'n': 400, 'unique': 400}
+[2026-09-09 09:35:30] [INFO]   [ok  ] split_no_leak: {'n_train': 300, 'n_test': 100, 'leaked': 0}
+[2026-09-09 09:35:30] [INFO]   [ok  ] split_labelled: {}
+[2026-09-09 09:35:30] [INFO]   [ok  ] split_label_balance: {'train_harmful_frac': 0.5, 'test_harmful_frac': 0.5}
+[2026-09-09 09:35:30] [INFO]   [ok  ] split_source_balance: {'max_share_drift': 0.007, 'train_shares': {'advbench': 0.167, 'alpaca': 0.25, 'jbb': 0.167, 'sorry-bench': 0.167, 'xstest_safe': 0.25}, 'test_shares': {'advbench': 0.17, 'alpaca': 0.25, 'jbb': 0.17, 'sorry-bench': 0.16, 'xstest_safe': 0.25}}
+[2026-09-09 09:35:30] [INFO]   [ok  ] source_balance_harmful: {'advbench': 67, 'jbb': 67, 'sorry-bench': 66}
+[2026-09-09 09:35:30] [INFO]   [ok  ] source_balance_harmless: {'alpaca': 100, 'xstest_safe': 100}
+[2026-09-09 09:35:30] [INFO]   [ok  ] attack_pool_disjoint: {'exact': 0, 'near_duplicate': 0, 'n_attack': 150, 'threshold': 0.8}
+[2026-09-09 09:35:30] [INFO]   [ok  ] length_balance: {'median_words_harmful': 14, 'median_words_harmless': 9, 'median_ratio': 1.56, 'max_words': 64, 'max_over_median': 5.8}
+[2026-09-09 09:35:30] [INFO]   [ok  ] source_recorded: {'distinct_sources': 5}
+[2026-09-09 09:35:30] [INFO]   [ok  ] no_chat_special_tokens: {'n_offending': 0, 'uids': []}
+[2026-09-09 09:35:30] [INFO]   [ok  ] dataset_sources_loaded: {}
+[2026-09-09 09:35:30] [INFO]   [ok  ] transfer_no_duplicates: {'n': 150, 'unique': 150}
+[2026-09-09 09:35:30] [INFO]   [ok  ] transfer_split: {'n_train': 112, 'n_test': 38}
+[2026-09-09 09:35:30] [INFO]   [ok  ] transfer_length: {'min_words': 25, 'max_words': 60}
+[2026-09-09 09:35:30] [INFO]   [ok  ] transfer_disjoint_from_fitting: {'overlap': 0}
+[2026-09-09 09:35:30] [INFO]   [ok  ] transfer_no_chat_special_tokens: {}
+[2026-09-09 09:35:30] [INFO] ------------------------------------------------------------------------------
+[2026-09-09 09:35:30] [INFO] Corpus-wide rendering sweep (tokenizer only, no weights):
+[2026-09-09 09:35:48] [INFO]   qwen2.5-7b/fitting: 3200 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=4/800 (0.50%)
+[2026-09-09 09:35:51] [INFO]   qwen3.5-9b/fitting: 3200 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=0/800 (0.00%)
+[2026-09-09 09:35:52] [INFO]   qwen2.5-7b/transfer: 1200 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=0/300 (0.00%)
+[2026-09-09 09:35:54] [INFO]   qwen3.5-9b/transfer: 1200 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=0/300 (0.00%)
+[2026-09-09 09:35:54] [INFO] ------------------------------------------------------------------------------
+[2026-09-09 09:35:54] [INFO] Length confound (reported, not gated):
+[2026-09-09 09:35:54] [INFO]   qwen2.5-7b/fixed_slot: role median spread 19 tok, harmful/harmless median ratio 1.128 -> length-only baseline required for role AND harm
+[2026-09-09 09:35:54] [INFO]   qwen2.5-7b/natural_slot: role median spread 27 tok, harmful/harmless median ratio 1.139 -> length-only baseline required for role AND harm
+[2026-09-09 09:35:54] [INFO]   qwen3.5-9b/fixed_slot: role median spread 15 tok, harmful/harmless median ratio 1.114 -> length-only baseline required for role AND harm
+[2026-09-09 09:35:54] [INFO]   qwen3.5-9b/natural_slot: role median spread 27 tok, harmful/harmless median ratio 1.143 -> length-only baseline required for role AND harm
+[2026-09-09 09:35:56] [INFO] ------------------------------------------------------------------------------
+[2026-09-09 09:35:56] [INFO] E1.0 complete — 22 checks pass, corpus written to results_verify/e1_0_corpus
+[2026-09-09 09:35:56] [INFO] Status: CANDIDATE. E1.1 Stage 1 labels it on both models; the freeze follows only if the harmful-and-complied cell is adequate on each.

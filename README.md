@@ -1,449 +1,131 @@
 # SecurityControl — The Causal Architecture of LLM Safety
 
-Research code for the ICLR project asking whether LLM safety is implemented by a
-**structured, measurable causal architecture** — rather than a single "refusal
-direction" — and whether the *structure* of that architecture predicts how
-easily it can be broken.
+Research code asking whether LLM safety is implemented by a **structured, measurable
+causal architecture** rather than a single "refusal direction", and whether the
+*structure* of that architecture predicts how easily it can be broken.
 
-**Thesis under test:** safety decomposes into interacting latent variables
-(`R_role`, `R_harm`, `R_control`); different attacks compromise different parts
-of that architecture; and its concentration/redundancy predicts the intervention
+Hypothesis under test: safety decomposes into interacting latent variables
+(`R_role`, `R_harm`, `R_control`); different attacks compromise different parts of
+that architecture; and its concentration/redundancy predicts the intervention
 budget needed to disable it.
 
 ---
 
-> ## ⚠ ALL RESULTS BELOW ARE QUARANTINED (2026-09-07)
->
-> We have restarted the experimental programme from scratch. Every number in
-> this file was produced before the current design review and is to be treated
-> as **not valid** until re-derived. The old outputs are preserved, unmodified,
-> in `results_ARCHIVED_v1_invalid/`; `results/` is empty.
->
-> Reasons for the reset, in brief: attack evaluation ran on 10–15 prompts;
-> harmfulness and refusal were read at the same token position rather than
-> `t_inst`/`t_post-inst`; `late_layer` (21) was earlier than `mid_layer` (23),
-> so part of the cross-intervention matrix read upstream of its own
-> intervention; `k_50` is undefined in every row; and the RQ5 phase only ever
-> ran under `FAST_DEV`.
->
-> **The live plan is [EXPERIMENTS.md](EXPERIMENTS.md).** Experiments are being
-> rebuilt one at a time, RQ by RQ. Read that first; treat the sections below as
-> a record of the previous attempt, useful for its retractions and its
-> methodological invariants rather than for its numbers.
+## Start here
 
----
+Documentation is split by **epistemic status**, because a previous single-file
+playbook let results contaminate the specification. A claim's kind determines
+which file it lives in.
 
-## Start here (new co-author, 10 minutes)
-
-1. Read **Status at a glance** below — what is established, open, and retracted.
-2. Read **Five things you must know before touching the code** — these are
-   non-obvious invariants that have already caused wrong results when violated.
-3. Skim the **Glossary** for any column name you meet in `results/`.
-4. Run `python tools/report_key_numbers.py` to re-derive every quoted number
-   from `results/` yourself. Do not trust numbers in prose, including this file's
-   — they have gone stale repeatedly. The tool is the source of truth.
-
-The single most important thing to understand: **almost every headline claim in
-this project so far has been killed by a control or by more data.** The
-controls are not decoration; they are the main experimental apparatus. See
-*Revision history*.
-
----
-
-## Status at a glance
-
-Pipeline runs end-to-end on `Qwen/Qwen3.5-9B` (6/6 phases, no errors). All
-current numbers are **dev-scale unless noted** (`FAST_DEV=1`: 3–4 intents,
-5 attack prompts, 3 layers, truncated sweep grids).
-
-### Established
-
-| Claim | Evidence | Confidence |
+| File | Holds | Changes when |
 |---|---|---|
-| **Components reorganize across contexts; representations do not** | `S_repr` 0.957/0.954 vs `S_comp` 0.491/0.538 against a matched-n within-context floor of 0.750/0.757. Gaps **+0.259 [0.187, 0.322]** (harm) and **+0.219 [0.138, 0.292]** (control); both CIs exclude 0. **Full-scale run.** | **strongest result** |
-| The three variables are separately decodable | held-out probe accuracy 1.00 / 0.984 / 1.00 under the factorial design | good |
-| `R_control` is a control variable, not token identity | transfers to *unforced* prompts at 0.783 mean / 0.938 best vs 0.5 chance | good |
-| Neuron ranking carries real information | ablating top-50 ranked leaves `A_R` at 0.89–0.95; **50 random neurons leave it at ~1.000**. At k=4000 (32.6% of a layer) ranked removes 19–28% vs random 6–11% | good, full scale |
-| `R_control` is the most read/write integrated | transformer-neuron counts: control 39.0, harm 27.3, role 14.7 (chance ≈ 1.9), monotone across 3 layers | suggestive |
-| **Our NeuroStrike implementation is validated** | attack path and probe path each reach 0.727 [0.65, 0.79] on their model, containing their 76.9%; our probe weights correlate r=+0.55 with theirs | **good, full scale** |
-| **Neuron pruning does not work by breaking the model** | utility flat at 0.920 across all pruning depths, above the 0.880 baseline | good, full scale |
-| Qwen3.5-9B resists this attack far more than Qwen2.5-7B | 0.287 vs 0.727 at 75% depth, non-overlapping CIs, comparable prune budgets | suggestive — see confound |
+| **[PLAN.md](PLAN.md)** | The research plan, extracted from the two `.tex` sources, with their conflicts resolved | the sources change |
+| **[ENVIRONMENT.md](ENVIRONMENT.md)** | Verified properties of models, chat templates, datasets, cluster — plus the traps that silently produce wrong numbers | never; re-verified, not re-decided |
+| **[EXPERIMENTS.md](EXPERIMENTS.md)** | Designs, pre-registered criteria, parameters, status. **RQ1–RQ4** | we argue ourselves out of a decision |
+| **[results/RQ1_FINDINGS.md](results/RQ1_FINDINGS.md)** | What RQ1 actually found, including every correction made along the way | a run produces new evidence |
 
-### Open — no evidence either way
+Read them in that order. **The only numbers in `EXPERIMENTS.md` are thresholds
+fixed before a run** — a measured value appearing there is a bug.
 
-- **RQ5, the central hypothesis, is untested.** Every `k_50`, `k*` and
-  `prediction_correlations` entry is NaN at dev scale. The sweep grids stop at
-  k=50, where `A_R` has only fallen to ~0.89. Not a negative result — an
-  unrun one.
-- **Whether Qwen3.5's low ASR reflects robustness or an under-tuned attack.**
-  See the reproduction section — the `|z|>3` threshold was never calibrated for
-  this model.
-
-### Stale — needs re-run
-
-`results/phase4_architecture_prediction/` was produced **before** the current
-phase 3, so its `k*` sweeps used superseded neuron rankings. Note the
-provenance tool reports `CONSISTENT` here only because every phase ran with a
-dirty working tree, where the commit hash cannot distinguish code states —
-**check the timestamps, not just the commit.**
+The most important thing to understand about this project: **almost every headline
+claim so far has been killed or reshaped by a control.** The controls are the main
+experimental apparatus, not decoration. `RQ1_FINDINGS.md` §6 lists eight
+corrections where a confident result turned out to be an artifact of the
+measurement.
 
 ---
 
-## NeuroStrike reproduction and the two-model comparison
+## Where RQ1 stands
 
-A result track that was not in the original plan but is now among the
-strongest things we have. It also validates every neuron-level claim in the
-pipeline, so read it before trusting any of them.
+Every RQ1 stage in `EXPERIMENTS.md` is settled except E1.7 Level 2. In brief:
 
-### The validation chain
+- Three variables are **representationally distinct** — recoverable against a
+  1000-draw anisotropy null, length-only baselines and cluster-bootstrapped CIs,
+  with a positive control that reaches the noise floor when two directions really
+  are the same variable.
+- They are **asymmetrically coupled but not independently manipulable**. One
+  directed relation replicates exactly: `R_harm → R_control` in 44 of 44
+  qualifying cells across both models.
+- Gate 1's pre-registered conjunction **fails** — its two conditions disagree.
+- All directions are **style-dependent**, and for harmfulness the variation is
+  driven mainly by *which harmful dataset* is used.
 
-Our own NeuroStrike-style attack initially gave ASR 0.0 while the reference
-reports 76.9%. Rather than assume a cause, we separated the candidates:
-
-| link tested | how | result |
-|---|---|---|
-| our **attack path** (prune hooks, prune site, judge) | their shipped weights, their model | **0.727** [0.65, 0.79] — contains their 76.9% |
-| our **probe path** (activation capture, logistic fit, \|z\|>3) | our probe, same model | **0.727** — identical |
-| probe **equivalence** | our weights vs theirs, same model | r=+0.55 median; neuron overlap 0.176 vs 0.0018 chance (~100x) |
-| ASR is not **collapse** | capability retention under identical hooks | **utility flat at 0.920**, vs 0.880 unpruned |
-
-Only after all four does a low ASR elsewhere become attributable to the model.
-The original ASR 0.0 was purely a data-starved probe: **12 training prompts
-against the reference's ~15,000**, for a logistic regression over ~19k
-features.
-
-### Two-model result (n=150 StrongREJECT, Llama-Guard, utility-controlled)
-
-| pruning | Qwen2.5-7B ASR | utility | Qwen3.5-9B ASR | utility |
-|---|---|---|---|---|
-| baseline | 0.040 [0.02, 0.08] | 0.880 | 0.000 [0.00, 0.02] | 0.880 |
-| 25% | 0.080 [0.05, 0.13] | 0.920 | 0.000 [0.00, 0.02] | 0.920 |
-| 50% | 0.340 [0.27, 0.42] | 0.920 | 0.140 [0.09, 0.20] | 0.920 |
-| 75% | **0.727** [0.65, 0.79] | 0.920 | 0.287 [0.22, 0.36] | 0.920 |
-| 100% | 0.720 [0.64, 0.79] | 0.920 | `[TODO: run pending]` | |
-
-At matched pruning depth the CIs do not overlap, so the gap is statistically
-real. Pruning budgets are comparable — Qwen3.5 actually prunes a slightly
-*larger* fraction of all MLP neurons (0.98% vs 0.797%).
-
-**Utility never moves**, and is *higher* under pruning than at baseline. That
-is a useful internal check: our utility score counts "coherent and not
-refused", so removing safety neurons also reduces over-refusal on benign
-prompts. The attack does what it claims.
-
-### The open confound — do not skip this
-
-We applied the reference's `|z|>3` threshold to Qwen3.5 **without tuning**. It
-was calibrated on their model set, which never included Qwen3.5. So
-"Qwen3.5 is more robust" and "we under-tuned the attack on Qwen3.5" are
-currently **indistinguishable**. Three live explanations:
-
-1. **Threshold miscalibration** — cheap to test by sweeping z.
-2. **Genuine robustness** — Qwen3.5 postdates every model they evaluated.
-3. **Reasoning-mode blind spot** — the probe was trained with
-   `enable_thinking=False`, so if part of Qwen3.5's safety lives in its
-   reasoning pass, our probe never observed it. Specific to comparing a
-   reasoning model against non-reasoning ones.
-
-The defensible claim is *"we tried harder on Qwen3.5 and it still resisted"*,
-not *"our defaults did not work on it."*
-
-### Methodological note on the reference
-
-Their `2_prune_and_get_asr.py` reports success rate only — there is **no
-capability, coherence, or benign-task measurement anywhere in their
-evaluation**. Our utility numbers show their attack does preserve capability,
-so their claim stands; but the guarantee was absent from the original work.
-
-## Five things you must know before touching the code
-
-1. **Attack-steering sign is design-dependent.** Always call
-   `data.attack_steering_sign(concept, cfg.use_factorial_design)`; never hardcode.
-   The factorial design puts *untrusted* on role's positive side while the legacy
-   pairs put *trusted* there, so the attack sign flips. Getting this wrong is
-   silent and makes "no attack effect" unfalsifiable rather than false — it
-   already happened once.
-2. **`alpha` means different things in the two steering modes.** Relative
-   (default): a *fraction of the residual norm*, grid near 1.0. Absolute: a raw
-   magnitude, grid an order of magnitude larger. Residual norms grow ~8x with
-   depth, so absolute steering confounds depth with perturbation size.
-   `core/config.py` picks the matching grid; overriding `ALPHA_GRID` without
-   matching the mode silently produces no-ops or destructive interventions.
-3. **Three measurement signals, not interchangeable.** `A_R`/`k_50` use the
-   class **separation** (`make_separation_score_fn`) — offset-free, positive at
-   baseline by construction. `refusal_logit_margin` is a cheap behavioral
-   cross-check recorded at the same grid points, never `A_R` itself.
-   `AttackJudge` (Llama-Guard) defines reported ASR.
-4. **An attack that destroys the model is not an attack.** `k*`/`alpha*` require
-   `utility >= MIN_UTILITY`; `viable_attack` marks grid points meeting both
-   conditions. At |α|=1.5 a *random* direction reaches high ASR simply because
-   output degenerates and the judge scores incoherence as non-refusal.
-5. **Thinking-mode must stay disabled.** Qwen3-family models emit `<think>`;
-   with short generations the judge scores the reasoning preamble instead of the
-   answer. `build_prompt` passes `enable_thinking=False`. NeuroStrike does the
-   same for Qwen3, so this matches the reference rather than diverging from it.
+Full detail, caveats and what may not be claimed: [RQ1_FINDINGS.md](results/RQ1_FINDINGS.md).
 
 ---
 
-## How to run
+## Running things
 
-Everything is environment-variable driven (`core/config.py`); phases must run in
-order 1→6 the first time, and `require_phase_output()` fails with an actionable
-message otherwise.
+**Everything goes through Slurm**, including CPU-only analysis: login nodes kill
+even a few GB of cached activations with a policy `SIGKILL`.
 
 ```bash
-# Full scale (Slurm GPU)
-sbatch slurm/scripts/run_phase.sh 1     # then 2, 3, 4, 5, 6
+# corpus (model-independent, no GPU)
+sbatch slurm/scripts/run_cpu.sh experiments/e1_0_corpus.py
 
-# Fast smoke test — same code path, smaller data/grids
-FAST_DEV=1 python run_phase.py 1
+# one RQ1 stage, one model
+sbatch --export=ALL,MODELS=qwen2.5-7b,BATCH_SIZE=50 \
+       slurm/scripts/run_gpu.sh experiments/rq1.py --only causal
 
-# Re-derive every number quoted in this file
-python tools/report_key_numbers.py
+# CPU analysis off the cached activations
+sbatch --export=ALL,MODELS=qwen2.5-7b slurm/scripts/run_cpu.sh \
+       experiments/rq1.py --only nulls geometry projections
+
+python experiments/rq1.py --list        # stages, dependencies, GPU needs
 ```
 
-### Scaling knobs
+> `--export=ALL,MODELS=a,b` does **not** work — sbatch splits `--export` on
+> commas, so only the first model is passed. Submit one job per model.
 
-Scaling should require only these variables plus larger prompt pools in
-`core/data.py` — never edits to phase code.
+Each research question is **one script composed of stages**. A stage declares what
+it `produces`, `requires`, and whether it `needs_gpu`; completed stages are skipped
+unless `--force`, so re-running an analysis never re-runs a capture.
 
-| Variable | Default | Controls |
-|---|---|---|
-| `LAYER_STRIDE` | unset (3 layers) | `1` analyzes **every** layer — cheapest way from 9 to ~96 rows for RQ5 |
-| `K_GRID` | `1,5,…,2000,4000` | neuron-ablation budget for `k*`/`k_50` |
-| `ALPHA_GRID` | `0.05…2.0` (relative) | steering magnitudes; **must match `STEER_RELATIVE`** |
-| `LAYER_PREFIX_FRACTIONS` | `0.25,0.5,0.75,1.0` | NeuroStrike's layer-prefix attack depth |
-| `MAX_NEW_TOKENS` | 512 | generation length for judging |
-| `USE_LLAMA_GUARD` | 1 | 0 = keyword-only (dev only; not reportable as ASR) |
-| `MIN_UTILITY` / `ATTACK_SUCCESS_THRESHOLD` | 0.5 / 0.5 | capability floor and `tau` |
+### Verification
+
+```bash
+sbatch slurm/scripts/run_cpu.sh tests/test_invariants.py          # 22 environment invariants
+RESULTS_ROOT=./results sbatch slurm/scripts/run_cpu.sh tests/verify_rq1_run.py
+```
+
+`verify_rq1_run.py` checks what the pipeline does not check itself: no train/test
+leakage, layer selection on train rather than test, every direction beating its
+length-only baseline, no gate verdict from a criterion with zero tests, FDR
+actually applied, the steering readout calibrated, and — with `VERIFY_AGAINST` —
+two results roots compared in two tiers (label-independent concepts must reproduce
+**exactly**; label-dependent ones get a tolerance, because greedy generation is
+only bit-reproducible at a fixed batch size).
+
+**A full independent reproduction is part of settling an RQ**, not an optional
+extra.
 
 ---
 
 ## Repo map
 
 ```
-core/           shared library — all real logic lives here
-phases/         one script per phase, each exposing run(cfg)
-tools/          report_key_numbers.py       re-derives every quoted number
-                reproduce_neurostrike.py    their weights, their model — validates our attack path
-                train_probe_and_attack.py   our probe on any model — validates our probe path
-run_phase.py    CLI: python run_phase.py <1-6>
-results/        per-phase outputs + run_manifest.json (gitignored)
+PLAN.md ENVIRONMENT.md EXPERIMENTS.md     the three-file rule (see Start here)
+core/           config, pools (corpus), positions (rendering), capture,
+                extract (estimators), refusal (labelling), guard, interventions
+                (steering), model_io, model_meta, stages (runner), io_utils
+experiments/    e1_0_corpus.py   E1.0 corpus build + freeze
+                rq1.py           all of RQ1, as stages
+tests/          test_invariants.py, verify_rq1_run.py, smoke_generate_steered.py
+tools/          analysis and maintenance: gate_compare, asymmetry_structure,
+                style_decompose, readjudicate, repro_diag, clean_slurm_logs,
+                prune_caches
+slurm/          run_cpu.sh, run_gpu.sh, fetch_model.sh; logs + KEPT.md
+results/        live artifacts, one dir per experiment per model
+results_verify/ independent reproduction (activation caches pruned)
+results_llama_probe/  third-model probe: Llama-3.1-8B under-refusal check
 ```
 
-**Design principle: no giant end-to-end script.** Each phase loads the previous
-phase's frozen outputs, calls into `core/`, and saves its own. `core/` never
-imports `phases/`, so there is exactly one implementation of "extract a
-direction" or "ablate and measure," shared by everything.
+`activations.pt` is a **cache, not a result** — regenerate with
+`rq1.py --only extract`. Extraction is deterministic.
 
-| `core/` file | Role |
-|---|---|
-| `config.py` | All tunables, from env vars. `FAST_DEV=1` shrinks data/grids — same code path, not a separate mode. |
-| `data.py` | Prompt datasets, curated offline. **Factorial design** (`factorial_pairs`) is the default estimator; legacy per-concept pairs kept for comparison. Also `check_disjoint_topics()`, which enforces that architecture-measurement and attack pools never share a topic. |
-| `model_io.py` | Model loading, chat templating, refusal-margin proxy, generation. |
-| `hooks.py` | `HookEngine` — residual/MLP capture for Llama-style decoders (**not** MoE). |
-| `subspaces.py` | Direction math, probe validation, dimensionality (`spectrum_effective_rank`). |
-| `attribution.py` | Neuron attribution. Output side (`down_proj` cols) **and** input side (`gate`/`up` rows), plus reader/writer/transformer classification. |
-| `neurostrike.py` | Faithful port of NeuroStrike's white-box probe (NDSS 2026), from the sibling repo. Deviations documented inline. |
-| `judge.py` | Llama-Guard-3-8B + refusal-keyword AND-rule, matching their ASR definition. |
-| `interventions.py` | Steering (absolute/relative), neuron ablation, causal rescue. |
-| `utility.py` | Capability retention — the "did I break the model?" check. |
-| `metrics.py` | `A_R`/`k_50`, ASR sweeps, budget search, stability metrics, bootstrap CIs. |
-| `io_utils.py` | Logging, IO, `write_run_manifest` (provenance). |
-
----
-
-## Research questions → phases
-
-| RQ | Question | Phase | Status |
-|---|---|---|---|
-| RQ1 | Is safety functionally decomposable? | 1 | established (dev-scale) |
-| RQ2 | What causal architecture connects the variables? | 2 | measured; no activation patching yet |
-| RQ3 | Which components implement each function? | 3 | neurons only (read+write); no attention/MoE |
-| RQ4 | Do different attacks hit different stages? | 5B | measured |
-| RQ5 | **Does structure predict vulnerability?** | 3 + 4 | **untested** |
-| RQ6 | Is the architecture context-dependent? | 5A | **established, full scale** |
-| RQ7 | Does added redundancy increase robustness? | — | not implemented (optional) |
-
-The pipeline's spine, and why phases are ordered this way:
-
-| Step | Question | Outputs |
-|---|---|---|
-| 1 | Do the variables exist and separate? | `probe_accuracy`, `concept_dimensionality`, `geometry_cosine`, `control_transfer_test` |
-| 2 | How do they causally connect? | `cross_intervention_matrix` |
-| 3 | Which components implement them? | neuron rankings, `neurostrike_neuron_functions`, `neuron_read_write_roles`, mediation/rescue |
-| 4 | How is each function structured? | `C_R`, `N_eff`, `r_eff`, `k_50` — **RQ5 predictors** |
-| 5 | How hard is it actually to break? | `k*`, `alpha*` — **RQ5 outcome** |
-| 6 | Does 4 predict 5? | `prediction_correlations` — **the thesis** |
-| 7 | Does it change with context? | `context_stability`, `component_stability`, `causal_transfer_matrix` |
-| 8 | Do different attacks hit different stages? | `attack_stage_diagnosis` |
-
-Steps 4 and 5 use **deliberately disjoint prompt pools** — architecture measured
-and frozen on one set, attack budget on topically disjoint intents. That
-separation is what makes step 6 a *prediction* rather than a retrospective
-correlation, and is why `check_disjoint_topics()` exists.
-
----
-
-## Controls, and the question each answers
-
-Without these the headline quantities are uninterpretable. None is optional.
-
-| Control | Question it answers | Current answer |
-|---|---|---|
-| Random ablation | *Would ablating **any** k neurons do that?* | **No** — ranked leaves `A_R` at 0.89–0.95 at k=50, random at ~1.000 |
-| Random direction | *Would **any** perturbation this large break safety?* | At \|α\|=1.5 **yes** (so those aren't attacks); at 0.5 no |
-| Random ranking | Same, for the neuron-budget attack | Unanswerable — all `k*` NaN at dev grid |
-| Norm-relative steering | *Is "early layers are vulnerable" a norm artifact?* | Partly — the L10/L21 gap shrank but survived |
-| `R_control` transfer test | *Is `R_control` real, or just the token "I"?* | **Real** — 0.783/0.938 vs 0.5 chance |
-| Capability retention | *Did safety fail, or did I destroy the model?* | Decisive — utility 0.911 at α=0.5 vs **0.178** at α=1.5 |
-| Within-context split-half | *Do components reorganize, or is the ranking just noisy?* | **Reorganize** — floor 0.75, across-context 0.49–0.54, CIs exclude 0 |
-| Matched-n comparison | *Is the floor measured with the same data as the contrast?* | Now yes; before, harm's gap was inflated 6x by the mismatch |
-| Bootstrap / Wilson CIs | *How much is noise?* | Often most of it — ASR 4/5 has 95% CI [0.38, 0.96] |
-
----
-
-## Prompt design: why factorial
-
-`R_role`/`R_harm`/`R_control` come from a **crossed factorial design**
-(`data.factorial_pairs`), each direction a main effect with the other two
-factors balanced. The legacy per-concept sets carried *systematic bias*, which
-more data would only have made more precise:
-
-- `ROLE_PAIRS` appended the injection to the negative side only — a **−16 token**
-  imbalance in every pair, so `R_role` was partly a "long/adversarial text"
-  detector. Factorial framings are **exactly length-matched** (16 tokens each).
-- The three concepts used structurally different templates, so cross-concept
-  geometry could reflect template differences rather than real relationships.
-- Several benign counterparts leaked safety-salient words (`own`, `legitimate`).
-
-Aggressive injection strings are deliberately **not** used to estimate `R_role`;
-they are attack conditions in phase 5. Using them as the estimator would define
-`R_role` as an adversarial-text detector rather than a perceived-origin variable.
-`USE_FACTORIAL_DESIGN=0` restores the legacy sets for comparison.
-
----
-
-## Glossary
-
-`k_50` — **redundancy.** Rank neurons by contribution to `R`, ablate the top-k,
-measure `A_R(k)` = fraction of the security function remaining. `k_50` is the
-smallest k where `A_R ≤ 0.5`. Small = fragile/concentrated; large = redundant.
-
-`C_R` = `Σ pᵢ²` — **concentration** (uniform over ~19k neurons would be 5.3e-5;
-ours is 2e-4…3e-3). `N_eff = 1/C_R` — effective component count. `r_eff` —
-participation ratio of the neuron Gram eigenvalues: how many *independent*
-mechanisms versus how many components merely fire.
-
-`k*` / `alpha*` — smallest ablation budget / steering magnitude reaching
-ASR ≥ τ **with capability intact**.
-
-`S_repr` / `S_comp` — representation- and component-level stability across
-contexts. `reorganization_gap` = within-context floor − across-context, both at
-matched n.
-
-**Two different `r_eff`s exist.** Phase 3's `effective_functional_rank_r_eff` is
-component-level (neuron Gram matrix). Phase 1's `r_eff_spectrum` is
-representation-level (dimensionality of the direction itself). Same formula,
-different matrix.
-
-**`r_eff_spectrum` is capped at `n_pairs − 1`.** With 4/4/9 training pairs the
-ceilings are 3/3/8, so the current values (role 2.03, harm 1.76, control 3.03)
-are **not comparable across concepts** — control simply had more headroom. Do
-not quote the ordering until sample sizes are equal or the ceiling is slack.
-
----
-
-## Known limitations
-
-- `w_{i,R}` is a **geometric proxy** (activation × weight-projection), not an
-  ablation-derived causal contribution. The plan calls it "the causal
-  contribution of component i" — either the attribution becomes causal, or the
-  paper says proxy.
-- `C_R`/`N_eff`/`k_50` are computed against a **1-D projector**, while
-  `concept_dimensionality.csv` suggests the variables are not 1-D.
-- With one model, RQ5 is a **within-model** correlation over non-independent
-  (layer, concept) rows — not the leave-one-model-out test the plan specifies.
-- Effect sizes have **shrunk with every measurement fix** (the single-neuron
-  ablation effect went 11.5% → 6.3% → ~2%). The *direction* of the effect has
-  been robust; the magnitude was inflated by artifacts. Treat unreplicated
-  magnitudes with suspicion.
-
-## Not implemented
-
-- **MoE / experts / routing** — `hooks.py` only instruments dense MLPs. Needed
-  for GateBreaker-style analysis and the plan's "one dense + one MoE" baseline.
-- **Attention components** — RQ3 names them; only neurons are done.
-- **Activation patching** — RQ2 names it; we do additive steering only. Lives in
-  phase 2 (~10 s to re-run), so cheap to add later.
-- **Leave-one-model-out** (RQ5) — needs ≥2 models. The prediction-table schema is
-  already `model`-ready.
-- **RQ7** redundancy hardening — optional in the plan.
-- **Plotting** — everything is CSV; no figure code exists. This is the real gap
-  between "results" and "paper-ready."
-
----
-
-## Next steps
-
-### Scaling prompt sets: which, and which not
-
-The probe starvation has a *specific* cause — logistic regression over ~19k
-features on 12 samples, i.e. `p >> n`. That reasoning does **not** generalise
-to every pool, and scaling uniformly would be wasted effort.
-
-| pool | current | verdict |
-|---|---|---|
-| NeuroStrike probe corpus | ~15k (fixed) | **done** — `data.load_neurostrike_probe_datasets()` |
-| `ATTACK_PROBE_PROMPTS` | 15 | **replace with StrongREJECT.** Drives every `k*`/`alpha*`; at n=15 ASR CIs are ~±0.2. Biggest single limiter on RQ5. |
-| `CONTEXT_INTENTS` | 10 | **expand, don't replace.** RQ6 already yields CIs excluding zero; more only tightens. |
-| factorial pairs | 24/24/48 | **cannot be replaced.** StrongREJECT has no topic-matched benign counterparts, no role manipulation, no crossed factors — our directions need a *designed* contrast. Held-out probe accuracy is already 0.98-1.00, so directions are not the bottleneck. |
-| `r_eff_spectrum` sample size | 4-9 pairs | **starved** — the estimator is capped at `n_pairs - 1`. Needs more factorial *topics*, not a different dataset. |
-
-**Hard constraint:** the freeze-then-attack protocol requires the architecture
-pool and the attack pool to be topically disjoint. If StrongREJECT becomes the
-attack pool, the architecture pools must not draw from it, and
-`check_disjoint_topics()` must be updated to enforce it. Violating this turns
-RQ5 from a prediction into a retrospective correlation.
-
-### Priority order
-
-1. **Swap the attack pool to StrongREJECT**, preserving disjointness.
-2. **Phase 4 efficiency work** — batch generation (~8x), early termination when
-   ASR at max budget < tau (~3x), binary search over the budget grid (~2.8x).
-   Without this RQ5 costs ~29 GPU-days; with it, ~10 hours.
-3. **Run RQ5 at scale** using `A_R_at_k` as the redundancy predictor. `k_50` is
-   undefined everywhere (see Known limitations), so it cannot serve as a
-   predictor; `A_R` at a fixed budget carries the same construct and is always
-   defined.
-4. **Threshold sweep on Qwen3.5** to close the under-tuning confound above.
-
-### The paper now has two independent result tracks
-
-Worth stating plainly, because it changes the risk profile:
-
-- **RQ6 context reorganization** — full scale, both functions, CIs excluding
-  zero. The plan's "strongest possible result."
-- **Two-model robustness comparison** — a reproduction of NeuroStrike, extended
-  to a model they never tested, with a capability control they never ran.
-
-Neither depends on RQ5 landing. RQ5 remains the central claim and is still
-untested, but it is no longer the only thing carrying the paper.
-
-## Revision history — conclusions the controls overturned
-
-Retractions, not results. Do not quote the superseded numbers. **Six of eight
-headline claims died to a control or to more data** — the strongest argument for
-keeping the controls in the loop.
-
-| # | Claim made | What overturned it |
-|---|---|---|
-| 1 | ASR 1.0 everywhere, even at k=1 | **Thinking-mode contamination** — generations never reached the answer |
-| 2 | Steering at `source == target` layer has exactly zero effect | **Hook-ordering bug** — capture registered before steering |
-| 3 | "Layer 10 is uniquely vulnerable" | **Norm confound** — norms grow ~8× with depth; gap shrank but survived |
-| 4 | `R_role` steering is not an attack pathway | **Sign bug** — we had been steering the *defensive* direction |
-| 5 | `R_control` @ L21 is a real vulnerability | **Capability retention** — utility 0.133; that was model destruction |
-| 6 | `R_harm` is the most multi-dimensional variable | **Ceiling artifact** — `r_eff` capped at `n_pairs−1` (3/3/8) |
-| 7 | "`R_control` reorganizes, `R_harm` does not" | **Full-scale run** — harm's gap moved 0.041 → 0.259 (6×); both reorganize equally |
-| 9 | "Our NeuroStrike attack does not work" (ASR 0.0) | **Reproduction** — with their weights our attack reaches 0.727. The failure was a probe trained on 12 prompts vs their ~15,000, not the attack path |
-| 8 | `k_50` = 50 and 1 for `R_role` | **Offset bug** — `A_R` divided by a near-zero baseline (+0.078), exploding the ratio. Now uses class separation; all `k_50` correctly NaN at k≤50 |
+Superseded result archives were deleted once their content was documented;
+`docs/REMOVED_ARCHIVES.md` indexes what they held and why each was invalid. The
+scientific record of what changed lives in `RQ1_FINDINGS.md` §6 (eight
+corrections, with before/after) and `slurm/1_run_phase/KEPT.md` (job → artifact).
+`EXPERIMENTS_v1_superseded.md` is the previous playbook, kept for its retractions;
+it is not a source of specifications.

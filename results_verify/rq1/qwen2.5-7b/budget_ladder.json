@@ -1,0 +1,35 @@
+{
+  "ladder": [
+    48,
+    128,
+    256
+  ],
+  "rungs": [
+    {
+      "budget": 48,
+      "undetermined_rate": 0.0,
+      "refused": 1211,
+      "complied": 1989,
+      "truncated_rate": 0.9116,
+      "agreement_with_next": 0.9997
+    },
+    {
+      "budget": 128,
+      "undetermined_rate": 0.0,
+      "refused": 1212,
+      "complied": 1988,
+      "truncated_rate": 0.5188,
+      "agreement_with_next": 0.9994
+    },
+    {
+      "budget": 256,
+      "undetermined_rate": 0.0,
+      "refused": 1214,
+      "complied": 1986,
+      "truncated_rate": 0.3525,
+      "agreement_with_next": null
+    }
+  ],
+  "chosen": 48,
+  "rule": "smallest budget with undetermined < 0.30 and agreement_with_next >= 0.95"
+}

@@ -1,0 +1,3 @@
+=== 2026-09-08T21:15:06+00:00 [gpu] experiments/rq1.py --only labels ===
+MODELS=qwen2.5-7b BATCH_SIZE=64 RESULTS_ROOT=./results
+=== 2026-09-08T21:24:07+00:00 done ===

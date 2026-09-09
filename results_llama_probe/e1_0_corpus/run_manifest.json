@@ -1,0 +1,40 @@
+{
+  "experiment": "e1_0_corpus",
+  "timestamp_utc": "2026-09-09T11:19:20.885846+00:00",
+  "git_commit": "6b977f6698e39465af8580586688c6e8be42a1ab",
+  "git_dirty": true,
+  "slurm_job_id": "6430148",
+  "hostname": "nid011288",
+  "config": {
+    "results_root": "results_llama_probe",
+    "seed": 0,
+    "fast_dev": false,
+    "n_harmful": 200,
+    "n_harmless": 200,
+    "n_attack": 150,
+    "n_transfer": 150,
+    "train_fraction": 0.75,
+    "roles": [
+      "system",
+      "user",
+      "tool",
+      "assistant"
+    ],
+    "designs": [
+      "fixed_slot",
+      "natural_slot"
+    ],
+    "models": [
+      "llama3.1-8b"
+    ],
+    "batch_size": 16,
+    "max_content_tokens": 8,
+    "layer_stride": null,
+    "refusal_max_new_tokens": 48,
+    "refusal_budget_ladder": [
+      48,
+      128,
+      256
+    ]
+  }
+}

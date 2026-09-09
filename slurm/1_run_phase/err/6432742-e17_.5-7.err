@@ -1,0 +1,9 @@
+[2026-09-09 13:00:57] [INFO] pipeline rq1: ['style']
+[2026-09-09 13:00:57] [INFO] ------------------------------------------------------------------------------
+[2026-09-09 13:00:57] [INFO] [style/qwen2.5-7b] E1.7 Level 1 — metadata vs style; variation across prompt categories
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:53: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu")
+[2026-09-09 13:00:58] [INFO] [qwen2.5-7b] E1.7 Level 1 — directions refitted within each native style
+[2026-09-09 13:00:58] [INFO]   R_role_tool_vs_user        across source   (5 levels): cos min 0.808 med 0.878 max 0.974 | within-level split-half floor 0.987 -> style-DEPENDENT
+[2026-09-09 13:00:58] [INFO]   R_harm                     across source_pair (6 levels): cos min 0.023 med 0.434 max 0.940 | within-level split-half floor 0.987 -> style-DEPENDENT
+[2026-09-09 13:00:59] [INFO]   R_harm                     across category (25 levels): cos min -0.011 med 0.242 max 0.833 | within-level split-half floor 0.938 -> style-DEPENDENT

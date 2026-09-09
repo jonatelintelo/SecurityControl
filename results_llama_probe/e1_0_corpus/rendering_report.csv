@@ -1,0 +1,27 @@
+model,design,role,n_tokens,t_inst,t_post_inst,content_tokens,slot_is_fixed,prefix,suffix
+llama3.1-8b,fixed_slot,system,45,30,44,6,False,"ber 2023
+Today Date: 26 Jul 2024
+
+",<|eot_id|><|start_header_id|>user<
+llama3.1-8b,fixed_slot,user,56,50,55,6,True,"header_id|>user<|end_header_id|>
+
+",<|eot_id|><|start_header_id|>assis
+llama3.1-8b,fixed_slot,tool,59,52,58,6,True,"er_id|>ipython<|end_header_id|>
+
+""","""<|eot_id|><|start_header_id|>assi"
+llama3.1-8b,fixed_slot,assistant,56,50,55,6,True,"r_id|>assistant<|end_header_id|>
+
+",<|eot_id|><|start_header_id|>assis
+llama3.1-8b,natural_slot,system,45,30,44,6,False,"ber 2023
+Today Date: 26 Jul 2024
+
+",<|eot_id|><|start_header_id|>user<
+llama3.1-8b,natural_slot,user,47,41,46,6,False,"header_id|>user<|end_header_id|>
+
+",<|eot_id|><|start_header_id|>assis
+llama3.1-8b,natural_slot,tool,67,60,66,6,False,"er_id|>ipython<|end_header_id|>
+
+""","""<|eot_id|><|start_header_id|>assi"
+llama3.1-8b,natural_slot,assistant,56,50,55,6,False,"r_id|>assistant<|end_header_id|>
+
+",<|eot_id|><|start_header_id|>assis

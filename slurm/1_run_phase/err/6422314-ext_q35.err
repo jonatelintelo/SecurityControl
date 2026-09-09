@@ -1,0 +1,28 @@
+[2026-09-08 21:31:26] [INFO] pipeline rq1: ['extract']
+[2026-09-08 21:31:26] [INFO] ------------------------------------------------------------------------------
+[2026-09-08 21:31:26] [INFO] [extract/qwen3.5-9b] E1.1 — directions + role probe at every layer
+[2026-09-08 21:31:45] [INFO] Loading Qwen/Qwen3.5-9B: {'model_id': 'Qwen/Qwen3.5-9B', 'architecture': 'Qwen3_5ForConditionalGeneration', 'model_type': 'qwen3_5', 'num_layers': 32, 'hidden_size': 4096, 'num_experts': None, 'is_multimodal': True}
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files: 100%|██████████| 4/4 [00:00<00:00, 1619.74it/s]
+Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:   3%|▎         | 14/427 [00:00<00:03, 131.15it/s]Loading weights:   9%|▊         | 37/427 [00:00<00:02, 163.04it/s]Loading weights:  13%|█▎        | 54/427 [00:00<00:02, 131.58it/s]Loading weights:  17%|█▋        | 73/427 [00:00<00:02, 147.44it/s]Loading weights:  22%|██▏       | 95/427 [00:00<00:01, 167.76it/s]Loading weights:  30%|██▉       | 128/427 [00:00<00:01, 214.89it/s]Loading weights:  36%|███▌      | 153/427 [00:00<00:01, 220.21it/s]Loading weights:  44%|████▎     | 186/427 [00:00<00:00, 250.43it/s]Loading weights:  50%|████▉     | 212/427 [00:01<00:00, 247.92it/s]Loading weights:  56%|█████▋    | 241/427 [00:01<00:00, 258.21it/s]Loading weights:  64%|██████▍   | 273/427 [00:01<00:00, 271.12it/s]Loading weights:  71%|███████   | 302/427 [00:01<00:00, 273.09it/s]Loading weights:  77%|███████▋  | 330/427 [00:01<00:00, 264.97it/s]Loading weights:  84%|████████▍ | 359/427 [00:01<00:00, 265.40it/s]Loading weights:  90%|█████████ | 386/427 [00:01<00:00, 257.48it/s]Loading weights:  97%|█████████▋| 414/427 [00:01<00:00, 259.37it/s]Loading weights: 100%|██████████| 427/427 [00:01<00:00, 234.94it/s]
+[2026-09-08 21:31:55] [INFO] Decoder stack at 'model.layers' (32 layers)
+[2026-09-08 21:31:56] [INFO] [qwen3.5-9b] capturing residual at both positions, 32 layers...
+[2026-09-08 21:31:57] [INFO]     captured 32/3200
+[2026-09-08 21:32:03] [INFO]     captured 832/3200
+[2026-09-08 21:32:09] [INFO]     captured 1632/3200
+[2026-09-08 21:32:14] [INFO]     captured 2432/3200
+[2026-09-08 21:32:33] [INFO]   R_harm               AUC 0.981 [0.96,1.00] L16 d=0.52 | length-only 0.653 | split-half 0.991 | n_instr=100
+[2026-09-08 21:32:39] [INFO]   R_harm_user          AUC 0.980 [0.95,1.00] L16 d=0.52 | length-only 0.706 | split-half 0.963 | n_instr=100
+[2026-09-08 21:32:39] [WARNING]   R_control: too few examples — skipped
+[2026-09-08 21:32:53] [INFO]   R_harm_at_post       AUC 0.995 [0.99,1.00] L28 d=0.90 | length-only 0.653 | split-half 0.997 | n_instr=100
+[2026-09-08 21:32:53] [INFO]   R_control_harmless: role composition TV=0.144  <-- balanced
+[2026-09-08 21:33:02] [INFO]   R_control_harmless   AUC 0.948 [0.88,1.00] L28 d=0.90 | length-only 0.535 | split-half 0.949 | n_instr=50
+[2026-09-08 21:33:02] [INFO]   R_control_harmless   balanced on role: shared=['assistant', 'system', 'tool', 'user'] dropped=[] weight kept pos=1.00 neg=1.00
+[2026-09-08 21:33:02] [WARNING]   R_control_unbalanced: too few examples — skipped
+[2026-09-08 21:33:02] [INFO]   R_control_preguard: role composition TV=0.068  <-- balanced
+[2026-09-08 21:33:12] [INFO]   R_control_preguard   AUC 0.996 [0.98,1.00] L29 d=0.94 | length-only 0.473 | split-half 0.949 | n_instr=50
+[2026-09-08 21:33:12] [INFO]   R_control_preguard   balanced on role: shared=['assistant', 'system', 'tool', 'user'] dropped=[] weight kept pos=1.00 neg=1.00
+[2026-09-08 21:33:12] [INFO] [qwen3.5-9b] role probe: token-level capture, 32 layers...
+[2026-09-08 21:33:12] [INFO]     tokens from 32/3200
+[2026-09-08 21:33:18] [INFO]     tokens from 832/3200
+[2026-09-08 21:33:24] [INFO]     tokens from 1632/3200
+[2026-09-08 21:33:28] [INFO]     tokens from 2432/3200

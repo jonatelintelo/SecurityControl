@@ -1,0 +1,2 @@
+=== 2026-09-09T11:23:34+00:00 [gpu] experiments/rq1.py --only labels ===
+MODELS=llama3.1-8b BATCH_SIZE=50 RESULTS_ROOT=./results_llama_probe

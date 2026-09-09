@@ -1,0 +1,56 @@
+=== 2026-09-09T13:31:28+00:00 [cpu] tests/verify_rq1_run.py  ===
+RESULTS_ROOT=./results FAST_DEV=0 SEED=0
+[ok  ] corpus: no train/test leakage by instruction
+         {'train': 300, 'test': 100}
+[ok  ] corpus: every instruction rendered under every (role, design)
+         cells per instruction: min=8 max=8 (expected 8)
+[ok  ] qwen2.5-7b/R_harm: reported layer selected on TRAIN, not test
+         train-selected L16 != test-argmax L9 — selection is honest
+[ok  ] qwen2.5-7b: fit/eval instruction sets disjoint
+         train=300 test=100 overlap=0
+[ok  ] qwen2.5-7b: every direction beats its length-only baseline
+[ok  ] qwen2.5-7b: activations finite, fp16 storage has headroom
+         absmax=366.0 (fp16 max 65504, 179x headroom), nan=0 inf=0
+[ok  ] qwen2.5-7b: cached activation index aligns with refusal labels
+         n_cached=3200 n_labels=3200
+[ok  ] qwen2.5-7b: gate artifacts present
+         ['causal_gate__over.json', 'causal_gate__under.json'] / ['causal_matrix__over.csv', 'causal_matrix__under.csv']
+[ok  ] qwen2.5-7b__over: no gate verdict from an untested criterion
+         bounds reporting a verdict with 0 pairs tested: []
+[ok  ] qwen2.5-7b__over: G2 is FDR-corrected
+         BH q=0.05 over the asymmetry family, as pre-registered
+[ok  ] qwen2.5-7b__under: no gate verdict from an untested criterion
+         bounds reporting a verdict with 0 pairs tested: []
+[ok  ] qwen2.5-7b__under: G2 is FDR-corrected
+         BH q=0.05 over the asymmetry family, as pre-registered
+[ok  ] qwen2.5-7b__over: steering readout is calibrated (delta_AA ~= alpha)
+         median |delta/alpha - 1| = 0.159 at the first read layer
+[ok  ] qwen2.5-7b__over: behavioural readout is generation-based
+         refusal rate under intervention, labelled with the published rule
+[ok  ] qwen2.5-7b__under: steering readout is calibrated (delta_AA ~= alpha)
+         median |delta/alpha - 1| = 0.147 at the first read layer
+[ok  ] qwen2.5-7b__under: behavioural readout is generation-based
+         refusal rate under intervention, labelled with the published rule
+[ok  ] qwen3.5-9b/R_harm: reported layer selected on TRAIN, not test
+         train-selected L16 != test-argmax L19 — selection is honest
+[ok  ] qwen3.5-9b: fit/eval instruction sets disjoint
+         train=300 test=100 overlap=0
+[ok  ] qwen3.5-9b: every direction beats its length-only baseline
+[ok  ] qwen3.5-9b: activations finite, fp16 storage has headroom
+         absmax=228.0 (fp16 max 65504, 287x headroom), nan=0 inf=0
+[ok  ] qwen3.5-9b: cached activation index aligns with refusal labels
+         n_cached=3200 n_labels=3200
+[ok  ] qwen3.5-9b: gate artifacts present
+         ['causal_gate__over.json'] / ['causal_matrix__over.csv']
+[ok  ] qwen3.5-9b__over: no gate verdict from an untested criterion
+         bounds reporting a verdict with 0 pairs tested: []
+[ok  ] qwen3.5-9b__over: G2 is FDR-corrected
+         BH q=0.05 over the asymmetry family, as pre-registered
+[ok  ] qwen3.5-9b__over: steering readout is calibrated (delta_AA ~= alpha)
+         median |delta/alpha - 1| = 0.101 at the first read layer
+[ok  ] qwen3.5-9b__over: behavioural readout is generation-based
+         refusal rate under intervention, labelled with the published rule
+
+======================================================================
+26/26 checks passed
+=== 2026-09-09T13:31:44+00:00 done rc=0 ===

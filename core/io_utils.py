@@ -39,11 +39,6 @@ def save_json(path: Path, obj: Any) -> None:
         json.dump(obj, f, indent=2, default=str)
 
 
-def load_json(path: Path) -> Any:
-    with open(path) as f:
-        return json.load(f)
-
-
 def save_torch(path: Path, obj: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     torch.save(obj, path)
@@ -56,10 +51,6 @@ def load_torch(path: Path) -> Any:
 def save_df(path: Path, df: pd.DataFrame) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(path, index=False)
-
-
-def load_df(path: Path) -> pd.DataFrame:
-    return pd.read_csv(path)
 
 
 def write_run_manifest(cfg, experiment_name: str) -> Path:
@@ -97,13 +88,4 @@ def write_run_manifest(cfg, experiment_name: str) -> Path:
     out_dir = cfg.dir(experiment_name) if hasattr(cfg, "dir") else cfg.phase_dir(experiment_name)
     path = out_dir / "run_manifest.json"
     save_json(path, manifest)
-    return path
-
-
-def require_phase_output(path: Path, phase_name: str) -> Path:
-    """Fails fast with an actionable message if an upstream phase hasn't been run yet."""
-    if not path.exists():
-        raise FileNotFoundError(
-            f"Missing expected output {path}. Run phase '{phase_name}' first: `python run_phase.py <n>`."
-        )
     return path

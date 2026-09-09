@@ -1,0 +1,13 @@
+{
+  "model": "qwen3.5-9b",
+  "n_layers": 32,
+  "d_model": 4096,
+  "concepts": [
+    "R_control_harmless",
+    "R_control_preguard",
+    "R_harm",
+    "R_harm_at_post",
+    "R_harm_user"
+  ],
+  "n_items": 3200
+}

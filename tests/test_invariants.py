@@ -136,46 +136,68 @@ def check_enable_thinking(tok) -> None:
 # t_post-inst = last token of the templated prompt
 # --------------------------------------------------------------------------
 def check_token_positions(tok) -> None:
-    from core.positions import ROLES, batch_positions, content_token_spans, resolve_positions
+    from core.positions import DESIGNS, ROLES, batch_positions, render
 
     inst = "Tell me how to bake bread"
-    for role in ROLES:
-        p = resolve_positions(tok, inst, role=role, system="You are helpful.")
-        ids = tok(p.text, add_special_tokens=False)["input_ids"]
-        toks = tok.convert_ids_to_tokens(ids)
 
-        # t_inst must be the last token of the instruction: everything up to and
-        # including it must decode to a string ending with the instruction.
-        upto = tok.decode(ids[: p.t_inst + 1])
-        ok_inst = upto.rstrip().endswith(inst.rstrip())
-        ok_post = p.t_post_inst == len(ids) - 1
+    for design in DESIGNS:
+        n_content = set()
+        lengths = {}
+        for role in ROLES:
+            r = render(tok, inst, role, design)
+            ids = tok(r.text, add_special_tokens=False)["input_ids"]
+            toks = tok.convert_ids_to_tokens(ids)
+
+            ok_inst = tok.decode(ids[: r.t_inst + 1]).rstrip().endswith(inst.rstrip())
+            ok_post = r.t_post_inst == len(ids) - 1
+            ok_span = tok.decode(ids[r.content_start:r.content_end]).strip() == inst.strip()
+            n_content.add(r.content_end - r.content_start)
+            lengths[role] = r.n_tokens
+
+            record(
+                f"{design}/{role}: positions resolve and content span excludes markup",
+                "CONFIRMED" if (ok_inst and ok_post and ok_span) else "REFUTED",
+                f"n={r.n_tokens} t_inst={r.t_inst}({toks[r.t_inst]!r}) "
+                f"t_post={r.t_post_inst}({toks[r.t_post_inst]!r}) fixed={r.slot_is_fixed}",
+            )
+
+        # The load-bearing invariant: identical content must tokenise identically
+        # under every role, so reading at t_inst sees the same token regardless of
+        # the surrounding markup.
         record(
-            f"t_inst/t_post resolve correctly for role='{role}'",
-            "CONFIRMED" if (ok_inst and ok_post) else "REFUTED",
-            f"n={len(ids)} t_inst={p.t_inst}({toks[p.t_inst]!r}) "
-            f"t_post={p.t_post_inst}({toks[p.t_post_inst]!r}) "
-            f"decode-ends-with-instruction={ok_inst}",
+            f"{design}: instruction tokenises identically under every role",
+            "CONFIRMED" if len(n_content) == 1 else "REFUTED",
+            f"content token counts across roles = {sorted(n_content)}",
         )
 
-        # content span must cover exactly the instruction, no tag tokens
-        text, start, end = content_token_spans(tok, inst, role=role, system="You are helpful.")
-        span = tok.decode(tok(text, add_special_tokens=False)["input_ids"][start:end])
-        ok_span = span.strip() == inst.strip()
+        # Length is NOT constant across roles (authentic markup differs). Recorded
+        # so the size of the confound is known, and because it is why the role
+        # probe needs a length-only baseline.
+        spread = max(lengths.values()) - min(lengths.values())
         record(
-            f"content span excludes role tags for role='{role}'",
-            "CONFIRMED" if ok_span else "REFUTED",
-            f"[{start},{end}) decodes to {span.strip()[:60]!r}",
+            f"{design}: role length spread measured (confound size)",
+            "CONFIRMED",
+            f"{lengths}, spread={spread} tokens — role probe must beat a length-only baseline",
         )
+
+    # `system` can never occupy the fixed slot; both models must agree on that.
+    r_sys = render(tok, inst, "system", "fixed_slot")
+    r_user = render(tok, inst, "user", "fixed_slot")
+    record(
+        "fixed_slot: system falls back to natural slot, user does not",
+        "CONFIRMED" if (not r_sys.slot_is_fixed and r_user.slot_is_fixed) else "REFUTED",
+        f"system.slot_is_fixed={r_sys.slot_is_fixed} user.slot_is_fixed={r_user.slot_is_fixed}",
+    )
 
     # left-padding offset arithmetic
-    ps = [resolve_positions(tok, s, role="user") for s in ["hi", "a much longer instruction here"]]
-    padded = max(p.n_tokens for p in ps)
-    ti, tp = batch_positions(ps, padded, padding_side="left")
-    ok = all(t == padded - 1 for t in tp)
+    rs = [render(tok, s, "user", "fixed_slot") for s in ["hi", "a much longer instruction here"]]
+    padded = max(r.n_tokens for r in rs)
+    pos = batch_positions(rs, padded, padding_side="left")
+    ok = all(t == padded - 1 for t in pos["t_post_inst"])
     record(
         "batch_positions maps t_post to index -1 under left padding",
         "CONFIRMED" if ok else "REFUTED",
-        f"padded_len={padded} t_post={tp} t_inst={ti}",
+        f"padded_len={padded} t_post={pos['t_post_inst']} t_inst={pos['t_inst']}",
     )
 
 
