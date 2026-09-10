@@ -1,0 +1,50 @@
+{
+  "model": "qwen2.5-7b",
+  "k_star": {
+    "R_control": 3,
+    "R_control_harmless": 1,
+    "R_harm": 1,
+    "R_harm_at_post": 1
+  },
+  "bases": [
+    {
+      "model": "qwen2.5-7b",
+      "concept": "R_control",
+      "k_star": 3,
+      "k_used": 3,
+      "position": "t_post_inst",
+      "layer": 20,
+      "n_strata_axes": 6
+    },
+    {
+      "model": "qwen2.5-7b",
+      "concept": "R_control_harmless",
+      "k_star": 1,
+      "k_used": 1,
+      "position": "t_post_inst",
+      "layer": 22,
+      "n_strata_axes": 6
+    },
+    {
+      "model": "qwen2.5-7b",
+      "concept": "R_harm",
+      "k_star": 1,
+      "k_used": 1,
+      "position": "t_inst",
+      "layer": 16,
+      "n_strata_axes": 4
+    },
+    {
+      "model": "qwen2.5-7b",
+      "concept": "R_harm_at_post",
+      "k_star": 1,
+      "k_used": 1,
+      "position": "t_post_inst",
+      "layer": 16,
+      "n_strata_axes": 4
+    }
+  ],
+  "pass2_degenerate": false,
+  "interpretation": "At least one concept has k > 1, so subspace measures are not reducible to the pass-1 cosine and are the primary geometry.",
+  "note": "Between subspaces the canonical correlations ARE the cosines of the principal angles and the projection metric is their normalised sum of squares; the three named quantities are one spectrum. `data_cca` is the independent, data-weighted measure."
+}

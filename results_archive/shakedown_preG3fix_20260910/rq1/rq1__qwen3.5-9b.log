@@ -1,0 +1,12 @@
+[2026-09-09 16:19:13] [INFO] pipeline rq1: ['labels', 'extract', 'nulls', 'geometry', 'projections', 'dimensionality', 'harm_controls', 'dim_behavioural', 'emergence', 'style', 'fidelity', 'causal']
+[2026-09-09 16:19:13] [INFO] ------------------------------------------------------------------------------
+[2026-09-09 16:19:13] [INFO] [labels/qwen3.5-9b] E1.1 input — refusal labels; gates R_control identifiability
+[2026-09-09 16:19:30] [INFO] Loading Qwen/Qwen3.5-9B: {'model_id': 'Qwen/Qwen3.5-9B', 'architecture': 'Qwen3_5ForConditionalGeneration', 'model_type': 'qwen3_5', 'num_layers': 32, 'hidden_size': 4096, 'num_experts': None, 'is_multimodal': True}
+[2026-09-09 16:19:42] [INFO] Decoder stack at 'model.layers' (32 layers)
+[2026-09-09 16:19:43] [INFO] [qwen3.5-9b] rendered 3200 items
+[2026-09-09 16:19:43] [INFO] [qwen3.5-9b] generating at max budget 256 (ladder [48, 128, 256])
+[2026-09-09 16:19:53] [INFO]     generated 16/3200
+[2026-09-09 16:23:20] [INFO]     generated 336/3200
+[2026-09-09 16:26:44] [INFO]     generated 656/3200
+[2026-09-09 16:30:09] [INFO]     generated 976/3200
+[2026-09-09 16:33:27] [INFO]     generated 1296/3200

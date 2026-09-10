@@ -1,0 +1,26 @@
+{
+  "baseline_entropy": 0.3100641369819641,
+  "determinism_kl": 0.0,
+  "alpha_curve": {
+    "0.5": {
+      "real_kl": 0.0677068829536438,
+      "random_kl_mean": 0.006704036767284076,
+      "random_kl_max": 0.007940603420138359,
+      "content_gap": 0.061002846186359726
+    },
+    "1.0": {
+      "real_kl": 0.25440293550491333,
+      "random_kl_mean": 0.02486973504225413,
+      "random_kl_max": 0.03110337257385254,
+      "content_gap": 0.2295332004626592
+    },
+    "2.0": {
+      "real_kl": 0.8524324297904968,
+      "random_kl_mean": 0.10010142127672832,
+      "random_kl_max": 0.1314379870891571,
+      "content_gap": 0.7523310085137686
+    }
+  },
+  "direction_raw_norm": 8.566682815551758,
+  "deterministic": true
+}

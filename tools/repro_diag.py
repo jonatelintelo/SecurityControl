@@ -8,7 +8,7 @@ import pandas as pd
 A_ROOT = Path(os.environ.get("ROOT_A", "./results"))
 B_ROOT = Path(os.environ.get("ROOT_B", "./results_verify"))
 
-for m in ["qwen2.5-7b", "qwen3.5-9b"]:
+for m in ["qwen2.5-7b", "qwen3.5-9b", "qwen3.5-35b-a3b"]:
     pa, pb = A_ROOT/"rq1"/m/"direction_validation.csv", B_ROOT/"rq1"/m/"direction_validation.csv"
     if not (pa.exists() and pb.exists()):
         print(f"=== {m}: missing ==="); continue

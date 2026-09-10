@@ -1,0 +1,117 @@
+[2026-09-10 19:11:17] [INFO] pipeline rq1: ['labels', 'extract', 'nulls', 'geometry', 'projections', 'dimensionality', 'harm_controls', 'dim_behavioural', 'geometry_subspace', 'emergence', 'style', 'style_level2', 'fidelity', 'causal']
+[2026-09-10 19:11:17] [INFO] [labels/qwen2.5-7b] already complete (2 artifacts) — skipping
+[2026-09-10 19:11:17] [INFO] [extract/qwen2.5-7b] already complete (5 artifacts) — skipping
+[2026-09-10 19:11:17] [INFO] [nulls/qwen2.5-7b] already complete (1 artifacts) — skipping
+[2026-09-10 19:11:17] [INFO] [geometry/qwen2.5-7b] already complete (2 artifacts) — skipping
+[2026-09-10 19:11:17] [INFO] [projections/qwen2.5-7b] already complete (2 artifacts) — skipping
+[2026-09-10 19:11:17] [INFO] [dimensionality/qwen2.5-7b] already complete (1 artifacts) — skipping
+[2026-09-10 19:11:17] [INFO] [harm_controls/qwen2.5-7b] already complete (2 artifacts) — skipping
+[2026-09-10 19:11:17] [INFO] ------------------------------------------------------------------------------
+[2026-09-10 19:11:17] [INFO] [dim_behavioural/qwen2.5-7b] E1.4b — smallest k reproducing the full steering effect
+[2026-09-10 19:11:43] [INFO] Loading Qwen/Qwen2.5-7B-Instruct: {'model_id': 'Qwen/Qwen2.5-7B-Instruct', 'architecture': 'Qwen2ForCausalLM', 'model_type': 'qwen2', 'num_layers': 28, 'hidden_size': 3584, 'num_experts': None, 'is_multimodal': False}
+[2026-09-10 19:11:53] [INFO] Decoder stack at 'model.layers' (28 layers)
+[2026-09-10 19:11:54] [INFO] [qwen2.5-7b] E1.4b probe set: 100 items
+[2026-09-10 19:12:56] [INFO]   R_harm                 full Δrefusal +0.060 (null 0.000) | k=1:1.00 k=2:0.67 k=3:0.67 k=4:1.00 | k* = 1
+[2026-09-10 19:14:02] [INFO]   R_control              full Δrefusal +0.250 (null 0.000) | k=1:0.88 k=2:0.88 k=3:0.92 k=4:0.92 k=6:1.00 | k* = 3
+[2026-09-10 19:15:00] [INFO]   R_harm_at_post         full Δrefusal +0.480 (null 0.000) | k=1:1.02 k=2:1.04 k=3:1.02 k=4:1.00 | k* = 1
+[2026-09-10 19:16:09] [INFO]   R_control_harmless     full Δrefusal +0.130 (null 0.000) | k=1:1.00 k=2:0.92 k=3:1.00 k=4:1.00 k=6:1.00 | k* = 1
+[2026-09-10 19:16:09] [INFO] [qwen2.5-7b] behavioural k*: {'R_control': 3.0, 'R_control_harmless': 1.0, 'R_harm': 1.0, 'R_harm_at_post': 1.0}
+[2026-09-10 19:16:09] [INFO] ------------------------------------------------------------------------------
+[2026-09-10 19:16:09] [INFO] [geometry_subspace/qwen2.5-7b] E1.2 pass 2 — principal angles / projection / CCA at E1.4b's k
+[2026-09-10 19:16:09] [INFO]   R_control              k*=3 basis 3x3584 @L20 (t_post_inst)
+[2026-09-10 19:16:09] [INFO]   R_control_harmless     k*=1 basis 1x3584 @L22 (t_post_inst)
+[2026-09-10 19:16:09] [INFO]   R_harm                 k*=1 basis 1x3584 @L16 (t_inst)
+[2026-09-10 19:16:09] [INFO]   R_harm_at_post         k*=1 basis 1x3584 @L16 (t_post_inst)
+[2026-09-10 19:16:09] [INFO]   R_control vs R_control_harmless: proj 0.268 (null p97.5 0.003) angles [58.8] deg  data-CCA max 0.976
+[2026-09-10 19:16:10] [INFO]   R_control vs R_harm_at_post: proj 0.033 (null p97.5 0.003) angles [79.5] deg  data-CCA max 0.883
+[2026-09-10 19:16:10] [INFO]   R_control_harmless vs R_harm_at_post: proj 0.011 (null p97.5 0.001) angles [84.1] deg  data-CCA max 0.776
+[2026-09-10 19:16:10] [INFO] [qwen2.5-7b] E1.2 pass 2: subspace measures apply
+[2026-09-10 19:16:10] [INFO] ------------------------------------------------------------------------------
+[2026-09-10 19:16:10] [INFO] [emergence/qwen2.5-7b] E1.5 — separation vs relative depth
+[2026-09-10 19:16:10] [INFO]   emergence by concept — onset depth (peak selected on train):
+[2026-09-10 19:16:10] [INFO]     R_harm                 peak 0.981 @ d=0.59 | onset90 d=0.04 [0.00,0.11] (w=0.11) | 80/95%: 0.00/0.07
+[2026-09-10 19:16:10] [INFO]     R_harm_user            peak 0.982 @ d=0.59 | onset90 d=0.00 [0.00,0.07] (w=0.07) | 80/95%: 0.00/0.07
+[2026-09-10 19:16:10] [INFO]     R_control              peak 0.993 @ d=0.74 | onset90 d=0.48 [0.31,0.52] (w=0.20) | 80/95%: 0.48/0.52
+[2026-09-10 19:16:10] [INFO]     R_harm_at_post         peak 0.991 @ d=0.59 | onset90 d=0.00 [0.00,0.19] (w=0.19) | 80/95%: 0.00/0.19
+[2026-09-10 19:16:10] [INFO]     R_control_harmless     peak 0.946 @ d=0.81 | onset90 d=0.59 [0.00,0.85] (w=0.85) | 80/95%: 0.59/0.70
+[2026-09-10 19:16:10] [INFO]     R_control_unbalanced   peak 0.994 @ d=0.74 | onset90 d=0.48 [0.48,0.52] (w=0.04) | 80/95%: 0.48/0.52
+[2026-09-10 19:16:10] [INFO]     R_control_preguard     peak 0.973 @ d=0.74 | onset90 d=0.67 [0.52,0.70] (w=0.19) | 80/95%: 0.52/0.67
+[2026-09-10 19:16:10] [INFO]     R_role_probe           peak 0.959 @ d=0.44 | onset90 d=0.04 [0.04,0.04] (w=0.00) | 80/95%: 0.00/0.04
+[2026-09-10 19:16:10] [INFO] ------------------------------------------------------------------------------
+[2026-09-10 19:16:10] [INFO] [style/qwen2.5-7b] E1.7 Level 1 — metadata vs style; variation across prompt categories
+[2026-09-10 19:16:10] [INFO] [qwen2.5-7b] E1.7 Level 1 — directions refitted within each native style
+[2026-09-10 19:16:10] [INFO]   R_role_tool_vs_user        across source   (5 levels): cos min 0.808 med 0.878 max 0.974 | within-level split-half floor 0.987 -> style-DEPENDENT
+[2026-09-10 19:16:10] [INFO]   R_harm                     across source_pair (6 levels): cos min 0.023 med 0.434 max 0.940 | within-level split-half floor 0.987 -> style-DEPENDENT
+[2026-09-10 19:16:18] [INFO]   Zhao replication (advbench vs alpaca): peak AUC 1.000 at L2 (depth 0.07), length-only 0.521
+[2026-09-10 19:16:18] [INFO]   R_harm                     across category (25 levels): cos min -0.012 med 0.242 max 0.833 | within-level split-half floor 0.938 -> style-DEPENDENT
+[2026-09-10 19:16:18] [INFO] [style_level2/qwen2.5-7b] already complete (2 artifacts) — skipping
+[2026-09-10 19:16:18] [INFO] ------------------------------------------------------------------------------
+[2026-09-10 19:16:18] [INFO] [fidelity/qwen2.5-7b] E1.1 — pre_mlp fidelity + cross-corpus transfer (dropped in the first consolidation)
+[2026-09-10 19:16:19] [INFO] Loading Qwen/Qwen2.5-7B-Instruct: {'model_id': 'Qwen/Qwen2.5-7B-Instruct', 'architecture': 'Qwen2ForCausalLM', 'model_type': 'qwen2', 'num_layers': 28, 'hidden_size': 3584, 'num_experts': None, 'is_multimodal': False}
+[2026-09-10 19:16:21] [INFO] Decoder stack at 'model.layers' (28 layers)
+[2026-09-10 19:16:35] [INFO]   pre_mlp @L12: 0.960 (residual 0.980)
+[2026-09-10 19:16:35] [INFO]   transfer corpus: 150 C4 passages x 4 roles = 600 items (frozen at E1.0b)
+[2026-09-10 19:16:46] [INFO]   transfer @L12: ours->constant-content 0.721, theirs->our corpus 0.769 (chance 0.250)
+[2026-09-10 19:16:47] [INFO] ------------------------------------------------------------------------------
+[2026-09-10 19:16:47] [INFO] [causal/qwen2.5-7b] E1.6 — causal distinguishability; GO/NO-GO GATE 1
+[2026-09-10 19:16:47] [INFO] [qwen2.5-7b] control variable: R_control (variant='under', requested 'under')
+[2026-09-10 19:16:47] [INFO] [qwen2.5-7b] probe sets: train 80, test 100 (balanced harmful/harmless)
+[2026-09-10 19:16:48] [INFO] Loading Qwen/Qwen2.5-7B-Instruct: {'model_id': 'Qwen/Qwen2.5-7B-Instruct', 'architecture': 'Qwen2ForCausalLM', 'model_type': 'qwen2', 'num_layers': 28, 'hidden_size': 3584, 'num_experts': None, 'is_multimodal': False}
+[2026-09-10 19:16:50] [INFO] Decoder stack at 'model.layers' (28 layers)
+[2026-09-10 19:16:53] [INFO]   sanity @L12: determinism KL 0.0e+00 (ok); raw_norm 8.57
+[2026-09-10 19:16:53] [INFO]     alpha=0.5: real KL 0.0669 vs magnitude-matched random 0.0066 (content gap +0.0604)
+[2026-09-10 19:16:53] [INFO]     alpha=1.0: real KL 0.2550 vs magnitude-matched random 0.0245 (content gap +0.2305)
+[2026-09-10 19:16:53] [INFO]     alpha=2.0: real KL 0.8485 vs magnitude-matched random 0.1020 (content gap +0.7465)
+[2026-09-10 19:16:53] [INFO] [qwen2.5-7b] stage A: layer profile on train, all 28 layers, alpha=+/-1
+[2026-09-10 19:17:27] [INFO]   stage A top-3/source [11, 16, 17, 18, 24, 25, 26]; sensitivity depths [6, 13, 20]; steering at [6, 11, 13, 16, 17, 18, 20, 24, 25, 26]
+[2026-09-10 19:17:27] [INFO] [qwen2.5-7b] stage B: alpha x token-position profile on train, 10 layers x 10 alpha x 4 token sets
+[2026-09-10 19:17:53] [INFO]     L6: 120 cells
+[2026-09-10 19:18:20] [INFO]     L11: 120 cells
+[2026-09-10 19:18:47] [INFO]     L13: 120 cells
+[2026-09-10 19:19:13] [INFO]     L16: 120 cells
+[2026-09-10 19:19:40] [INFO]     L17: 120 cells
+[2026-09-10 19:20:07] [INFO]     L18: 120 cells
+[2026-09-10 19:20:34] [INFO]     L20: 120 cells
+[2026-09-10 19:21:01] [INFO]     L24: 120 cells
+[2026-09-10 19:21:27] [INFO]     L25: 120 cells
+[2026-09-10 19:21:54] [INFO]     L26: 120 cells
+[2026-09-10 19:21:54] [INFO]   stage B all_real           mean |margin shift| 5.3354  mean KL 2.3653
+[2026-09-10 19:21:54] [INFO]   stage B instruction_span   mean |margin shift| 0.7268  mean KL 0.2112
+[2026-09-10 19:21:54] [INFO]   stage B post_instruction   mean |margin shift| 5.1988  mean KL 2.1190
+[2026-09-10 19:21:54] [INFO]   stage B t_inst_only        mean |margin shift| 0.2698  mean KL 0.0276
+[2026-09-10 19:22:05] [INFO]   L6: baseline refusal rate 0.390 (harmful 0.780, harmless 0.000)
+[2026-09-10 19:22:16] [INFO]   L6: magnitude-matched random KL (harmless) by alpha 0.25:0.0023, 0.5:0.0049, 1.0:0.0152, 2.0:0.0494, 4.0:0.1692
+[2026-09-10 19:29:25] [INFO]   L6: 4200 cells
+[2026-09-10 19:29:35] [INFO]   L11: baseline refusal rate 0.390 (harmful 0.780, harmless 0.000)
+[2026-09-10 19:29:46] [INFO]   L11: magnitude-matched random KL (harmless) by alpha 0.25:0.0046, 0.5:0.0147, 1.0:0.0632, 2.0:0.2586, 4.0:1.0407
+[2026-09-10 19:36:54] [INFO]   L11: 3200 cells
+[2026-09-10 19:37:04] [INFO]   L13: baseline refusal rate 0.390 (harmful 0.780, harmless 0.000)
+[2026-09-10 19:37:15] [INFO]   L13: magnitude-matched random KL (harmless) by alpha 0.25:0.0081, 0.5:0.0300, 1.0:0.1225, 2.0:0.5073, 4.0:1.9614
+[2026-09-10 19:44:18] [INFO]   L13: 2800 cells
+[2026-09-10 19:44:29] [INFO]   L16: baseline refusal rate 0.390 (harmful 0.780, harmless 0.000)
+[2026-09-10 19:44:40] [INFO]   L16: magnitude-matched random KL (harmless) by alpha 0.25:0.0172, 0.5:0.0622, 1.0:0.2426, 2.0:0.9313, 4.0:4.0049
+[2026-09-10 19:51:48] [INFO]   L16: 2200 cells
+[2026-09-10 19:51:58] [INFO]   L17: baseline refusal rate 0.390 (harmful 0.780, harmless 0.000)
+[2026-09-10 19:52:09] [INFO]   L17: magnitude-matched random KL (harmless) by alpha 0.25:0.0179, 0.5:0.0691, 1.0:0.3117, 2.0:1.2621, 4.0:5.2843
+[2026-09-10 19:59:15] [INFO]   L17: 2000 cells
+[2026-09-10 19:59:25] [INFO]   L18: baseline refusal rate 0.390 (harmful 0.780, harmless 0.000)
+[2026-09-10 19:59:36] [INFO]   L18: magnitude-matched random KL (harmless) by alpha 0.25:0.0279, 0.5:0.1112, 1.0:0.4844, 2.0:1.8341, 4.0:7.1129
+[2026-09-10 20:06:18] [INFO]   L18: 1800 cells
+[2026-09-10 20:06:28] [INFO]   L20: baseline refusal rate 0.390 (harmful 0.780, harmless 0.000)
+[2026-09-10 20:06:39] [INFO]   L20: magnitude-matched random KL (harmless) by alpha 0.25:0.0308, 0.5:0.1140, 1.0:0.4793, 2.0:2.1290, 4.0:6.6024
+[2026-09-10 20:13:11] [INFO]   L20: 1400 cells
+[2026-09-10 20:13:21] [INFO]   L24: baseline refusal rate 0.390 (harmful 0.780, harmless 0.000)
+[2026-09-10 20:13:32] [INFO]   L24: magnitude-matched random KL (harmless) by alpha 0.25:0.0109, 0.5:0.0411, 1.0:0.1735, 2.0:0.8324, 4.0:4.0343
+[2026-09-10 20:20:02] [INFO]   L24: 600 cells
+[2026-09-10 20:20:12] [INFO]   L25: baseline refusal rate 0.390 (harmful 0.780, harmless 0.000)
+[2026-09-10 20:20:23] [INFO]   L25: magnitude-matched random KL (harmless) by alpha 0.25:0.0067, 0.5:0.0290, 1.0:0.1553, 2.0:0.8201, 4.0:4.7240
+[2026-09-10 20:26:53] [INFO]   L25: 400 cells
+[2026-09-10 20:27:03] [INFO]   L26: baseline refusal rate 0.390 (harmful 0.780, harmless 0.000)
+[2026-09-10 20:27:13] [INFO]   L26: magnitude-matched random KL (harmless) by alpha 0.25:0.0080, 0.5:0.0309, 1.0:0.1294, 2.0:0.5407, 4.0:3.2623
+[2026-09-10 20:33:49] [INFO]   L26: 200 cells
+[2026-09-10 20:33:50] [INFO]   KL_harmless <= 0.1 : n_live=2325 G1 0.7161 G2 48/201 G3 0 -> FAIL
+[2026-09-10 20:33:51] [INFO]   KL_harmless <= 0.25: n_live=3690 G1 0.7585 G2 148/477 G3 0 -> FAIL
+[2026-09-10 20:33:52] [INFO]   KL_harmless <= 0.5 : n_live=4590 G1 0.7791 G2 176/586 G3 0 -> FAIL
+[2026-09-10 20:33:54] [INFO]   KL_harmless <= 1.0 : n_live=5463 G1 0.8083 G2 242/759 G3 0 -> FAIL
+[2026-09-10 20:33:56] [INFO]   KL_harmless <= 2.0 : n_live=6216 G1 0.8118 G2 256/832 G3 0 -> FAIL
+[2026-09-10 20:33:56] [INFO] [qwen2.5-7b] GATE 1 — FAIL (testable at bounds [0.1, 0.25, 0.5, 1.0, 2.0])

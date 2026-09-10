@@ -188,6 +188,22 @@ def label_response(text: str, truncated: bool, rule: str = PRIMARY_RULE) -> Refu
     return RefusalLabel("complied", f"no_refusal_marker[{rule}]", truncated)
 
 
+def label_all_rules(text: str, truncated: bool) -> Dict[str, str]:
+    """The label this response gets under EVERY declared rule.
+
+    One generation, three verdicts, so `rule_disagreement` can compare rules on
+    identical text rather than on separate passes — the rules must differ only in
+    their marker set, never in what they saw.
+
+    Restored after being lost: `rule_disagreement` called this, no commit ever
+    contained a definition, and `py_compile` cannot see an undefined name, so the
+    labels stage raised `NameError` at runtime the first time it was exercised
+    end-to-end. The archived `label_rule_disagreement.json` shows the contract it
+    must satisfy — `{rule: label}`, read as `d[rule]` against `LABELS`.
+    """
+    return {r: label_response(text, truncated, r).label for r in LABEL_RULES}
+
+
 def rule_disagreement(responses: Sequence[str], truncated: Sequence[bool]) -> Dict[str, object]:
     """Pairwise disagreement between the label rules.
 

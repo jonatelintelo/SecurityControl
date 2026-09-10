@@ -46,15 +46,30 @@ MODELS: Dict[str, ModelSpec] = {
     "qwen2.5-0.5b": ModelSpec(
         "qwen2.5-0.5b", "Qwen/Qwen2.5-0.5B-Instruct", "qwen2.5", "dense", True,
         "smoke tests only"),
+    # The MoE arm of RQ1. The scoped plan's first pass is "one representative
+    # dense model and one representative MoE model", and its success criterion is
+    # "if both results hold on one dense and one MoE architecture" — so this is
+    # part of RQ1, not the roster expansion (which is PEP item 7).
+    # Verified: config nests under `text_config`, 40 layers, d=2048, 256 experts
+    # (8 active), and the chat template renders all four role classes. Its stack
+    # is 30 linear-attention + 10 full-attention layers, which does not affect
+    # residual-stream capture but is worth stating when depth profiles are
+    # compared against the dense models.
     "qwen3.5-35b-a3b": ModelSpec(
         "qwen3.5-35b-a3b", "Qwen/Qwen3.5-35B-A3B", "qwen3.5", "moe", False,
-        "40L d=2048, 256 experts; deferred until dense RQ1-4 settle"),
+        "40L d=2048, 256 experts (8 active); RQ1 MoE arm"),
 }
 
 # Run order for the dense arm. Qwen2.5 first: it is text-only and is where the
 # NeuroStrike signal demonstrably exists, so a null there is informative rather
 # than ambiguous.
 DENSE_MODELS: List[str] = ["qwen2.5-7b", "qwen3.5-9b"]
+
+# The full RQ1 roster: the dense arm plus the MoE the scoped plan requires.
+# Not the default for `MODELS` — jobs pass one slug each, because `sbatch
+# --export` splits on commas and would silently drop the rest of a list.
+MOE_MODELS: List[str] = ["qwen3.5-35b-a3b"]
+RQ1_MODELS: List[str] = DENSE_MODELS + MOE_MODELS
 
 
 def _b(name: str, default: bool) -> bool:

@@ -14,9 +14,16 @@ import pandas as pd
 import torch
 
 
-def get_logger(name: str, log_dir: Path) -> logging.Logger:
+def get_logger(name: str, log_dir: Path, suffix: str = "") -> logging.Logger:
+    """`suffix` distinguishes concurrent jobs writing into the same directory.
+
+    Models run as separate Slurm jobs (sbatch splits `--export` on commas, so one
+    job cannot carry two model slugs), and every one of them opens this log in
+    truncate mode in the shared `results/<experiment>/`. Without a per-job
+    suffix the last job to start silently erases the others' logs.
+    """
     log_dir.mkdir(parents=True, exist_ok=True)
-    logger = logging.getLogger(name)
+    logger = logging.getLogger(name + suffix)
     logger.setLevel(logging.INFO)
     logger.handlers.clear()
 
@@ -26,7 +33,7 @@ def get_logger(name: str, log_dir: Path) -> logging.Logger:
     stderr_handler.setFormatter(formatter)
     logger.addHandler(stderr_handler)
 
-    file_handler = logging.FileHandler(log_dir / f"{name}.log", mode="w", encoding="utf-8")
+    file_handler = logging.FileHandler(log_dir / f"{name}{suffix}.log", mode="w", encoding="utf-8")
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
@@ -86,6 +93,10 @@ def write_run_manifest(cfg, experiment_name: str) -> Path:
         "config": cfg_dict,
     }
     out_dir = cfg.dir(experiment_name) if hasattr(cfg, "dir") else cfg.phase_dir(experiment_name)
-    path = out_dir / "run_manifest.json"
+    # One manifest per job, keyed by the models that job ran. A single shared
+    # `run_manifest.json` is overwritten by whichever model's job finishes last,
+    # which loses the record of how the others were produced — exactly the
+    # provenance this file exists to preserve.
+    path = out_dir / f"run_manifest__{'+'.join(getattr(cfg, 'models', []) or ['all'])}.json"
     save_json(path, manifest)
     return path

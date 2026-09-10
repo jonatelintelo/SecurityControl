@@ -1,0 +1,8 @@
+{
+  "criterion": "smallest k whose rank-k subspace reproduces >=90% of the full direction's change in refusal rate at alpha=1",
+  "k_star": {
+    "R_control": 1,
+    "R_control_harmless": 1,
+    "R_harm_at_post": 1
+  }
+}

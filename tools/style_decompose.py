@@ -10,7 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import numpy as np, pandas as pd
 
-for slug in ["qwen2.5-7b", "qwen3.5-9b"]:
+for slug in ["qwen2.5-7b", "qwen3.5-9b", "qwen3.5-35b-a3b"]:
     p = Path(f"results/rq1/{slug}/style_vs_metadata.csv")
     if not p.exists():
         continue

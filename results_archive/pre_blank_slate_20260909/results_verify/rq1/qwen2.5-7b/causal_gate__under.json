@@ -1,0 +1,852 @@
+{
+  "model": "qwen2.5-7b",
+  "n_cells": 1680,
+  "adjudication_options": {
+    "null_q": 95.0,
+    "null_group": "alpha",
+    "g2_rule": "any",
+    "fdr_q": 0.05,
+    "beh_null_q": 95.0
+  },
+  "capability_bounds_swept": [
+    0.1,
+    0.25,
+    0.5,
+    1.0,
+    2.0
+  ],
+  "bounds_with_testable_pairs": [
+    0.1,
+    0.25,
+    0.5,
+    1.0,
+    2.0
+  ],
+  "per_bound": {
+    "0.1": {
+      "kl_bound": 0.1,
+      "n_live": 300,
+      "adjudication_options": {
+        "null_q": 95.0,
+        "null_group": "alpha",
+        "g2_rule": "any",
+        "fdr_q": 0.05,
+        "beh_null_q": 95.0
+      },
+      "null_band_delta": {
+        "('R_control', np.float64(0.25))": 0.015,
+        "('R_control', np.float64(0.5))": 0.0296,
+        "('R_control', np.float64(1.0))": 0.0626,
+        "('R_control', np.float64(2.0))": 0.1663,
+        "('R_control', np.float64(4.0))": 0.2508,
+        "('R_harm', np.float64(0.25))": 0.0203,
+        "('R_harm', np.float64(0.5))": 0.0415,
+        "('R_harm', np.float64(1.0))": 0.1035,
+        "('R_harm', np.float64(2.0))": 0.2782,
+        "('R_harm', np.float64(4.0))": 0.4623,
+        "('R_role', np.float64(0.25))": 0.0246,
+        "('R_role', np.float64(0.5))": 0.0522,
+        "('R_role', np.float64(1.0))": 0.1231,
+        "('R_role', np.float64(2.0))": 0.282,
+        "('R_role', np.float64(4.0))": 0.7159
+      },
+      "null_band_behaviour": {
+        "(0.25,)": 0.03,
+        "(0.5,)": 0.03,
+        "(1.0,)": 0.06,
+        "(2.0,)": 0.23,
+        "(4.0,)": 0.39
+      },
+      "G1_diagonal_dominance": {
+        "note": "sanity only \u2014 partly true by construction; failing it means something is broken",
+        "rate": 0.76,
+        "n": 100
+      },
+      "G2_asymmetry": {
+        "criterion": "CIs disjoint AND at least one direction beyond its alpha-matched null band AND surviving BH-FDR (q=0.05) over the family of asymmetry tests at this bound",
+        "family_size": 23,
+        "n_pairs_tested": 23,
+        "n_cis_disjoint": 23,
+        "n_beyond_null": 8,
+        "n_fdr_reject": 23,
+        "n_asymmetric": 8,
+        "holds": true,
+        "direction_counts": {
+          "R_harm->R_control": 3,
+          "R_role->R_harm": 2,
+          "R_role->R_control": 2,
+          "R_harm->R_role": 1
+        },
+        "examples": [
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.25,
+            "A": "R_harm",
+            "B": "R_role",
+            "pair": "R_harm->R_role vs R_role->R_harm",
+            "d_ab": -0.000701274024322629,
+            "d_ba": -0.06598952412605286,
+            "p": 0.0,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.25,
+            "A": "R_control",
+            "B": "R_harm",
+            "pair": "R_control->R_harm vs R_harm->R_control",
+            "d_ab": 0.019490068778395653,
+            "d_ba": 0.032899364829063416,
+            "p": 3.510687214192885e-154,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.25,
+            "A": "R_control",
+            "B": "R_role",
+            "pair": "R_control->R_role vs R_role->R_control",
+            "d_ab": 5.888861051062122e-05,
+            "d_ba": -0.035282086580991745,
+            "p": 3.255530545632008e-172,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.5,
+            "A": "R_harm",
+            "B": "R_role",
+            "pair": "R_harm->R_role vs R_role->R_harm",
+            "d_ab": -0.0009752724436111748,
+            "d_ba": -0.13072767853736877,
+            "p": 0.0,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.5,
+            "A": "R_control",
+            "B": "R_harm",
+            "pair": "R_control->R_harm vs R_harm->R_control",
+            "d_ab": 0.037973903119564056,
+            "d_ba": 0.06729134917259216,
+            "p": 3.601476558285896e-191,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.5,
+            "A": "R_control",
+            "B": "R_role",
+            "pair": "R_control->R_role vs R_role->R_control",
+            "d_ab": -0.0005959923728369176,
+            "d_ba": -0.06441467255353928,
+            "p": 1.6715702017835952e-128,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          }
+        ]
+      },
+      "G3_behavioural_dissociation": {
+        "criterion": "behavioural shift beyond the random-direction band, while at least one other variable stays inside its own null band",
+        "behavioural_readout": "d_refusal",
+        "behavioural_null_p95_by_alpha": {
+          "(0.25,)": 0.03,
+          "(0.5,)": 0.03,
+          "(1.0,)": 0.06,
+          "(2.0,)": 0.23,
+          "(4.0,)": 0.39
+        },
+        "n": 0,
+        "holds": false,
+        "examples": []
+      },
+      "verdict": "FAIL"
+    },
+    "0.25": {
+      "kl_bound": 0.25,
+      "n_live": 495,
+      "adjudication_options": {
+        "null_q": 95.0,
+        "null_group": "alpha",
+        "g2_rule": "any",
+        "fdr_q": 0.05,
+        "beh_null_q": 95.0
+      },
+      "null_band_delta": {
+        "('R_control', np.float64(0.25))": 0.015,
+        "('R_control', np.float64(0.5))": 0.0296,
+        "('R_control', np.float64(1.0))": 0.0626,
+        "('R_control', np.float64(2.0))": 0.1663,
+        "('R_control', np.float64(4.0))": 0.2508,
+        "('R_harm', np.float64(0.25))": 0.0203,
+        "('R_harm', np.float64(0.5))": 0.0415,
+        "('R_harm', np.float64(1.0))": 0.1035,
+        "('R_harm', np.float64(2.0))": 0.2782,
+        "('R_harm', np.float64(4.0))": 0.4623,
+        "('R_role', np.float64(0.25))": 0.0246,
+        "('R_role', np.float64(0.5))": 0.0522,
+        "('R_role', np.float64(1.0))": 0.1231,
+        "('R_role', np.float64(2.0))": 0.282,
+        "('R_role', np.float64(4.0))": 0.7159
+      },
+      "null_band_behaviour": {
+        "(0.25,)": 0.03,
+        "(0.5,)": 0.03,
+        "(1.0,)": 0.06,
+        "(2.0,)": 0.23,
+        "(4.0,)": 0.39
+      },
+      "G1_diagonal_dominance": {
+        "note": "sanity only \u2014 partly true by construction; failing it means something is broken",
+        "rate": 0.7939,
+        "n": 165
+      },
+      "G2_asymmetry": {
+        "criterion": "CIs disjoint AND at least one direction beyond its alpha-matched null band AND surviving BH-FDR (q=0.05) over the family of asymmetry tests at this bound",
+        "family_size": 63,
+        "n_pairs_tested": 63,
+        "n_cis_disjoint": 52,
+        "n_beyond_null": 36,
+        "n_fdr_reject": 54,
+        "n_asymmetric": 29,
+        "holds": true,
+        "direction_counts": {
+          "R_control->R_role": 7,
+          "R_control->R_harm": 6,
+          "R_harm->R_control": 5,
+          "R_role->R_harm": 4,
+          "R_role->R_control": 4,
+          "R_harm->R_role": 3
+        },
+        "examples": [
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.25,
+            "A": "R_harm",
+            "B": "R_role",
+            "pair": "R_harm->R_role vs R_role->R_harm",
+            "d_ab": -0.000701274024322629,
+            "d_ba": -0.06598952412605286,
+            "p": 0.0,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.25,
+            "A": "R_control",
+            "B": "R_harm",
+            "pair": "R_control->R_harm vs R_harm->R_control",
+            "d_ab": 0.019490068778395653,
+            "d_ba": 0.032899364829063416,
+            "p": 3.510687214192885e-154,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.25,
+            "A": "R_control",
+            "B": "R_role",
+            "pair": "R_control->R_role vs R_role->R_control",
+            "d_ab": 5.888861051062122e-05,
+            "d_ba": -0.035282086580991745,
+            "p": 3.255530545632008e-172,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.5,
+            "A": "R_harm",
+            "B": "R_role",
+            "pair": "R_harm->R_role vs R_role->R_harm",
+            "d_ab": -0.0009752724436111748,
+            "d_ba": -0.13072767853736877,
+            "p": 0.0,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.5,
+            "A": "R_control",
+            "B": "R_harm",
+            "pair": "R_control->R_harm vs R_harm->R_control",
+            "d_ab": 0.037973903119564056,
+            "d_ba": 0.06729134917259216,
+            "p": 3.601476558285896e-191,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.5,
+            "A": "R_control",
+            "B": "R_role",
+            "pair": "R_control->R_role vs R_role->R_control",
+            "d_ab": -0.0005959923728369176,
+            "d_ba": -0.06441467255353928,
+            "p": 1.6715702017835952e-128,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          }
+        ]
+      },
+      "G3_behavioural_dissociation": {
+        "criterion": "behavioural shift beyond the random-direction band, while at least one other variable stays inside its own null band",
+        "behavioural_readout": "d_refusal",
+        "behavioural_null_p95_by_alpha": {
+          "(0.25,)": 0.03,
+          "(0.5,)": 0.03,
+          "(1.0,)": 0.06,
+          "(2.0,)": 0.23,
+          "(4.0,)": 0.39
+        },
+        "n": 0,
+        "holds": false,
+        "examples": []
+      },
+      "verdict": "FAIL"
+    },
+    "0.5": {
+      "kl_bound": 0.5,
+      "n_live": 624,
+      "adjudication_options": {
+        "null_q": 95.0,
+        "null_group": "alpha",
+        "g2_rule": "any",
+        "fdr_q": 0.05,
+        "beh_null_q": 95.0
+      },
+      "null_band_delta": {
+        "('R_control', np.float64(0.25))": 0.015,
+        "('R_control', np.float64(0.5))": 0.0296,
+        "('R_control', np.float64(1.0))": 0.0626,
+        "('R_control', np.float64(2.0))": 0.1663,
+        "('R_control', np.float64(4.0))": 0.2508,
+        "('R_harm', np.float64(0.25))": 0.0203,
+        "('R_harm', np.float64(0.5))": 0.0415,
+        "('R_harm', np.float64(1.0))": 0.1035,
+        "('R_harm', np.float64(2.0))": 0.2782,
+        "('R_harm', np.float64(4.0))": 0.4623,
+        "('R_role', np.float64(0.25))": 0.0246,
+        "('R_role', np.float64(0.5))": 0.0522,
+        "('R_role', np.float64(1.0))": 0.1231,
+        "('R_role', np.float64(2.0))": 0.282,
+        "('R_role', np.float64(4.0))": 0.7159
+      },
+      "null_band_behaviour": {
+        "(0.25,)": 0.03,
+        "(0.5,)": 0.03,
+        "(1.0,)": 0.06,
+        "(2.0,)": 0.23,
+        "(4.0,)": 0.39
+      },
+      "G1_diagonal_dominance": {
+        "note": "sanity only \u2014 partly true by construction; failing it means something is broken",
+        "rate": 0.8125,
+        "n": 208
+      },
+      "G2_asymmetry": {
+        "criterion": "CIs disjoint AND at least one direction beyond its alpha-matched null band AND surviving BH-FDR (q=0.05) over the family of asymmetry tests at this bound",
+        "family_size": 77,
+        "n_pairs_tested": 77,
+        "n_cis_disjoint": 64,
+        "n_beyond_null": 42,
+        "n_fdr_reject": 66,
+        "n_asymmetric": 33,
+        "holds": true,
+        "direction_counts": {
+          "R_harm->R_control": 7,
+          "R_control->R_role": 7,
+          "R_control->R_harm": 6,
+          "R_role->R_harm": 5,
+          "R_role->R_control": 4,
+          "R_harm->R_role": 4
+        },
+        "examples": [
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.25,
+            "A": "R_harm",
+            "B": "R_role",
+            "pair": "R_harm->R_role vs R_role->R_harm",
+            "d_ab": -0.000701274024322629,
+            "d_ba": -0.06598952412605286,
+            "p": 0.0,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.25,
+            "A": "R_control",
+            "B": "R_harm",
+            "pair": "R_control->R_harm vs R_harm->R_control",
+            "d_ab": 0.019490068778395653,
+            "d_ba": 0.032899364829063416,
+            "p": 3.510687214192885e-154,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.25,
+            "A": "R_control",
+            "B": "R_role",
+            "pair": "R_control->R_role vs R_role->R_control",
+            "d_ab": 5.888861051062122e-05,
+            "d_ba": -0.035282086580991745,
+            "p": 3.255530545632008e-172,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.5,
+            "A": "R_harm",
+            "B": "R_role",
+            "pair": "R_harm->R_role vs R_role->R_harm",
+            "d_ab": -0.0009752724436111748,
+            "d_ba": -0.13072767853736877,
+            "p": 0.0,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.5,
+            "A": "R_control",
+            "B": "R_harm",
+            "pair": "R_control->R_harm vs R_harm->R_control",
+            "d_ab": 0.037973903119564056,
+            "d_ba": 0.06729134917259216,
+            "p": 3.601476558285896e-191,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.5,
+            "A": "R_control",
+            "B": "R_role",
+            "pair": "R_control->R_role vs R_role->R_control",
+            "d_ab": -0.0005959923728369176,
+            "d_ba": -0.06441467255353928,
+            "p": 1.6715702017835952e-128,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          }
+        ]
+      },
+      "G3_behavioural_dissociation": {
+        "criterion": "behavioural shift beyond the random-direction band, while at least one other variable stays inside its own null band",
+        "behavioural_readout": "d_refusal",
+        "behavioural_null_p95_by_alpha": {
+          "(0.25,)": 0.03,
+          "(0.5,)": 0.03,
+          "(1.0,)": 0.06,
+          "(2.0,)": 0.23,
+          "(4.0,)": 0.39
+        },
+        "n": 0,
+        "holds": false,
+        "examples": []
+      },
+      "verdict": "FAIL"
+    },
+    "1.0": {
+      "kl_bound": 1.0,
+      "n_live": 780,
+      "adjudication_options": {
+        "null_q": 95.0,
+        "null_group": "alpha",
+        "g2_rule": "any",
+        "fdr_q": 0.05,
+        "beh_null_q": 95.0
+      },
+      "null_band_delta": {
+        "('R_control', np.float64(0.25))": 0.015,
+        "('R_control', np.float64(0.5))": 0.0296,
+        "('R_control', np.float64(1.0))": 0.0626,
+        "('R_control', np.float64(2.0))": 0.1663,
+        "('R_control', np.float64(4.0))": 0.2508,
+        "('R_harm', np.float64(0.25))": 0.0203,
+        "('R_harm', np.float64(0.5))": 0.0415,
+        "('R_harm', np.float64(1.0))": 0.1035,
+        "('R_harm', np.float64(2.0))": 0.2782,
+        "('R_harm', np.float64(4.0))": 0.4623,
+        "('R_role', np.float64(0.25))": 0.0246,
+        "('R_role', np.float64(0.5))": 0.0522,
+        "('R_role', np.float64(1.0))": 0.1231,
+        "('R_role', np.float64(2.0))": 0.282,
+        "('R_role', np.float64(4.0))": 0.7159
+      },
+      "null_band_behaviour": {
+        "(0.25,)": 0.03,
+        "(0.5,)": 0.03,
+        "(1.0,)": 0.06,
+        "(2.0,)": 0.23,
+        "(4.0,)": 0.39
+      },
+      "G1_diagonal_dominance": {
+        "note": "sanity only \u2014 partly true by construction; failing it means something is broken",
+        "rate": 0.8346,
+        "n": 260
+      },
+      "G2_asymmetry": {
+        "criterion": "CIs disjoint AND at least one direction beyond its alpha-matched null band AND surviving BH-FDR (q=0.05) over the family of asymmetry tests at this bound",
+        "family_size": 105,
+        "n_pairs_tested": 105,
+        "n_cis_disjoint": 83,
+        "n_beyond_null": 63,
+        "n_fdr_reject": 86,
+        "n_asymmetric": 50,
+        "holds": true,
+        "direction_counts": {
+          "R_control->R_role": 14,
+          "R_control->R_harm": 12,
+          "R_harm->R_control": 7,
+          "R_role->R_harm": 6,
+          "R_harm->R_role": 6,
+          "R_role->R_control": 5
+        },
+        "examples": [
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.25,
+            "A": "R_harm",
+            "B": "R_role",
+            "pair": "R_harm->R_role vs R_role->R_harm",
+            "d_ab": -0.000701274024322629,
+            "d_ba": -0.06598952412605286,
+            "p": 0.0,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.25,
+            "A": "R_control",
+            "B": "R_harm",
+            "pair": "R_control->R_harm vs R_harm->R_control",
+            "d_ab": 0.019490068778395653,
+            "d_ba": 0.032899364829063416,
+            "p": 3.510687214192885e-154,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.25,
+            "A": "R_control",
+            "B": "R_role",
+            "pair": "R_control->R_role vs R_role->R_control",
+            "d_ab": 5.888861051062122e-05,
+            "d_ba": -0.035282086580991745,
+            "p": 3.255530545632008e-172,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.5,
+            "A": "R_harm",
+            "B": "R_role",
+            "pair": "R_harm->R_role vs R_role->R_harm",
+            "d_ab": -0.0009752724436111748,
+            "d_ba": -0.13072767853736877,
+            "p": 0.0,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.5,
+            "A": "R_control",
+            "B": "R_harm",
+            "pair": "R_control->R_harm vs R_harm->R_control",
+            "d_ab": 0.037973903119564056,
+            "d_ba": 0.06729134917259216,
+            "p": 3.601476558285896e-191,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.5,
+            "A": "R_control",
+            "B": "R_role",
+            "pair": "R_control->R_role vs R_role->R_control",
+            "d_ab": -0.0005959923728369176,
+            "d_ba": -0.06441467255353928,
+            "p": 1.6715702017835952e-128,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          }
+        ]
+      },
+      "G3_behavioural_dissociation": {
+        "criterion": "behavioural shift beyond the random-direction band, while at least one other variable stays inside its own null band",
+        "behavioural_readout": "d_refusal",
+        "behavioural_null_p95_by_alpha": {
+          "(0.25,)": 0.03,
+          "(0.5,)": 0.03,
+          "(1.0,)": 0.06,
+          "(2.0,)": 0.23,
+          "(4.0,)": 0.39
+        },
+        "n": 0,
+        "holds": false,
+        "examples": []
+      },
+      "verdict": "FAIL"
+    },
+    "2.0": {
+      "kl_bound": 2.0,
+      "n_live": 861,
+      "adjudication_options": {
+        "null_q": 95.0,
+        "null_group": "alpha",
+        "g2_rule": "any",
+        "fdr_q": 0.05,
+        "beh_null_q": 95.0
+      },
+      "null_band_delta": {
+        "('R_control', np.float64(0.25))": 0.015,
+        "('R_control', np.float64(0.5))": 0.0296,
+        "('R_control', np.float64(1.0))": 0.0626,
+        "('R_control', np.float64(2.0))": 0.1663,
+        "('R_control', np.float64(4.0))": 0.2508,
+        "('R_harm', np.float64(0.25))": 0.0203,
+        "('R_harm', np.float64(0.5))": 0.0415,
+        "('R_harm', np.float64(1.0))": 0.1035,
+        "('R_harm', np.float64(2.0))": 0.2782,
+        "('R_harm', np.float64(4.0))": 0.4623,
+        "('R_role', np.float64(0.25))": 0.0246,
+        "('R_role', np.float64(0.5))": 0.0522,
+        "('R_role', np.float64(1.0))": 0.1231,
+        "('R_role', np.float64(2.0))": 0.282,
+        "('R_role', np.float64(4.0))": 0.7159
+      },
+      "null_band_behaviour": {
+        "(0.25,)": 0.03,
+        "(0.5,)": 0.03,
+        "(1.0,)": 0.06,
+        "(2.0,)": 0.23,
+        "(4.0,)": 0.39
+      },
+      "G1_diagonal_dominance": {
+        "note": "sanity only \u2014 partly true by construction; failing it means something is broken",
+        "rate": 0.8328,
+        "n": 287
+      },
+      "G2_asymmetry": {
+        "criterion": "CIs disjoint AND at least one direction beyond its alpha-matched null band AND surviving BH-FDR (q=0.05) over the family of asymmetry tests at this bound",
+        "family_size": 114,
+        "n_pairs_tested": 114,
+        "n_cis_disjoint": 87,
+        "n_beyond_null": 67,
+        "n_fdr_reject": 89,
+        "n_asymmetric": 52,
+        "holds": true,
+        "direction_counts": {
+          "R_control->R_role": 14,
+          "R_control->R_harm": 12,
+          "R_harm->R_control": 8,
+          "R_role->R_harm": 7,
+          "R_harm->R_role": 6,
+          "R_role->R_control": 5
+        },
+        "examples": [
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.25,
+            "A": "R_harm",
+            "B": "R_role",
+            "pair": "R_harm->R_role vs R_role->R_harm",
+            "d_ab": -0.000701274024322629,
+            "d_ba": -0.06598952412605286,
+            "p": 0.0,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.25,
+            "A": "R_control",
+            "B": "R_harm",
+            "pair": "R_control->R_harm vs R_harm->R_control",
+            "d_ab": 0.019490068778395653,
+            "d_ba": 0.032899364829063416,
+            "p": 3.510687214192885e-154,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.25,
+            "A": "R_control",
+            "B": "R_role",
+            "pair": "R_control->R_role vs R_role->R_control",
+            "d_ab": 5.888861051062122e-05,
+            "d_ba": -0.035282086580991745,
+            "p": 3.255530545632008e-172,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.5,
+            "A": "R_harm",
+            "B": "R_role",
+            "pair": "R_harm->R_role vs R_role->R_harm",
+            "d_ab": -0.0009752724436111748,
+            "d_ba": -0.13072767853736877,
+            "p": 0.0,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.5,
+            "A": "R_control",
+            "B": "R_harm",
+            "pair": "R_control->R_harm vs R_harm->R_control",
+            "d_ab": 0.037973903119564056,
+            "d_ba": 0.06729134917259216,
+            "p": 3.601476558285896e-191,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          },
+          {
+            "steer_layer": 6,
+            "read_layer": 7,
+            "abs_alpha": 0.5,
+            "A": "R_control",
+            "B": "R_role",
+            "pair": "R_control->R_role vs R_role->R_control",
+            "d_ab": -0.0005959923728369176,
+            "d_ba": -0.06441467255353928,
+            "p": 1.6715702017835952e-128,
+            "cis_disjoint": true,
+            "beyond_null": true,
+            "fdr_reject": true,
+            "qualifies": true
+          }
+        ]
+      },
+      "G3_behavioural_dissociation": {
+        "criterion": "behavioural shift beyond the random-direction band, while at least one other variable stays inside its own null band",
+        "behavioural_readout": "d_refusal",
+        "behavioural_null_p95_by_alpha": {
+          "(0.25,)": 0.03,
+          "(0.5,)": 0.03,
+          "(1.0,)": 0.06,
+          "(2.0,)": 0.23,
+          "(4.0,)": 0.39
+        },
+        "n": 0,
+        "holds": false,
+        "examples": []
+      },
+      "verdict": "FAIL"
+    }
+  },
+  "verdict": "FAIL",
+  "criterion": "G2 (off-diagonal asymmetry) AND G3 (behavioural dissociation) on cells within the capability bound; G1 is a sanity check and is not evidence. Reported across a swept bound."
+}

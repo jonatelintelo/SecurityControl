@@ -1,0 +1,40 @@
+{
+  "experiment": "rq1",
+  "timestamp_utc": "2026-09-09T16:19:13.344189+00:00",
+  "git_commit": "8919876a1e61e30c50a864efdead2431e21bb2cb",
+  "git_dirty": true,
+  "slurm_job_id": "6436509",
+  "hostname": "nid011282",
+  "config": {
+    "results_root": "results",
+    "seed": 0,
+    "fast_dev": false,
+    "n_harmful": 200,
+    "n_harmless": 200,
+    "n_attack": 150,
+    "n_transfer": 150,
+    "train_fraction": 0.75,
+    "roles": [
+      "system",
+      "user",
+      "tool",
+      "assistant"
+    ],
+    "designs": [
+      "fixed_slot",
+      "natural_slot"
+    ],
+    "models": [
+      "qwen3.5-9b"
+    ],
+    "batch_size": 16,
+    "max_content_tokens": 8,
+    "layer_stride": null,
+    "refusal_max_new_tokens": 48,
+    "refusal_budget_ladder": [
+      48,
+      128,
+      256
+    ]
+  }
+}

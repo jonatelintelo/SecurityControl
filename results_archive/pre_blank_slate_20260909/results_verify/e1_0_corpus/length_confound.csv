@@ -1,0 +1,5 @@
+model,design,role_median_spread,median_assistant,median_system,median_tool,median_user,median_harmful,median_harmless,harm_length_ratio
+qwen2.5-7b,fixed_slot,19,41,30,49,41,44,39,1.128
+qwen2.5-7b,natural_slot,27,41,30,57,32,41,36,1.139
+qwen3.5-9b,fixed_slot,15,49,34,49,45,49,44,1.114
+qwen3.5-9b,natural_slot,27,49,34,61,36,48,42,1.143

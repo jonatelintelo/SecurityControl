@@ -246,6 +246,8 @@ def steer_and_capture(
     batch_size: int = 16,
     read_positions: Sequence[int] = (-1,),
     position_masks: Optional[Sequence[Sequence[bool]]] = None,
+    read_rendered: Optional[Sequence] = None,
+    read_which: Sequence[str] = ("t_post_inst",),
 ) -> Dict[int, torch.Tensor]:
     """Steer at one layer, read the residual stream at later layers.
 
@@ -253,7 +255,23 @@ def steer_and_capture(
     identical code path, so a baseline and a steered run differ only in the
     perturbation.
 
-    Returns `{read_layer: [n_items, n_positions, d_model]}` on CPU.
+    Two ways to say *where* to read, and they are not interchangeable:
+
+    * `read_positions` — flat offsets applied to every row. Safe only for
+      negative offsets under left padding, where `-1` is the last real token of
+      every row regardless of length.
+    * `read_rendered` + `read_which` — the corpus's own **per-item** positions
+      (`t_inst`, `t_post_inst`), resolved per batch through
+      :func:`core.positions.batch_positions`, the same arithmetic
+      `ActivationCapture.at_positions` uses. Required for any position other
+      than the last token: `t_inst` sits at a different index in every row, so a
+      single offset would read pad tokens for all but one of them.
+
+    PLAN-INF asks for the intervention's effect "at later layers **and later
+    tokens**", which is what the second form provides.
+
+    Returns `{read_layer: [n_items, n_positions, d_model]}` on CPU, with the
+    position axis ordered as `read_which` (or `read_positions`).
     """
     layers = model_meta.find_layers(model)
     read_layers = sorted(read_layers)
@@ -280,21 +298,40 @@ def steer_and_capture(
             handles.append(_resolve(layers, steer_layer).register_forward_hook(
                 _make_steer_hook(v.to(device), alpha, enc["attention_mask"], pm)))
 
+        # Resolve WHICH positions to keep before the forward pass, so the capture
+        # hook can slice immediately. Retaining the full [batch, seq, d] per read
+        # layer and slicing afterwards costs memory proportional to the number of
+        # read layers — and E1.6 now reads every layer downstream of the steer
+        # layer, which made that ~10x what it was. Slicing in the hook makes the
+        # footprint independent of how many layers are read.
+        n_pad = enc["input_ids"].shape[1]
+        if read_rendered is not None:
+            # Per-item positions, via the same arithmetic as
+            # ActivationCapture.at_positions: `t_inst` sits at a different index
+            # in every row, so one shared offset would read pad tokens.
+            from core.positions import batch_positions
+            chunk_r = list(read_rendered[start:start + batch_size])
+            pos = batch_positions(chunk_r, n_pad, tokenizer.padding_side)
+            sel = torch.tensor([pos[w] for w in read_which], device=device).T  # [rows, npos]
+            rows_i = torch.arange(sel.shape[0], device=device).unsqueeze(1)
+            take = lambda h: h[rows_i, sel, :]                      # noqa: E731
+        else:
+            idx = torch.tensor([p if p >= 0 else n_pad + p for p in read_positions], device=device)
+            take = lambda h: h[:, idx, :]                           # noqa: E731
+
         # 2. capture SECOND, so it observes the steered value
         for li in read_layers:
             def _cap(_m, _a, output, li=li):
                 h = output[0] if isinstance(output, tuple) else output
-                cache[li] = h.detach()
+                cache[li] = take(h.detach()).float().cpu()
             handles.append(_resolve(layers, li).register_forward_hook(_cap))
 
         model(**enc)
         for h in handles:
             h.remove()
 
-        n_pad = enc["input_ids"].shape[1]
-        idx = torch.tensor([p if p >= 0 else n_pad + p for p in read_positions], device=device)
         for li in read_layers:
-            out[li].append(cache[li][:, idx, :].float().cpu())
+            out[li].append(cache[li])
         cache.clear()
 
     return {li: torch.cat(v_, 0) for li, v_ in out.items()}

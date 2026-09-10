@@ -289,6 +289,16 @@ Naming: the plan's third variable appears as `R_refusal` in `main.tex` and
 `R_control` in the scoped plan. **`R_control` throughout**, with the scoped
 definition.
 
+**Role classes: four, not five.** PLAN-EXTRACT names *system, user, assistant, tool,
+untrusted external content*. We render four, with **`tool` standing in for untrusted
+external content** — which is what a tool response *is* in the prompt-injection setting
+both source papers draw on: content that entered the context from outside and carries
+no user authority. The stand-in is forced rather than chosen: on both models a tool
+message renders as a `user` turn wrapped in `<tool_response>` (see `ENVIRONMENT.md`),
+so there is no separate untrusted-external tag to render, and hand-building one would
+feed the model a token sequence it was never trained on. Recorded here because the
+code assumed this equivalence and no document stated it.
+
 ### The direction inventory
 
 | Name | Estimator | Position | Contrast |
@@ -427,7 +437,7 @@ would have no unit. **Role interventions use the contrast estimator**
 | direction scale | raw difference-in-means | raw difference-in-means | **raw**, `raw_norm` retained | lit |
 | `α` | implicit 1.0 | implicit 1.0 | anchor **1.0**, swept `{0.25, 0.5, 1, 2, 4} × {+,−}` | plan + lit + swept |
 | steer layer | single `l*`, selected on validation | best layer varies by model | **sweep all layers**, report the profile | lit + swept |
-| direction selection | bypass / induce / KL scores | layer-wise reporting | **implemented but NOT run** — see O-10 | lit |
+| direction selection | bypass / induce / KL scores | layer-wise reporting | **measured in stronger form** — bypass/induce by generation, KL as the capability bound; see O-10 | lit |
 | steered positions | **all** | all | **swept**: all real / instruction span / `t_inst` only / post-instruction only | lit + plan (PLAN-INF says *early tokens*) |
 | read position | `t_post-inst` | `t_post-inst` | `t_post-inst` **plus later token positions** | lit + plan |
 | readout | refusal string-match + Llama Guard | accept/refuse at `t_post-inst` | behavioural **and** representational | lit + ours |
@@ -479,7 +489,8 @@ go/no-go gate and carries the RQ.
 |---|---|---|---|
 | **E1.0** | Corpus construction and freeze | PLAN-EXTRACT | `settled` |
 | **E1.1** | Recover and validate the three variables at every layer | PLAN-PEP-1, PLAN-EXTRACT | `settled` |
-| **E1.2** | Pairwise geometry — **principal angles, projection measures, canonical correlations**; cosine as the 1-D special case | PLAN-GEOM, PLAN-INF | `settled` — pass 1; pass 2 **degenerate at `k = 1`** |
+| **E1.1d** | `R_harm` with **refusal held constant** — the contrast PLAN-EXTRACT specifies and the pooled fit does not provide | PLAN-EXTRACT | `settled` |
+| **E1.2** | Pairwise geometry — **principal angles, projection measures, canonical correlations**; cosine as the 1-D special case | PLAN-GEOM, PLAN-INF | `settled` — pass 1 AND pass 2. **The earlier "degenerate at `k = 1`" status was a stale RESULT recorded as settled status, and it is not safe**: pass 2 is implemented (`stage_geometry_subspace`) and decides the branch from E1.4b's measured `k` at run time, stating the degeneracy explicitly when every `k = 1` |
 | **E1.3** | Projections across prompt sets, and correlations between projections | PLAN-INF | `settled` |
 | **E1.4** | Dimensionality, and **the smallest `k` that explains the behavioural interventions** | PLAN-RQ1, PLAN-EXTRACT | `settled` — both halves; `k = 1` |
 | **E1.5** | Emergence across layers **and persistence in later layers** | PLAN-RQ1, PLAN-GEOM | `settled` |
@@ -610,7 +621,7 @@ disjoint attack intents"*. Widen in this order:
 
 `results/e1_0/` — `instructions.jsonl`, `attack_intents.jsonl`, `transfer_corpus.jsonl`,
 `corpus_meta.json` (with `source_provenance`), `rendering_report.csv`,
-`tokenisation_mismatches.csv`, `verification.json`, `run_manifest.json`
+`tokenisation_mismatches.csv`, `verification.json`, `run_manifest__<models>.json`
 
 ---
 
@@ -728,14 +739,54 @@ indices are decoder-block *outputs*, so attention has already run and high
 separation there is expected. The **length-only baseline** and the **matched random
 null** are the meaningful lexical-shortcut controls.
 
+### E1.1d — `R_harm` with refusal held constant
+
+PLAN-EXTRACT asks for `R_harm` estimated *"while controlling for refusal behavior
+where possible"*. Pooled `R_harm` does not provide that: the harmful side is
+overwhelmingly refused and the harmless side overwhelmingly complied, so the
+pooled contrast is close to the 2×2 diagonal and may carry a refusal component.
+
+Two variants, one per row of the 2×2, fitted at both positions and every layer:
+
+| variant | contrast | population |
+|---|---|---|
+| `R_harm_in_refused` | harmful vs harmless | among **refused** items |
+| `R_harm_in_complied` | harmful vs harmless | among **complied** items |
+
+A variant is **skipped, not fitted on noise**, when either side has fewer than
+25 training items.
+
+**Estimator — role-balanced, unlike pooled `R_harm`.** This asymmetry is
+deliberate. Pooled `R_harm` is exempt from stratification because every
+instruction is rendered under all four roles, so both of its sides carry
+identical role composition by construction. **Conditioning on the refusal label
+destroys that guarantee**, because refusal rate varies by role — the same fact
+that forces `R_control` to be balanced. A plain difference of means here would
+therefore carry a role component; and since the headline compares these variants
+against a role-balanced `R_control`, that component would push the cosine *down*
+and **overstate** the separability of harm from control. Both variants are fitted
+with `stratum_balanced_diff_of_means` over `role`, and the pre-balancing role
+total-variation is recorded per fit so "balanced" is a reported quantity rather
+than an assumption.
+
+**Comparisons, all against the split-half floor.** `cos(refusal-controlled harm,
+pooled harm)` asks whether the pooled fit is contaminated;
+`cos(refusal-controlled harm @post, R_control)` against its pooled counterpart
+asks whether holding refusal constant reduces the harm/control overlap.
+
+**Cross-layer comparison is forbidden here as everywhere.** The residual basis
+differs by layer, so the two variants are compared only *within* a layer, never
+at each one's own best layer.
+
 ### Produces
 
-`results/e1_1/<model>/` — `directions.pt`, `role_probes.pt`,
-`direction_validation.csv`, `length_baselines.csv`, `role_probe_accuracy.csv`,
-`role_probe_transfer.csv`, `refusal_labels.csv`, `degeneracy_calibration.json`,
-`harm_refusal_2x2.csv`, `guard_sensitivity.csv`, `splithalf.csv`,
+`results/e1_1/<model>/` — `harm_controls.csv`, `harm_controls_geometry.csv`,
+`harm_controls_by_layer.csv`, `directions.pt`, `role_probes.pt`,
+`direction_validation.csv`, `direction_validation.csv` (`length_only_auc` column), `role_probe.csv`,
+`fidelity.json` (both directions), `refusal_labels.csv`, `degeneracy_calibration.json`,
+`labels_checks.json` (`strata`), `labels_checks.json` (`guard`) + `R_control_preguard`, `direction_validation.csv` (`split_half_cos` column),
 `null_distributions.csv`, `zhao_replication.csv`, `fidelity.json`,
-`run_manifest.json`
+`run_manifest__<models>.json`
 
 ---
 
@@ -792,7 +843,71 @@ split-half floor.
 **Level 2 — controlled style, a separate corpus build.** The real test needs the
 *same* content rewritten to sound like a system prompt, a user request, and tool
 output, crossed with the tag. That requires a generation step with content-
-preservation verification and is its own corpus, built when E1.7 runs.
+preservation verification and is its own corpus: `experiments/e1_7_style_corpus.py`,
+consumed by the `style_level2` stage. E1.0 stays offline and model-free, so the
+generation lives here rather than there.
+
+Four design decisions, three of them forced by measurement rather than chosen:
+
+| Decision | Why |
+|---|---|
+| **Generated, not templated** | A template puts the register in a fixed framing phrase around verbatim content, so the fitted contrast is a framing-phrase contrast. Orthogonality to that licenses only *"`R_role` is not the framing phrase"*, which is not the claim. Generation redistributes register through the text. The template arm is kept as a **control**, since templated register is trivially separable and so upper-bounds how detectable register can be |
+| **Rewriter is outside the roster** (`Qwen3-30B-A3B-Instruct-2507`) | Generating the corpus with a model that is then probed on it entangles the register cue and the probe through the same weights |
+| **Harmless bases only** | *Measured.* An aligned rewriter refuses to restyle harmful requests, so harmful bases failed verification systematically and the survivors were a biased subset. Harmfulness is not a term in the tag-vs-register question, and Level 1 still covers the full corpus. Limitation: Level 2 cannot detect an `R_role` that behaves differently on harmful content |
+| **Balance by complete registers, not by a retention threshold** | A per-register threshold can be met while the survivors in one register are a different set of bases from another — which would make the register contrast partly a contrast between different requests. Keeping only bases complete in *every* register makes content identical across registers by construction and makes the within-base pairing well defined (asserted in `stage_style_level2`, not assumed) |
+
+**Verification, and what it cannot do.** Rejects are refusals, inversions (a
+negation the base lacked — *"You must **not** seek to destroy your opponent"*:
+same words, opposite request, invisible to overlap), catastrophic content loss,
+and wholesale content addition. Two instruments were tried and discarded against
+data, both because they measured the wrong thing:
+
+* a **75% content-word floor** rewarded rewrites closest to templating —
+  `tool_register` passed at coverage 1.0 when the model quoted the request
+  verbatim inside JSON and failed when it genuinely restructured into fields;
+* a **character length-ratio bound** rejected `tool_register` almost entirely,
+  because JSON is verbose: a 44-character request becomes a 250-character object
+  while adding only a handful of field names. Added **content words** is the
+  bound that matches the stated concern;
+* counting content words over the **raw** text still rejected `tool_register`,
+  because a structured register carries its register in KEYS and its content in
+  VALUES — `"subject"`, `"attribute"`, `"task"` are markup, not material the
+  rewriter invented. Measured: 31 of 38 rejects in a diagnostic run were
+  `added_content` **at coverage 1.0**, i.e. content perfectly preserved and
+  structure miscounted as content. Content extraction is now **register-blind**
+  (`_request_text`): for JSON-ish output only the values are read.
+
+* an **added-set** bound then fired on conversational register — *"do you happen
+  to know of any good spots around here"* adds words because hedging is what that
+  register IS. Replaced by a bound on the rewrite's **total** content-word size,
+  which catches the failure actually worth catching: a rewrite that answers the
+  request or writes an essay instead of restyling it;
+* **negation token sets** flagged *"why can X **not** resurrect the dead"* →
+  *"why is it that X **can't** bring the dead back"* as an inversion, because
+  `not` became `can't`. Polarity is what matters, so the test is now whether a
+  request acquired a negation it did not have.
+
+Every one of those five corrections is the same lesson: **a verification check
+that is not blind to register will penalise the registers that differ most from
+prose, and so will select for rewrites closest to templating** — the opposite of
+what Level 2 needs. Content extraction and the negation test both read
+`_request_text`, and the size bound is indifferent to which words are new.
+
+**A process note, recorded because it cost four rounds.** Three of those
+instrument failures were diagnosed from aggregate rejection *rates* without
+reading the rejected text. `verify_style_items` now emits a per-item
+`reject_reason` and the full reject list into the corpus metadata, so a
+rejection is inspected rather than inferred.
+
+What remains unmeasurable lexically is the distinction between a faithful
+paraphrase and a changed request — *"break into the film industry"* and
+*"entering the film industry"* share two content words of six. The floor is set
+low enough to admit such paraphrases, which necessarily admits some drift. Three
+things bound the residual risk, none of them a threshold: the within-base
+pairing, the verbatim template arm as a comparison, and `coverage` recorded per
+item so lexical fidelity is a **reported distribution rather than an
+assumption**. A semantic-equivalence judge would measure it properly but is
+itself an unvalidated instrument.
 
 Also here: variation across **prompt categories** (PLAN-GEOM), using the `category`
 factor recorded at E1.0. Variation across **model families** and **dense vs MoE**
@@ -914,7 +1029,7 @@ instead, with **all layer selection on the train split**:
 
 | Stage | Split | Grid | Purpose |
 |---|---|---|---|
-| **A — profile** | train | all layers × `α ∈ {+1, −1}` × steer-tokens `all real` × 4 sources | the layer profile PLAN requires. *Arditi's three selection metrics are NOT computed here — see O-10* |
+| **A — profile** | train | all layers × `α ∈ {+1, −1}` × steer-tokens `all real` × 4 sources | the layer profile PLAN requires. *Arditi's three scores are not computed under those names; their substance is `d_refusal_harmful` / `d_refusal_harmless` / `kl_harmless` — see O-10* |
 | **B — refine** | train | top-3 layers per source from A, plus fixed sensitivity layers at relative depth `{0.25, 0.5, 0.75}` × full `α` grid × 4 token sets × 4 sources | the `α` and token-position profiles; identifies the in-range region |
 | **C — verdict** | **test** | the layers B selects, plus the fixed sensitivity layers; representational 3×3 with downstream capture | G1–G3 |
 
@@ -1179,30 +1294,83 @@ identifies a refusal-vs-compliance direction from behaviour inherits this ceilin
 Recorded in *Refusal labelling*. Mitigated by the no-filter sensitivity fit and its
 acceptance criterion; not eliminated.
 
-### O-10 — Arditi's selection metrics are implemented but never called
-`interventions.selection_scores` computes the published bypass / induce / KL
-scores correctly, and this document claimed in two places that E1.6 reports them
-per layer. Nothing called it; the claims are now corrected to say so.
+### O-10 — SUPERSEDED — Arditi's selection metrics are not needed
+`interventions.selection_scores` implements the published bypass / induce / KL
+scores and is never called. That was logged as a gap; on inspection it is not one,
+and the reasoning is worth recording because it is a case of the spec outliving
+the design.
 
-They are worth running: they are the published comparator against which our
-directions can be placed, and they are cheap (forward passes only, no
-generation). Our steering layer is selected by the behavioural profile instead, so
-this is a missing *comparison*, not a missing control. **Not blocking; do before
-writing up RQ1.**
+Arditi's three scores are a **direction-selection** procedure: generate many
+candidate directions, score each, keep the best. We do not select directions that
+way — our concepts are *defined* by their contrasts, we report full layer curves
+rather than a chosen layer, and where a layer must be named it is chosen on the
+train split by the behavioural profile.
 
-### O-11 — the Zhao replication was never run
-E1.1's checklist and its `Produces` list both name `zhao_replication.csv`: their
-estimator, on their contrast, corpus and scale, extraction and separation only. It
-was never implemented.
+More decisively, **we already measure all three, in a stronger form**, on the same
+probe set:
 
-This matters more than a missing artifact. `R_harm` and `R_control` use Zhao's
-difference-of-means estimator, and the licence for doing so is that we reproduce
-their separation on their own setup. Without it we can report our numbers but
-cannot claim comparability with theirs — and E1.7 has since shown the harm
-direction is substantially **dataset-specific**, which makes "does it behave the
-same on their data?" a sharper question than when the checklist was written, not a
-formality. **Do before writing up RQ1.**
+| Arditi | their readout | ours | recorded as |
+|---|---|---|---|
+| bypass | single-token refusal logit margin, harmful, −α | **generation** + the published prefix rule | `d_refusal_harmful` |
+| induce | single-token logit margin, harmless, +α | **generation** + the published prefix rule | `d_refusal_harmless` |
+| kl_score | KL on harmless prompts | the same quantity — it *is* our capability bound | `kl_harmless` |
 
+Their bypass/induce use the logit margin, which this playbook demotes to "a cheap
+proxy that is never reported alone". Implementing `selection_scores` would add a
+weaker measurement of something already measured better. The claim in the
+parameter register and in Stage A is corrected to say the metrics are not
+computed; the substance is present under other names.
+
+Residual value: their *numeric* values, for cross-paper calibration. That is
+presentation, not soundness, and it is weak anyway — the scores depend on probe
+set, model and α convention.
+
+### O-11 — DOWNGRADED — the Zhao replication is mostly already done
+E1.1's checklist names `zhao_replication.csv`: their estimator, on their contrast,
+corpus and scale, extraction and separation only. It was never implemented, and it
+was logged as a gap. On inspection most of it is covered, by work done since.
+
+* **Their corpus is essentially ours.** Zhao draw harmful items from
+  AdvBench/JBB/Sorry-Bench and harmless from Alpaca/XSTest, which is exactly our
+  source list.
+* **Their estimator on their sources is already fitted.** E1.7 refits `R_harm`
+  within every (harmful source x harmless source) pair, including
+  `advbench|alpaca` — a canonical Zhao-style setup — at comparable scale, and
+  reports how each relates to the others against a split-half floor.
+* **Their asymmetry result is E1.6's job, not the replication's**, as the
+  checklist itself says; E1.6 now measures it across a 3x3 matrix with
+  alpha-matched nulls and FDR, far beyond a replication.
+
+What remains is a like-for-like comparison against their *published numbers*.
+That is comparability and presentation, not soundness. **Downgraded from a gap to
+a nice-to-have for the write-up.**
+
+*What E1.7 did surface, which matters more:* the AdvBench and JBB fits agree with
+each other (cos 0.77-0.94) while **Sorry-Bench is nearly orthogonal to both**
+(0.045-0.30, against a floor of ~0.99), on both models. Our pooled `R_harm` is
+therefore a blend of two substantially different directions. This is consistent
+with E1.4 finding it functionally one-dimensional: the top-1 component carries the
+classification signal common to all sources, while the fitted direction's
+*orientation* depends on the source mixture. Both statements are true and the
+paper needs both.
+
+### O-12 — RESOLVED — the verdict is robust to every free adjudication choice
+Swept 216 adjudication settings x 3 runs (`tools/gate_sensitivity.py`, CPU-only,
+re-reading the saved matrices). Results in `results/RQ1_FINDINGS.md` §5b.
+
+* **G3 = 0 in 648/648 combinations.** The absence of clean dissociation is not a
+  threshold artifact.
+* **Verdict FAIL in 216/216 for every run.**
+* **`R_harm -> R_control` directionally consistent in 100% of settings** on both
+  matched-control runs; mixed in 100% of settings on the `under` control. The
+  under/over distinction is itself robust.
+* G2's presence depends on exactly one choice: alpha-matching the null. Pooling
+  zeroes it; every other factor (`null_q`, `fdr_q`, `beh_null_q`, `g2_rule`) leaves
+  it well above zero. Alpha-matching is not a free parameter — pooling compares an
+  alpha=1 effect against an alpha=4 null, which is the error corrected earlier.
+* Incidental: **FDR is non-binding** at q = 0.01, 0.05 and 0.10 alike.
+
+The sweep is cheap and should be re-run whenever the adjudicator changes.
 
 ---
 
@@ -1315,7 +1483,7 @@ best, never a specification.
 - [ ] Role probe vs role contrast agreement
 - [ ] Guard-filter sensitivity fit and its agreement check
 - [ ] Cross-corpus transfer, **both directions**
-- [ ] Zhao replication on their own contrast, corpus and scale — **extraction and separation only** *(NOT DONE — see O-11)*
+- [x] Zhao replication on their own contrast, corpus and scale — **extraction and separation only** *(emitted as `zhao_replication.csv` by E1.7; `published_auc` is filled from their paper at write-up, not from memory)*
 - [ ] `post_attention_layernorm` fidelity check for the role probe
 - [ ] `harm × refused` 2×2 emitted **before any direction is trusted**
 - [x] `early < mid < late` — **not applicable**: the design sweeps all layers and names none, so the ordering bug this guarded against cannot occur. The guard stays specified in case a named layer is ever reintroduced

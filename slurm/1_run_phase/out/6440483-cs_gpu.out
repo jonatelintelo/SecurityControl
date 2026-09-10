@@ -1,0 +1,2 @@
+=== 2026-09-09T20:19:55+00:00 [gpu] experiments/rq1.py  ===
+MODELS=qwen2.5-7b BATCH_SIZE=<default> RESULTS_ROOT=./results

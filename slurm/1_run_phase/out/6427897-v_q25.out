@@ -1,3 +1,0 @@
-=== 2026-09-09T09:37:01+00:00 [gpu] experiments/rq1.py  ===
-MODELS=qwen2.5-7b BATCH_SIZE=32 RESULTS_ROOT=./results_verify
-=== 2026-09-09T10:05:13+00:00 done ===

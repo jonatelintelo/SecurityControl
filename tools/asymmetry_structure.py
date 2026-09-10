@@ -10,18 +10,48 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import numpy as np, pandas as pd
 
+
+def _post(m):
+    """Keep only the `t_post_inst` read position.
+
+    `causal_matrix*.csv` carries a second read position (`t_inst`), added for the
+    token-resolved readout. Every gate-level quantity is defined at
+    `t_post_inst`; consuming both would double-count each intervention and mix
+    two incomparable residual bases.
+
+    It deliberately does NOT restrict read LAYERS. The matrix carries every layer
+    downstream of the steer layer, and which of those form the test family is an
+    adjudication option (`gate_layers`) applied inside `_adjudicate_at`, so that
+    it can be swept. Filtering here would silently pin that sweep to one arm.
+    Older matrices lack the column.
+    """
+    if "read_position" in m.columns:
+        m = m[m.read_position == "t_post_inst"]
+    return m
+
+
+
 BOUND = 0.5
-for slug in ["qwen2.5-7b", "qwen3.5-9b"]:
-    p = Path(f"results/rq1/{slug}/causal_matrix.csv")
-    if not p.exists():
-        continue
-    m = pd.read_csv(p)
+
+# Gate artifacts carry a `__under` / `__over` suffix naming the control variant.
+# Globbing, not naming one file: an earlier version read the pre-rename
+# `causal_matrix.csv` and `continue`d when it was absent, so it printed nothing
+# at all while still exiting 0 — a silent skip that reads exactly like a real
+# "no qualifying pairs" result.
+mats = sorted(Path("results/rq1").glob("*/causal_matrix*.csv"))
+if not mats:
+    raise SystemExit("no causal_matrix*.csv under results/rq1 — nothing to analyse")
+
+for p in mats:
+    slug = p.parent.name
+    variant = p.stem.replace("causal_matrix", "") or "(default)"
+    m = _post(pd.read_csv(p))
     rnd = m[m.source == "random"]
     band = {k: float(np.percentile(g.delta.abs().dropna(), 95))
             for k, g in rnd.groupby(["target", "abs_alpha"])}
     live = m[(m.source != "random") & (m.kl_harmless <= BOUND) & (m.alpha > 0)]
 
-    print(f"\n{'='*74}\n{slug}  (KL_harmless <= {BOUND}, alpha > 0)\n{'='*74}")
+    print(f"\n{'='*74}\n{slug} {variant}  (KL_harmless <= {BOUND}, alpha > 0)\n{'='*74}")
 
     rows = []
     for (L, rl, a), g in live.groupby(["steer_layer", "read_layer", "abs_alpha"]):

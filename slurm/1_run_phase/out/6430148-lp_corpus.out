@@ -1,2 +1,0 @@
-=== 2026-09-09T11:19:10+00:00 [cpu] experiments/e1_0_corpus.py  ===
-RESULTS_ROOT=./results_llama_probe FAST_DEV=0 SEED=0

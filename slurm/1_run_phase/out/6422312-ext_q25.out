@@ -1,3 +1,0 @@
-=== 2026-09-08T21:31:17+00:00 [gpu] experiments/rq1.py --only extract ===
-MODELS=qwen2.5-7b BATCH_SIZE=32 RESULTS_ROOT=./results
-=== 2026-09-08T21:40:45+00:00 done ===

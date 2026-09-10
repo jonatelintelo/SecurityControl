@@ -1,0 +1,25 @@
+{
+  "n": 3200,
+  "counts": {
+    "arditi": {
+      "refused": 1633,
+      "complied": 1562,
+      "undetermined": 5
+    },
+    "arditi_anchored": {
+      "refused": 1633,
+      "complied": 1562,
+      "undetermined": 5
+    },
+    "extended": {
+      "refused": 1635,
+      "complied": 1560,
+      "undetermined": 5
+    }
+  },
+  "disagreement_rate": {
+    "arditi_vs_arditi_anchored": 0.0,
+    "arditi_vs_extended": 0.0006,
+    "arditi_anchored_vs_extended": 0.0006
+  }
+}

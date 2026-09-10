@@ -1,30 +1,0 @@
-[2026-09-08 21:31:26] [INFO] pipeline rq1: ['extract']
-[2026-09-08 21:31:26] [INFO] ------------------------------------------------------------------------------
-[2026-09-08 21:31:26] [INFO] [extract/qwen2.5-7b] E1.1 — directions + role probe at every layer
-[2026-09-08 21:31:45] [INFO] Loading Qwen/Qwen2.5-7B-Instruct: {'model_id': 'Qwen/Qwen2.5-7B-Instruct', 'architecture': 'Qwen2ForCausalLM', 'model_type': 'qwen2', 'num_layers': 28, 'hidden_size': 3584, 'num_experts': None, 'is_multimodal': False}
-Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   7%|▋         | 24/339 [00:00<00:01, 239.54it/s]Loading weights:  15%|█▍        | 50/339 [00:00<00:01, 233.61it/s]Loading weights:  22%|██▏       | 76/339 [00:00<00:01, 203.87it/s]Loading weights:  29%|██▉       | 100/339 [00:00<00:01, 208.74it/s]Loading weights:  37%|███▋      | 124/339 [00:00<00:00, 217.32it/s]Loading weights:  44%|████▎     | 148/339 [00:00<00:00, 219.78it/s]Loading weights:  50%|█████     | 171/339 [00:00<00:00, 199.75it/s]Loading weights:  58%|█████▊    | 196/339 [00:00<00:00, 196.95it/s]Loading weights:  67%|██████▋   | 226/339 [00:01<00:00, 222.11it/s]Loading weights:  76%|███████▌  | 256/339 [00:01<00:00, 236.82it/s]Loading weights:  83%|████████▎ | 281/339 [00:01<00:00, 235.41it/s]Loading weights:  90%|█████████ | 306/339 [00:01<00:00, 233.01it/s]Loading weights:  99%|█████████▉| 335/339 [00:01<00:00, 248.52it/s]Loading weights: 100%|██████████| 339/339 [00:01<00:00, 228.89it/s]
-[2026-09-08 21:31:54] [INFO] Decoder stack at 'model.layers' (28 layers)
-[2026-09-08 21:31:55] [INFO] [qwen2.5-7b] capturing residual at both positions, 28 layers...
-[2026-09-08 21:31:55] [INFO]     captured 32/3200
-[2026-09-08 21:31:58] [INFO]     captured 832/3200
-[2026-09-08 21:32:00] [INFO]     captured 1632/3200
-[2026-09-08 21:32:02] [INFO]     captured 2432/3200
-[2026-09-08 21:32:16] [INFO]   R_harm               AUC 0.981 [0.96,1.00] L16 d=0.59 | length-only 0.652 | split-half 0.991 | n_instr=100
-[2026-09-08 21:32:22] [INFO]   R_harm_user          AUC 0.982 [0.96,1.00] L16 d=0.59 | length-only 0.705 | split-half 0.966 | n_instr=100
-[2026-09-08 21:32:22] [INFO]   R_control: role composition TV=0.111  <-- balanced
-[2026-09-08 21:32:29] [INFO]   R_control            AUC 0.986 [0.96,1.00] L26 d=0.96 | length-only 0.370 | split-half 0.979 | n_instr=45
-[2026-09-08 21:32:29] [INFO]   R_control            balanced on role: shared=['assistant', 'system', 'tool', 'user'] dropped=[] weight kept pos=1.00 neg=1.00
-[2026-09-08 21:32:41] [INFO]   R_harm_at_post       AUC 0.992 [0.98,1.00] L16 d=0.59 | length-only 0.652 | split-half 0.995 | n_instr=100
-[2026-09-08 21:32:41] [INFO]   R_control_harmless: role composition TV=0.126  <-- balanced
-[2026-09-08 21:32:49] [INFO]   R_control_harmless   AUC 0.944 [0.79,1.00] L22 d=0.81 | length-only 0.466 | split-half 0.940 | n_instr=50
-[2026-09-08 21:32:49] [INFO]   R_control_harmless   balanced on role: shared=['assistant', 'system', 'tool', 'user'] dropped=[] weight kept pos=1.00 neg=1.00
-[2026-09-08 21:32:49] [INFO]   R_control_unbalanced: role composition TV=0.111
-[2026-09-08 21:32:56] [INFO]   R_control_unbalanced AUC 0.985 [0.96,1.00] L26 d=0.96 | length-only 0.370 | split-half 0.979 | n_instr=45
-[2026-09-08 21:32:56] [INFO]   R_control_preguard: role composition TV=0.219  <-- balanced
-[2026-09-08 21:33:05] [INFO]   R_control_preguard   AUC 0.975 [0.95,0.99] L20 d=0.74 | length-only 0.428 | split-half 0.992 | n_instr=50
-[2026-09-08 21:33:05] [INFO]   R_control_preguard   balanced on role: shared=['assistant', 'system', 'tool', 'user'] dropped=[] weight kept pos=1.00 neg=1.00
-[2026-09-08 21:33:05] [INFO] [qwen2.5-7b] role probe: token-level capture, 28 layers...
-[2026-09-08 21:33:05] [INFO]     tokens from 32/3200
-[2026-09-08 21:33:07] [INFO]     tokens from 832/3200
-[2026-09-08 21:33:09] [INFO]     tokens from 1632/3200
-[2026-09-08 21:33:11] [INFO]     tokens from 2432/3200

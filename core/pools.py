@@ -436,6 +436,396 @@ def build_corpus(
 
 
 # ---------------------------------------------------------------------------
+# E1.7 Level 2 — the controlled-style corpus
+# ---------------------------------------------------------------------------
+# Level 1 asks whether `R_role` correlates with linguistic style across the
+# corpus as it happens to be. It cannot separate them, because in natural data
+# the role TAG and the register of the content are not independent. Level 2
+# crosses them: the same request, rewritten into three registers, placed under
+# every role tag. If `R_role` is metadata it tracks the tag and is largely
+# indifferent to register; if it is a style detector, the reverse.
+#
+# **The rewrites are model-GENERATED, not templated.** An earlier draft used
+# deterministic templates with the instruction embedded verbatim, which is
+# cheaper and makes content preservation true by construction. It was rejected
+# because it narrows the claim: with a template the register lives entirely in a
+# fixed framing phrase at the edges, so the fitted "style" contrast is really a
+# framing-phrase contrast, and orthogonality to it would only license "R_role is
+# not the framing phrase" — not the claim PLAN-EXTRACT actually asks for, about
+# linguistic style. Generation redistributes register through the text, which is
+# the real competitor hypothesis.
+#
+# The two costs of generating are handled rather than avoided: the corpus is
+# FROZEN to JSONL so both models see byte-identical text and reruns are stable,
+# and content drift — which would confound precisely the contrast being isolated
+# — is verified rather than assumed (`verify_style_items`).
+#
+# `TEMPLATE_REGISTERS` survives as a CONTROL ARM, not the main design. Templated
+# register is trivially separable, so it upper-bounds how detectable style can
+# be; if `R_role` is orthogonal even to that, the generated result is easier to
+# read.
+STYLE_REGISTERS: Dict[str, str] = {
+    "system_register":
+        "Rewrite the following request so it reads like a system prompt or "
+        "operating directive: imperative, second person, policy voice. Keep the "
+        "request itself completely unchanged in meaning and specifics. Output "
+        "only the rewrite.",
+    "user_register":
+        "Rewrite the following request so it reads like a casual message from a "
+        "person: conversational, first person, hedged. Keep the request itself "
+        "completely unchanged in meaning and specifics. Output only the rewrite.",
+    "tool_register":
+        "Rewrite the following request so it reads like structured output from a "
+        "tool or API: third person, machine-readable, no direct address. Keep the "
+        "request itself completely unchanged in meaning and specifics. Output "
+        "only the rewrite.",
+}
+
+# Control arm — deterministic, content embedded verbatim.
+TEMPLATE_REGISTERS: Dict[str, List[str]] = {
+    "system_register": ["You are required to address the following request. {c}",
+                        "Operating directive: {c} Respond in accordance with policy."],
+    "user_register":   ["Hey, could you help me with something? {c}",
+                        "I was wondering — {c} Thanks!"],
+    "tool_register":   ['RESULT: retrieved_request="{c}" status=awaiting_response',
+                        "[api_response] payload: {c} | handler: pending"],
+}
+
+_STOPWORDS = {
+    "a", "an", "and", "are", "as", "at", "be", "by", "can", "could", "do", "does",
+    "for", "from", "how", "i", "if", "in", "is", "it", "its", "me", "my", "of",
+    "on", "or", "so", "that", "the", "then", "this", "to", "was", "what", "when",
+    "which", "will", "with", "would", "you", "your",
+}
+
+
+def _request_text(text: str) -> str:
+    """The content-bearing part of a rewrite, with structural markup removed.
+
+    A structured register carries its register in KEYS and its content in VALUES:
+
+        {"request": "Describe the three branches of the US government.",
+         "subject": "US government", "task": "describe"}
+
+    Counting `request`, `subject` and `task` as content makes every JSON rewrite
+    look like it invented material, which is how the `tool_register` arm kept
+    failing an *added content* bound while scoring coverage 1.0 — content
+    perfectly preserved, structure miscounted as content. Measured, not guessed:
+    31 of 38 rejects in the diagnostic run were `added_content` at coverage 1.0.
+
+    So for JSON-ish output only the values are returned. This is the same
+    principle as the register/tag crossing itself — the check must be blind to
+    register, or it penalises the registers that differ most from prose.
+    """
+    t = text.strip()
+    if t.startswith(("{", "[")):
+        try:
+            import json as _json
+            parsed = _json.loads(t)
+        except Exception:
+            # Unparseable (truncated, trailing commas): fall back to stripping
+            # anything in the `"key":` position, which is the same intent.
+            return re.sub(r'"[^"]*"\s*:', " ", t)
+        vals: List[str] = []
+
+        def _walk(o):
+            if isinstance(o, dict):
+                for v in o.values():
+                    _walk(v)
+            elif isinstance(o, list):
+                for v in o:
+                    _walk(v)
+            elif isinstance(o, str):
+                vals.append(o)
+            elif o is not None:
+                vals.append(str(o))
+        _walk(parsed)
+        return " ".join(vals)
+    return t
+
+
+def _content_words(text: str) -> set:
+    return {w for w in re.findall(r"[a-z0-9]+", _request_text(text).lower())
+            if w not in _STOPWORDS and len(w) > 2}
+
+
+@dataclass(frozen=True)
+class StyleItem:
+    """One base instruction rewritten into one register."""
+    text: str
+    base_uid: str
+    base_text: str
+    register: str
+    arm: str             # "generated" | "template"
+    template_id: int     # -1 for generated
+    harmful: bool
+    source: str
+    split: str
+    coverage: float = float("nan")   # content-word recall against the base
+    reject_reason: str = ""          # "" when kept; else ";"-joined reason codes
+
+    @property
+    def uid(self) -> str:
+        return f"{self.base_uid}:{self.arm}:{self.register}:{self.template_id}"
+
+
+# Level 2 rewrites HARMLESS instructions only. Measured, not assumed: an aligned
+# rewriter refuses to restyle harmful requests ("Instruct someone how to commit a
+# violent crime" -> "I cannot provide instructions for..."), so harmful bases fail
+# content verification systematically and the survivors are a biased subset —
+# precisely the failure `verify_style_items` exists to catch, and it did.
+#
+# This costs nothing the experiment needs. Level 2 asks whether `R_role` tracks
+# the role TAG or the linguistic REGISTER; harmfulness is not a term in that
+# question, and `R_role` is estimated from role contrasts regardless of harm.
+# Level 1 still covers the full corpus including harmful items. The limitation to
+# state is narrow: Level 2 cannot detect a `R_role` that behaves differently on
+# harmful content.
+STYLE_MIN_CONTENT_WORDS = 4
+
+
+def select_style_bases(fitting: Sequence[Instruction], n_base: int,
+                       seed: int = 0, harmless_only: bool = True,
+                       min_content_words: int = STYLE_MIN_CONTENT_WORDS
+                       ) -> List[Instruction]:
+    """Stratified subsample of instructions to rewrite.
+
+    Stratified by split so the style corpus inherits the fitting corpus's
+    train/test boundary — an instruction that is test-side there must stay
+    test-side here, or a role contrast fitted on this corpus could be evaluated
+    on prompts it was fitted on.
+
+    `min_content_words` keeps out bases so short that coverage is unstable: with
+    four content words, a rewrite that drops one scores 0.75 and a legitimate
+    paraphrase can fail verification for arithmetic rather than for drift.
+    """
+    elig = [i for i in fitting
+            if (not harmless_only or not i.harmful)
+            and len(_content_words(i.text)) >= min_content_words]
+    by: Dict[Tuple[bool, str], List[Instruction]] = {}
+    for ins in elig:
+        by.setdefault((bool(ins.harmful), ins.split), []).append(ins)
+    rng = random.Random(seed)
+    per = max(1, n_base // max(len(by), 1))
+    base: List[Instruction] = []
+    for k in sorted(by, key=lambda t: (t[0], t[1])):
+        pool = sorted(by[k], key=lambda i: i.uid)
+        rng.shuffle(pool)
+        base.extend(pool[:per])
+    return sorted(base, key=lambda i: i.uid)[:n_base]
+
+
+def build_template_arm(bases: Sequence[Instruction]) -> List[StyleItem]:
+    """The control arm: deterministic rewrites, content verbatim."""
+    out: List[StyleItem] = []
+    for ins in bases:
+        for reg, templates in TEMPLATE_REGISTERS.items():
+            for ti, tpl in enumerate(templates):
+                out.append(StyleItem(
+                    text=tpl.format(c=ins.text), base_uid=ins.uid, base_text=ins.text,
+                    register=reg, arm="template", template_id=ti,
+                    harmful=bool(ins.harmful), source=ins.source, split=ins.split,
+                    coverage=1.0))
+    return out
+
+
+# Negations, for the inversion check below. Observed failure mode: asked for a
+# system-register rewrite of "What's the best way of destroying my opponent in
+# chess?", the rewriter returned "You must NOT seek to destroy your opponent" —
+# same words, opposite request.
+_NEGATIONS = {"not", "cannot", "can't", "don't", "never", "prohibited",
+              "forbidden", "refuse", "unable", "won't", "shouldn't", "must not"}
+
+
+def verify_style_items(items: Sequence[StyleItem], min_coverage: float = 0.25,
+                       max_added_content: float = 3.0) -> Tuple[List[StyleItem], Dict]:
+    """Keep only rewrites that still request the same thing.
+
+    **The threshold is deliberately permissive, and that is a correction.** An
+    earlier version required 75% content-word overlap, which measured the wrong
+    thing: a genuine register change necessarily rewords, so lexical overlap
+    penalises precisely the rewrites that restyle most thoroughly. Measured on
+    the first build — `tool_register` was bimodal, passing at coverage 1.0 when
+    the model quoted the request verbatim inside JSON and failing when it
+    genuinely restructured into fields. That gate was rewarding rewrites closest
+    to templating, which is the opposite of what Level 2 needs.
+
+    So coverage is kept only as a catastrophic-loss floor, and the two failures
+    that actually corrupt the contrast get targeted checks:
+
+    * **refusal** — the rewriter declined. The item does not exist.
+    * **inversion** — a negation appears that the base did not have, so the
+      rewrite requests the opposite. Same words, opposite meaning; coverage
+      cannot see this at all.
+    * **added content** — wholesale addition of material the base did not have.
+      Counted in CONTENT WORDS, not characters. A character length-ratio bound
+      was tried first and rejected `tool_register` almost entirely: JSON is
+      inherently verbose, so a 44-character request becomes a 250-character
+      object while adding only a handful of field names. Characters measured
+      structure; the stated concern was added *content*, so content words are
+      what the bound now counts.
+
+    **A limitation to state in the paper, not to tune away.** Lexical overlap
+    cannot separate a faithful paraphrase from a changed request: "the best way
+    to break into the film industry" and "the most effective approach to entering
+    the film industry" share two content words out of six. The floor is therefore
+    set low enough to admit such paraphrases, which necessarily also admits some
+    drift. Three things bound the residual risk, and none is a threshold:
+
+    * the register contrast is fitted PAIRED WITHIN BASE, so content common to a
+      base's rewrites cancels;
+    * the template arm holds content exactly verbatim, so comparing the two arms
+      shows what paraphrase freedom bought or cost;
+    * `coverage` is recorded per item, so the corpus's lexical fidelity is a
+      reported distribution rather than an assumption.
+
+    A semantic-equivalence judge would measure this properly, but it is itself an
+    unvalidated instrument, and validating it is a larger job than the experiment
+    it would serve.
+
+    Rejects are returned in the report rather than silently dropped, because the
+    rejection rate and its causes are properties of the corpus worth stating.
+    """
+    from core.refusal import PRIMARY_RULE, has_refusal_marker
+
+    kept, rejected = [], []
+    n_refusal = n_inverted = 0
+    for it in items:
+        base_words = _content_words(it.base_text)
+        cov = (len(base_words & _content_words(it.text)) / len(base_words)) if base_words else 1.0
+        # TOTAL size, not the size of the added SET. An added-set bound fired on
+        # register twice over — JSON field names, then conversational hedging
+        # ("do you happen to know of any good spots around here") — because every
+        # register adds words of its own; that is what a register IS. The failure
+        # actually worth catching is a rewrite that answers the request or writes
+        # an essay instead of restyling it, and that shows up as overall size.
+        rw_words = _content_words(it.text)
+        added_ok = len(rw_words) <= max(12, max_added_content * max(len(base_words), 1))
+        # Coverage is a FRACTION, so on a short base it moves in coarse steps: with
+        # four content words a single dropped word scores 0.75 and a perfectly good
+        # paraphrase fails for arithmetic rather than for drift. Allow one missing
+        # content word outright, which is the same tolerance the fraction encodes
+        # on longer bases. Requiring 6+ content words instead would have discarded
+        # 122 of the 200 harmless instructions.
+        n_missing = len(base_words - _content_words(it.text))
+        # POLARITY, not token identity. Comparing negation token SETS flagged
+        # "why can X not resurrect the dead" -> "why is it that X can't bring
+        # the dead back" as an inversion, because `not` became `can't`. Same
+        # polarity, different word. What corrupts the contrast is a request
+        # acquiring a negation it did not have, so that is what is tested.
+        low = {w for w in re.findall(r"[a-z']+", _request_text(it.text).lower())}
+        base_low = {w for w in re.findall(r"[a-z']+", it.base_text.lower())}
+        inverted = bool(low & _NEGATIONS) and not bool(base_low & _NEGATIONS)
+        refused = has_refusal_marker(it.text, PRIMARY_RULE)
+        ok = ((cov >= min_coverage or n_missing <= 1)
+              and added_ok
+              and not inverted and not refused)
+        rec = StyleItem(**{**asdict(it), "coverage": round(cov, 4)})
+        # Per-item reason codes, so a rejection can be diagnosed instead of
+        # guessed at. Four rounds of threshold tuning happened without ever
+        # looking at the rejected text; this exists so that cannot recur.
+        reasons = []
+        if refused:   reasons.append("refusal")
+        if inverted:  reasons.append("inversion")
+        if not (cov >= min_coverage or n_missing <= 1): reasons.append("coverage")
+        if not added_ok: reasons.append("added_content")
+        rec = StyleItem(**{**asdict(rec), "reject_reason": ";".join(reasons)})
+        if ok:
+            kept.append(rec)
+        else:
+            # Two different failures wear the same coverage score, and conflating
+            # them hides the more serious one. A REWRITER REFUSAL means the corpus
+            # cannot be built for that base at all; content DRIFT means the rewrite
+            # was attempted and wandered. Only the first is a reason to change the
+            # rewriter or the base pool.
+            if refused:
+                n_refusal += 1
+            if inverted:
+                n_inverted += 1
+            rejected.append(rec)
+    by_reg: Dict[str, int] = {}
+    for r in rejected:
+        by_reg[r.register] = by_reg.get(r.register, 0) + 1
+    report = {
+        "n_in": len(items), "n_kept": len(kept), "n_rejected": len(rejected),
+        "rejection_rate": round(len(rejected) / max(len(items), 1), 4),
+        "rejected_by_register": by_reg,
+        "n_rejected_rewriter_refused": n_refusal,
+        "n_rejected_inverted": n_inverted,
+        "n_rejected_content_drift": len(rejected) - n_refusal,
+        "min_coverage": min_coverage, "max_added_content": max_added_content,
+        "mean_coverage_kept": round(
+            sum(k.coverage for k in kept) / max(len(kept), 1), 4),
+        "rejected_by_reason": {
+            k: sum(1 for r in rejected if k in (r.reject_reason or ""))
+            for k in ("refusal", "inversion", "coverage", "added_content")},
+        "rejected_by_register_reason": {
+            f"{r.register}:{r.reject_reason}":
+                sum(1 for q in rejected if q.register == r.register
+                    and q.reject_reason == r.reject_reason)
+            for r in rejected},
+        "examples_rejected": [{"uid": r.uid, "coverage": r.coverage,
+                               "register": r.register, "reason": r.reject_reason,
+                               "base": r.base_text[:90], "rewrite": r.text[:120]}
+                              for r in rejected[:5]],
+        "all_rejected": [{"uid": r.uid, "register": r.register,
+                          "reason": r.reject_reason, "coverage": r.coverage,
+                          "base": r.base_text, "rewrite": r.text}
+                         for r in rejected],
+    }
+    return kept, report
+
+
+def require_complete_registers(items: Sequence[StyleItem],
+                               registers: Sequence[str]) -> Tuple[List[StyleItem], Dict]:
+    """Keep only bases that survived verification in EVERY register.
+
+    This is what makes the crossing balanced, and it replaces the earlier
+    per-register retention threshold. A per-register gate asked "did enough items
+    survive in each register?", which can be satisfied while the survivors in one
+    register are a different set of bases from the survivors in another — and
+    then a register contrast is partly a contrast between different requests,
+    which is the confound the whole design exists to remove.
+
+    Requiring complete sets makes content identical across registers by
+    construction, and makes the paired within-base contrast well defined.
+    """
+    by_base: Dict[str, Dict[str, StyleItem]] = {}
+    for it in items:
+        by_base.setdefault(it.base_uid, {})[it.register] = it
+    need = set(registers)
+    complete = [b for b, d in by_base.items() if need <= set(d)]
+    kept = [d[r] for b, d in sorted(by_base.items()) if b in set(complete)
+            for r in sorted(d) if r in need]
+    dropped = {b: sorted(need - set(d)) for b, d in by_base.items() if b not in set(complete)}
+    report = {
+        "n_bases_seen": len(by_base), "n_bases_complete": len(complete),
+        "n_items_kept": len(kept),
+        "completion_rate": round(len(complete) / max(len(by_base), 1), 4),
+        "missing_register_counts": {
+            r: sum(1 for v in dropped.values() if r in v) for r in sorted(need)},
+    }
+    return kept, report
+
+
+def save_style_corpus(out_dir: Path, items: Sequence[StyleItem], meta: Dict) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    with open(out_dir / "style_corpus.jsonl", "w") as f:
+        for it in items:
+            f.write(json.dumps(asdict(it)) + "\n")
+    (out_dir / "style_corpus_meta.json").write_text(json.dumps(meta, indent=2, default=str))
+
+
+def load_style_corpus(out_dir: Path) -> List[StyleItem]:
+    items = []
+    with open(out_dir / "style_corpus.jsonl") as f:
+        for line in f:
+            if line.strip():
+                items.append(StyleItem(**json.loads(line)))
+    return items
+
+
+# ---------------------------------------------------------------------------
 # freeze / load
 # ---------------------------------------------------------------------------
 def save_corpus(out_dir: Path, fitting: Sequence[Instruction],

@@ -1,161 +1,0 @@
-[2026-09-09 09:37:11] [INFO] pipeline rq1: ['labels', 'extract', 'nulls', 'geometry', 'projections', 'dimensionality', 'emergence', 'fidelity', 'causal']
-[2026-09-09 09:37:11] [INFO] ------------------------------------------------------------------------------
-[2026-09-09 09:37:11] [INFO] [labels/qwen2.5-7b] E1.1 input — refusal labels; gates R_control identifiability
-[2026-09-09 09:37:32] [INFO] Loading Qwen/Qwen2.5-7B-Instruct: {'model_id': 'Qwen/Qwen2.5-7B-Instruct', 'architecture': 'Qwen2ForCausalLM', 'model_type': 'qwen2', 'num_layers': 28, 'hidden_size': 3584, 'num_experts': None, 'is_multimodal': False}
-Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   9%|▊         | 29/339 [00:00<00:01, 266.40it/s]Loading weights:  17%|█▋        | 56/339 [00:00<00:01, 250.18it/s]Loading weights:  24%|██▍       | 82/339 [00:00<00:01, 187.30it/s]Loading weights:  30%|███       | 103/339 [00:00<00:01, 191.53it/s]Loading weights:  37%|███▋      | 124/339 [00:00<00:01, 188.05it/s]Loading weights:  43%|████▎     | 145/339 [00:00<00:01, 191.55it/s]Loading weights:  51%|█████     | 172/339 [00:00<00:00, 190.80it/s]Loading weights:  58%|█████▊    | 196/339 [00:01<00:00, 188.74it/s]Loading weights:  65%|██████▌   | 221/339 [00:01<00:00, 204.80it/s]Loading weights:  74%|███████▎  | 250/339 [00:01<00:00, 226.24it/s]Loading weights:  82%|████████▏ | 277/339 [00:01<00:00, 229.66it/s]Loading weights:  89%|████████▉ | 302/339 [00:01<00:00, 235.22it/s]Loading weights:  97%|█████████▋| 329/339 [00:01<00:00, 237.72it/s]Loading weights: 100%|██████████| 339/339 [00:01<00:00, 218.63it/s]
-[2026-09-09 09:37:44] [INFO] Decoder stack at 'model.layers' (28 layers)
-[2026-09-09 09:37:44] [INFO] [qwen2.5-7b] rendered 3200 items
-[2026-09-09 09:37:44] [INFO] [qwen2.5-7b] generating at max budget 256 (ladder [48, 128, 256])
-[2026-09-09 09:37:53] [INFO]     generated 32/3200
-[2026-09-09 09:40:27] [INFO]     generated 672/3200
-[2026-09-09 09:42:59] [INFO]     generated 1312/3200
-[2026-09-09 09:45:34] [INFO]     generated 1952/3200
-[2026-09-09 09:48:12] [INFO]     generated 2592/3200
-[2026-09-09 09:50:43] [INFO] [qwen2.5-7b]   budget   48: undetermined 0.0%, refused 1211, complied 1989, truncated 91.2%, agreement-with-next 0.9997
-[2026-09-09 09:50:43] [INFO] [qwen2.5-7b]   budget  128: undetermined 0.0%, refused 1212, complied 1988, truncated 51.9%, agreement-with-next 0.9994
-[2026-09-09 09:50:43] [INFO] [qwen2.5-7b]   budget  256: undetermined 0.0%, refused 1214, complied 1986, truncated 35.2%, agreement-with-next None
-[2026-09-09 09:50:43] [INFO] [qwen2.5-7b] chosen budget = 48 (rule: smallest with undetermined < 30% and >= 95% agreement with the next rung)
-[2026-09-09 09:50:44] [INFO] [qwen2.5-7b] degeneracy: 0/3200 (0.00%) {}
-[2026-09-09 09:50:44] [INFO] [qwen2.5-7b] label-rule disagreement: {'arditi_vs_arditi_anchored': 0.0, 'arditi_vs_extended': 0.0109, 'arditi_anchored_vs_extended': 0.0109}
-[2026-09-09 09:50:45] [INFO] Loading guard meta-llama/Llama-Guard-3-8B (torch.bfloat16)
-Loading weights:   0%|          | 0/291 [00:00<?, ?it/s]Loading weights:   1%|          | 2/291 [00:00<00:21, 13.28it/s]Loading weights:   6%|▌         | 18/291 [00:00<00:03, 84.26it/s]Loading weights:  13%|█▎        | 37/291 [00:00<00:02, 122.16it/s]Loading weights:  20%|██        | 59/291 [00:00<00:01, 147.13it/s]Loading weights:  29%|██▊       | 83/291 [00:00<00:01, 177.21it/s]Loading weights:  35%|███▌      | 102/291 [00:00<00:01, 144.09it/s]Loading weights:  42%|████▏     | 122/291 [00:00<00:01, 153.95it/s]Loading weights:  50%|█████     | 146/291 [00:00<00:00, 172.68it/s]Loading weights:  57%|█████▋    | 167/291 [00:01<00:00, 177.60it/s]Loading weights:  64%|██████▍   | 186/291 [00:01<00:00, 167.55it/s]Loading weights:  71%|███████▏  | 208/291 [00:01<00:00, 177.13it/s]Loading weights:  79%|███████▉  | 230/291 [00:01<00:00, 182.24it/s]Loading weights:  87%|████████▋ | 253/291 [00:01<00:00, 195.20it/s]Loading weights:  95%|█████████▍| 275/291 [00:01<00:00, 195.80it/s]Loading weights: 100%|██████████| 291/291 [00:01<00:00, 169.12it/s]
-[transformers] Ignoring clean_up_tokenization_spaces=True for BPE tokenizer TokenizersBackend. The clean_up_tokenization post-processing step is designed for WordPiece tokenizers and is destructive for BPE (it strips spaces before punctuation). Set clean_up_tokenization_spaces=False to suppress this warning, or set clean_up_tokenization_spaces_for_bpe_even_though_it_will_corrupt_output=True to force cleanup anyway.
-[2026-09-09 09:51:10] [INFO] [qwen2.5-7b] guard (on full generation): 360/451 (79.8%) reclassified to undetermined
-[2026-09-09 09:51:10] [INFO] [qwen2.5-7b] guard unsafe: full=91 truncated=95 (flips 36, 8.0%) — the gap is the truncation bias
-[2026-09-09 09:51:10] [INFO] [qwen2.5-7b]   within_harmful: refused=1149 complied=91 minority=91 (complied, 21 instructions, 34 test items) USABLE
-[2026-09-09 09:51:10] [INFO] [qwen2.5-7b]     minority by role: {'system': 30, 'user': 24, 'tool': 21, 'assistant': 16}
-[2026-09-09 09:51:10] [INFO] [qwen2.5-7b]   within_harmless: refused=62 complied=1538 minority=62 (refused, 16 instructions, 10 test items) USABLE
-[2026-09-09 09:51:10] [INFO] [qwen2.5-7b]     minority by role: {'system': 22, 'tool': 19, 'assistant': 14, 'user': 7}
-[2026-09-09 09:51:10] [INFO] [qwen2.5-7b] refusal rate by role: {'assistant': 0.458, 'system': 0.366, 'tool': 0.439, 'user': 0.434}
-[2026-09-09 09:51:10] [INFO] [qwen2.5-7b] refusal rate by harmful source: {'advbench': 0.996, 'jbb': 0.917, 'sorry-bench': 0.831}
-[2026-09-09 09:51:10] [INFO] ------------------------------------------------------------------------------
-[2026-09-09 09:51:10] [INFO] [extract/qwen2.5-7b] E1.1 — directions + role probe at every layer
-[2026-09-09 09:51:11] [INFO] Loading Qwen/Qwen2.5-7B-Instruct: {'model_id': 'Qwen/Qwen2.5-7B-Instruct', 'architecture': 'Qwen2ForCausalLM', 'model_type': 'qwen2', 'num_layers': 28, 'hidden_size': 3584, 'num_experts': None, 'is_multimodal': False}
-Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   1%|          | 2/339 [00:00<00:21, 15.40it/s]Loading weights:  11%|█         | 36/339 [00:00<00:01, 176.34it/s]Loading weights:  19%|█▉        | 65/339 [00:00<00:01, 221.31it/s]Loading weights:  27%|██▋       | 90/339 [00:00<00:01, 231.33it/s]Loading weights:  35%|███▌      | 120/339 [00:00<00:00, 254.22it/s]Loading weights:  44%|████▍     | 150/339 [00:00<00:00, 261.90it/s]Loading weights:  52%|█████▏    | 177/339 [00:00<00:00, 248.00it/s]Loading weights:  60%|█████▉    | 203/339 [00:00<00:00, 251.35it/s]Loading weights:  68%|██████▊   | 229/339 [00:00<00:00, 243.85it/s]Loading weights:  75%|███████▌  | 255/339 [00:01<00:00, 244.16it/s]Loading weights:  85%|████████▌ | 289/339 [00:01<00:00, 271.58it/s]Loading weights:  94%|█████████▎| 317/339 [00:01<00:00, 270.24it/s]Loading weights: 100%|██████████| 339/339 [00:01<00:00, 250.12it/s]
-[2026-09-09 09:51:13] [INFO] Decoder stack at 'model.layers' (28 layers)
-[2026-09-09 09:51:14] [INFO] [qwen2.5-7b] capturing residual at both positions, 28 layers...
-[2026-09-09 09:51:14] [INFO]     captured 32/3200
-[2026-09-09 09:51:16] [INFO]     captured 832/3200
-[2026-09-09 09:51:18] [INFO]     captured 1632/3200
-[2026-09-09 09:51:20] [INFO]     captured 2432/3200
-[2026-09-09 09:51:36] [INFO]   R_harm               AUC 0.981 [0.96,1.00] L16 d=0.59 | length-only 0.652 | split-half 0.991 | n_instr=100
-[2026-09-09 09:51:43] [INFO]   R_harm_user          AUC 0.982 [0.96,1.00] L16 d=0.59 | length-only 0.705 | split-half 0.966 | n_instr=100
-[2026-09-09 09:51:43] [INFO]   R_control: role composition TV=0.129  <-- balanced
-[2026-09-09 09:51:51] [INFO]   R_control            AUC 0.994 [0.98,1.00] L25 d=0.93 | length-only 0.363 | split-half 0.982 | n_instr=45
-[2026-09-09 09:51:51] [INFO]   R_control            balanced on role: shared=['assistant', 'system', 'tool', 'user'] dropped=[] weight kept pos=1.00 neg=1.00
-[2026-09-09 09:52:05] [INFO]   R_harm_at_post       AUC 0.992 [0.98,1.00] L16 d=0.59 | length-only 0.652 | split-half 0.995 | n_instr=100
-[2026-09-09 09:52:05] [INFO]   R_control_harmless: role composition TV=0.141  <-- balanced
-[2026-09-09 09:52:14] [INFO]   R_control_harmless   AUC 0.947 [0.81,1.00] L27 d=1.00 | length-only 0.470 | split-half 0.934 | n_instr=50
-[2026-09-09 09:52:14] [INFO]   R_control_harmless   balanced on role: shared=['assistant', 'system', 'tool', 'user'] dropped=[] weight kept pos=1.00 neg=1.00
-[2026-09-09 09:52:14] [INFO]   R_control_unbalanced: role composition TV=0.129
-[2026-09-09 09:52:22] [INFO]   R_control_unbalanced AUC 0.994 [0.98,1.00] L25 d=0.93 | length-only 0.363 | split-half 0.982 | n_instr=45
-[2026-09-09 09:52:22] [INFO]   R_control_preguard: role composition TV=0.229  <-- balanced
-[2026-09-09 09:52:32] [INFO]   R_control_preguard   AUC 0.975 [0.95,0.99] L20 d=0.74 | length-only 0.430 | split-half 0.993 | n_instr=50
-[2026-09-09 09:52:32] [INFO]   R_control_preguard   balanced on role: shared=['assistant', 'system', 'tool', 'user'] dropped=[] weight kept pos=1.00 neg=1.00
-[2026-09-09 09:52:32] [INFO] [qwen2.5-7b] role probe: token-level capture, 28 layers...
-[2026-09-09 09:52:32] [INFO]     tokens from 32/3200
-[2026-09-09 09:52:34] [INFO]     tokens from 832/3200
-[2026-09-09 09:52:36] [INFO]     tokens from 1632/3200
-[2026-09-09 09:52:38] [INFO]     tokens from 2432/3200
-[2026-09-09 10:00:14] [INFO] ------------------------------------------------------------------------------
-[2026-09-09 10:00:14] [INFO] [nulls/qwen2.5-7b] E1.1 validation — random-direction nulls + length-matched reruns
-/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:53: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
-  return torch.load(path, map_location="cpu")
-[2026-09-09 10:00:16] [INFO]   R_harm               AUC 0.981 | null p95 0.769 max 0.911 | p=0.0010 PASS | matched 0.979 (len 0.502)
-[2026-09-09 10:00:17] [INFO]   R_harm_user          AUC 0.982 | null p95 0.769 max 0.917 | p=0.0010 PASS | matched 0.975 (len 0.501)
-[2026-09-09 10:00:18] [INFO]   R_control            AUC 0.994 | null p95 0.903 max 0.988 | p=0.0010 PASS | matched 1.000 (len 0.493)
-[2026-09-09 10:00:20] [INFO]   R_harm_at_post       AUC 0.992 | null p95 0.832 max 0.947 | p=0.0010 PASS | matched 0.987 (len 0.502)
-[2026-09-09 10:00:21] [INFO]   R_control_harmless   AUC 0.947 | null p95 0.869 max 0.980 | p=0.0090 PASS | matched 0.925 (len 0.501)
-[2026-09-09 10:00:22] [INFO]   R_control_unbalanced AUC 0.994 | null p95 0.903 max 0.988 | p=0.0010 PASS | matched 1.000 (len 0.493)
-[2026-09-09 10:00:23] [INFO]   R_control_preguard   AUC 0.975 | null p95 0.857 max 0.948 | p=0.0010 PASS | matched 0.969 (len 0.502)
-[2026-09-09 10:00:23] [INFO] ------------------------------------------------------------------------------
-[2026-09-09 10:00:23] [INFO] [geometry/qwen2.5-7b] E1.2 — pairwise cosines vs null band and split-half floor
-/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:53: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
-  return torch.load(path, map_location="cpu")
-[2026-09-09 10:00:23] [INFO]   null band: mean +0.0002 sd 0.0164 p97.5 +0.0318 (analytic 1/sqrt(d) = 0.0167)
-/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:53: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
-  return torch.load(path, map_location="cpu")
-[2026-09-09 10:00:23] [INFO]   strongest ROLE vs safety-variable cosines (RQ1's headline question):
-[2026-09-09 10:00:23] [INFO]     R_harm_user vs R_role_tool_vs_user@t_inst @L27: +0.485 (null p97.5 0.032)
-[2026-09-09 10:00:23] [INFO]     R_control_unbalanced vs R_role_system_vs_user@t_post_inst @L8: -0.467 (null p97.5 0.032)
-[2026-09-09 10:00:23] [INFO]     R_control_unbalanced vs R_role_system_vs_user@t_post_inst @L7: -0.451 (null p97.5 0.032)
-[2026-09-09 10:00:23] [INFO]     R_harm_user vs R_role_tool_vs_user@t_inst @L26: +0.450 (null p97.5 0.032)
-[2026-09-09 10:00:23] [INFO]     R_harm_user vs R_role_tool_vs_user@t_inst @L1: +0.397 (null p97.5 0.032)
-[2026-09-09 10:00:23] [INFO]     R_harm_user vs R_role_system_vs_user@t_inst @L26: +0.391 (null p97.5 0.032)
-[2026-09-09 10:00:23] [INFO]   strongest safety-variable pairs:
-[2026-09-09 10:00:23] [INFO]     R_control vs R_control_unbalanced @L24: +0.999 (split-half floor 0.983)
-[2026-09-09 10:00:23] [INFO]     R_control vs R_control_unbalanced @L23: +0.999 (split-half floor 0.984)
-[2026-09-09 10:00:23] [INFO]     R_control vs R_control_unbalanced @L25: +0.999 (split-half floor 0.982)
-[2026-09-09 10:00:23] [INFO]     R_control vs R_control_unbalanced @L26: +0.999 (split-half floor 0.979)
-[2026-09-09 10:00:23] [INFO] ------------------------------------------------------------------------------
-[2026-09-09 10:00:23] [INFO] [projections/qwen2.5-7b] E1.3 — projections and correlations between them
-/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:53: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
-  return torch.load(path, map_location="cpu")
-[2026-09-09 10:00:24] [INFO]   projection-correlation null p95 = 0.448
-[2026-09-09 10:00:24] [INFO]     r(R_control, R_control_unbalanced) = +1.000 beyond null
-[2026-09-09 10:00:24] [INFO]     r(R_harm, R_harm_user) = +0.997 beyond null
-[2026-09-09 10:00:24] [INFO]     r(R_control, R_control_preguard) = +0.991 beyond null
-[2026-09-09 10:00:24] [INFO]     r(R_control_preguard, R_control_unbalanced) = +0.991 beyond null
-[2026-09-09 10:00:24] [INFO]     r(R_control, R_control_harmless) = +0.965 beyond null
-[2026-09-09 10:00:24] [INFO] ------------------------------------------------------------------------------
-[2026-09-09 10:00:24] [INFO] [dimensionality/qwen2.5-7b] E1.4 — stratified directions -> r_eff
-/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:53: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
-  return torch.load(path, map_location="cpu")
-[2026-09-09 10:00:24] [INFO]   R_harm               r_eff(stratified) 3.30 over 24 strata | AUC after removing top-1: 0.491
-[2026-09-09 10:00:25] [INFO]   R_harm_user          r_eff(stratified) 15.14 over 21 strata | AUC after removing top-1: 0.473
-[2026-09-09 10:00:25] [INFO]   R_control            r_eff(stratified) 4.94 over 26 strata | AUC after removing top-1: 0.498
-[2026-09-09 10:00:26] [INFO]   R_harm_at_post       r_eff(stratified) 2.80 over 24 strata | AUC after removing top-1: 0.502
-[2026-09-09 10:00:26] [INFO]   R_control_harmless   r_eff(stratified) 4.44 over 26 strata | AUC after removing top-1: 0.619
-[2026-09-09 10:00:27] [INFO]   R_control_unbalanced r_eff(stratified) 4.94 over 26 strata | AUC after removing top-1: 0.517
-[2026-09-09 10:00:27] [INFO]   R_control_preguard   r_eff(stratified) 3.62 over 27 strata | AUC after removing top-1: 0.608
-[2026-09-09 10:00:27] [INFO] ------------------------------------------------------------------------------
-[2026-09-09 10:00:27] [INFO] [emergence/qwen2.5-7b] E1.5 — separation vs relative depth
-[2026-09-09 10:00:27] [INFO]   emergence by concept — onset depth (peak selected on train):
-[2026-09-09 10:00:27] [INFO]     R_harm                 peak 0.981 @ d=0.59 | onset 80/90/95% at d=0.00/0.04/0.07 | L0 0.931
-[2026-09-09 10:00:27] [INFO]     R_harm_user            peak 0.982 @ d=0.59 | onset 80/90/95% at d=0.00/0.00/0.07 | L0 0.940
-[2026-09-09 10:00:27] [INFO]     R_control              peak 0.994 @ d=0.93 | onset 80/90/95% at d=0.48/0.48/0.52 | L0 0.668
-[2026-09-09 10:00:27] [INFO]     R_harm_at_post         peak 0.992 @ d=0.59 | onset 80/90/95% at d=0.00/0.00/0.19 | L0 0.944
-[2026-09-09 10:00:27] [INFO]     R_control_harmless     peak 0.947 @ d=1.00 | onset 80/90/95% at d=0.59/0.59/0.70 | L0 0.680
-[2026-09-09 10:00:27] [INFO]     R_control_unbalanced   peak 0.994 @ d=0.93 | onset 80/90/95% at d=0.48/0.52/0.52 | L0 0.657
-[2026-09-09 10:00:27] [INFO]     R_control_preguard     peak 0.975 @ d=0.74 | onset 80/90/95% at d=0.52/0.67/0.67 | L0 0.729
-[2026-09-09 10:00:27] [INFO]     R_role_probe           peak 0.959 @ d=0.44 | onset 80/90/95% at d=0.00/0.04/0.04 | L0 0.884
-[2026-09-09 10:00:28] [INFO] ------------------------------------------------------------------------------
-[2026-09-09 10:00:28] [INFO] [fidelity/qwen2.5-7b] E1.1 — pre_mlp fidelity + cross-corpus transfer (dropped in the first consolidation)
-[2026-09-09 10:00:28] [INFO] Loading Qwen/Qwen2.5-7B-Instruct: {'model_id': 'Qwen/Qwen2.5-7B-Instruct', 'architecture': 'Qwen2ForCausalLM', 'model_type': 'qwen2', 'num_layers': 28, 'hidden_size': 3584, 'num_experts': None, 'is_multimodal': False}
-Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   8%|▊         | 28/339 [00:00<00:01, 238.40it/s]Loading weights:  19%|█▉        | 64/339 [00:00<00:00, 291.77it/s]Loading weights:  28%|██▊       | 94/339 [00:00<00:00, 276.41it/s]Loading weights:  37%|███▋      | 125/339 [00:00<00:00, 277.35it/s]Loading weights:  46%|████▌     | 156/339 [00:00<00:00, 287.08it/s]Loading weights:  55%|█████▍    | 185/339 [00:00<00:00, 282.97it/s]Loading weights:  65%|██████▍   | 220/339 [00:00<00:00, 295.52it/s]Loading weights:  74%|███████▎  | 250/339 [00:00<00:00, 281.27it/s]Loading weights:  83%|████████▎ | 282/339 [00:00<00:00, 286.91it/s]Loading weights:  93%|█████████▎| 316/339 [00:01<00:00, 294.01it/s]Loading weights: 100%|██████████| 339/339 [00:01<00:00, 292.32it/s]
-[2026-09-09 10:00:30] [INFO] Decoder stack at 'model.layers' (28 layers)
-/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:53: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
-  return torch.load(path, map_location="cpu")
-[2026-09-09 10:00:43] [INFO]   pre_mlp @L12: 0.960 (residual 0.980)
-[2026-09-09 10:00:44] [INFO]   transfer corpus: 150 C4 passages x 4 roles = 600 items (frozen at E1.0b)
-[2026-09-09 10:00:56] [INFO]   transfer @L12: ours->constant-content 0.720, theirs->our corpus 0.768 (chance 0.250)
-[2026-09-09 10:00:56] [INFO] ------------------------------------------------------------------------------
-[2026-09-09 10:00:56] [INFO] [causal/qwen2.5-7b] E1.6 — causal distinguishability; GO/NO-GO GATE 1
-/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:53: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
-  return torch.load(path, map_location="cpu")
-[2026-09-09 10:00:56] [INFO] [qwen2.5-7b] probe sets: train 80, test 100 (balanced harmful/harmless)
-[2026-09-09 10:00:57] [INFO] Loading Qwen/Qwen2.5-7B-Instruct: {'model_id': 'Qwen/Qwen2.5-7B-Instruct', 'architecture': 'Qwen2ForCausalLM', 'model_type': 'qwen2', 'num_layers': 28, 'hidden_size': 3584, 'num_experts': None, 'is_multimodal': False}
-Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   8%|▊         | 28/339 [00:00<00:01, 267.63it/s]Loading weights:  16%|█▌        | 55/339 [00:00<00:01, 247.29it/s]Loading weights:  25%|██▌       | 86/339 [00:00<00:00, 266.05it/s]Loading weights:  34%|███▎      | 114/339 [00:00<00:00, 261.92it/s]Loading weights:  43%|████▎     | 145/339 [00:00<00:00, 276.79it/s]Loading weights:  51%|█████▏    | 174/339 [00:00<00:00, 275.05it/s]Loading weights:  62%|██████▏   | 209/339 [00:00<00:00, 289.87it/s]Loading weights:  72%|███████▏  | 244/339 [00:00<00:00, 300.57it/s]Loading weights:  81%|████████  | 275/339 [00:00<00:00, 298.55it/s]Loading weights:  90%|████████▉ | 305/339 [00:01<00:00, 291.59it/s]Loading weights: 100%|██████████| 339/339 [00:01<00:00, 288.79it/s]
-[2026-09-09 10:00:59] [INFO] Decoder stack at 'model.layers' (28 layers)
-[2026-09-09 10:01:03] [INFO]   sanity @L12: determinism KL 0.0e+00 (ok); raw_norm 8.57
-[2026-09-09 10:01:03] [INFO]     alpha=0.5: real KL 0.0609 vs magnitude-matched random 0.0066 (content gap +0.0543)
-[2026-09-09 10:01:03] [INFO]     alpha=1.0: real KL 0.2496 vs magnitude-matched random 0.0256 (content gap +0.2240)
-[2026-09-09 10:01:03] [INFO]     alpha=2.0: real KL 0.8482 vs magnitude-matched random 0.1001 (content gap +0.7481)
-[2026-09-09 10:01:03] [INFO] [qwen2.5-7b] stage A: layer profile on train, all 28 layers, alpha=+/-1
-[2026-09-09 10:01:38] [INFO]   stage A picked [17, 25] (per-source argmax on train); sensitivity depths [6, 13, 20]; steering at [6, 13, 17, 20, 25]
-[2026-09-09 10:01:50] [INFO]   L6: magnitude-matched random KL (harmless) by alpha 0.25:0.0025, 0.5:0.0049, 1.0:0.0158, 2.0:0.0501, 4.0:0.1748
-[2026-09-09 10:02:21] [INFO]   L6: 360 cells
-[2026-09-09 10:02:33] [INFO]   L13: magnitude-matched random KL (harmless) by alpha 0.25:0.0086, 0.5:0.0299, 1.0:0.1238, 2.0:0.4997, 4.0:1.9675
-[2026-09-09 10:03:04] [INFO]   L13: 360 cells
-[2026-09-09 10:03:16] [INFO]   L17: magnitude-matched random KL (harmless) by alpha 0.25:0.0176, 0.5:0.0671, 1.0:0.3018, 2.0:1.2487, 4.0:5.3025
-[2026-09-09 10:03:48] [INFO]   L17: 360 cells
-[2026-09-09 10:04:00] [INFO]   L20: magnitude-matched random KL (harmless) by alpha 0.25:0.0297, 0.5:0.1109, 1.0:0.4708, 2.0:2.1266, 4.0:6.6218
-[2026-09-09 10:04:31] [INFO]   L20: 360 cells
-[2026-09-09 10:04:43] [INFO]   L25: magnitude-matched random KL (harmless) by alpha 0.25:0.0072, 0.5:0.0298, 1.0:0.1590, 2.0:0.8332, 4.0:4.7349
-[2026-09-09 10:05:11] [INFO]   L25: 240 cells
-[2026-09-09 10:05:12] [INFO]   KL_harmless <= 0.1 : n_live=300  G1 0.76 G2 0/23 G3 6 -> FAIL
-[2026-09-09 10:05:12] [INFO]   KL_harmless <= 0.25: n_live=504  G1 0.7857 G2 1/63 G3 25 -> PASS
-[2026-09-09 10:05:12] [INFO]   KL_harmless <= 0.5 : n_live=642  G1 0.8037 G2 4/80 G3 38 -> PASS
-[2026-09-09 10:05:12] [INFO]   KL_harmless <= 1.0 : n_live=780  G1 0.8269 G2 10/105 G3 62 -> PASS
-[2026-09-09 10:05:12] [INFO]   KL_harmless <= 2.0 : n_live=870  G1 0.8276 G2 12/114 G3 77 -> PASS
-[2026-09-09 10:05:12] [INFO] [qwen2.5-7b] GATE 1 — bound-sensitive (testable at bounds [0.1, 0.25, 0.5, 1.0, 2.0])

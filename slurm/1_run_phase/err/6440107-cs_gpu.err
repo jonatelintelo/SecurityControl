@@ -1,0 +1,16 @@
+[2026-09-09 19:51:18] [INFO] pipeline rq1: ['style_level2']
+[2026-09-09 19:51:18] [INFO] ------------------------------------------------------------------------------
+[2026-09-09 19:51:18] [INFO] [style_level2/qwen2.5-7b] E1.7 Level 2 — tag vs register, crossed on the frozen style corpus
+[2026-09-09 19:51:38] [INFO] [qwen2.5-7b] style corpus: 594 items (2 arms, 3 registers)
+[2026-09-09 19:51:40] [INFO] Loading Qwen/Qwen2.5-7B-Instruct: {'model_id': 'Qwen/Qwen2.5-7B-Instruct', 'architecture': 'Qwen2ForCausalLM', 'model_type': 'qwen2', 'num_layers': 28, 'hidden_size': 3584, 'num_experts': None, 'is_multimodal': False}
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   8%|▊         | 28/339 [00:00<00:01, 274.90it/s]Loading weights:  17%|█▋        | 56/339 [00:00<00:01, 197.51it/s]Loading weights:  23%|██▎       | 78/339 [00:00<00:01, 163.97it/s]Loading weights:  30%|███       | 102/339 [00:00<00:01, 181.75it/s]Loading weights:  37%|███▋      | 124/339 [00:00<00:01, 181.30it/s]Loading weights:  42%|████▏     | 143/339 [00:00<00:01, 177.14it/s]Loading weights:  48%|████▊     | 162/339 [00:00<00:00, 177.94it/s]Loading weights:  53%|█████▎    | 181/339 [00:01<00:00, 164.95it/s]Loading weights:  60%|█████▉    | 202/339 [00:01<00:00, 175.48it/s]Loading weights:  65%|██████▌   | 222/339 [00:01<00:00, 179.76it/s]Loading weights:  72%|███████▏  | 245/339 [00:01<00:00, 187.42it/s]Loading weights:  79%|███████▉  | 269/339 [00:01<00:00, 189.92it/s]Loading weights:  87%|████████▋ | 294/339 [00:01<00:00, 200.91it/s]Loading weights:  94%|█████████▎| 317/339 [00:01<00:00, 207.29it/s]Loading weights: 100%|██████████| 339/339 [00:01<00:00, 191.75it/s]
+[2026-09-09 19:51:49] [INFO] Decoder stack at 'model.layers' (28 layers)
+[2026-09-09 19:51:49] [INFO] [qwen2.5-7b] rendering 2376 items (594 style items x 4 role tags)
+[2026-09-09 19:51:50] [INFO]     captured 16/2376
+[2026-09-09 19:51:51] [INFO]     captured 416/2376
+[2026-09-09 19:51:53] [INFO]     captured 816/2376
+[2026-09-09 19:51:54] [INFO]     captured 1216/2376
+[2026-09-09 19:51:55] [INFO]     captured 1616/2376
+[2026-09-09 19:51:56] [INFO]     captured 2016/2376
+[2026-09-09 19:52:04] [INFO]   [generated] cos(tag, register) median 0.104 max 0.433 vs floor 0.890 — distinct in 94.4% of cells
+[2026-09-09 19:52:04] [INFO]   [template] cos(tag, register) median 0.067 max 0.424 vs floor 0.892 — distinct in 94.0% of cells

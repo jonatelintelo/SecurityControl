@@ -1,0 +1,5 @@
+model,concept,position,layer,relative_depth,auc,auc_ci_low,auc_ci_high,n_test_instructions,split_half_cos,n_train_harmful,n_train_harmless,role_tv_before_balancing,design_tv,role_balanced,length_only_auc,beats_length_baseline
+qwen2.5-7b,R_harm_in_refused,t_inst,11,0.4074,1.0,1.0,1.0,45,0.9631384015083313,870,51,0.178,0.0479,True,0.6216588020324707,True
+qwen2.5-7b,R_harm_in_refused_at_post,t_post_inst,8,0.2963,0.9985663294792175,0.9906238913536072,1.0,45,0.938448429107666,870,51,0.178,0.0479,True,0.6216588020324707,True
+qwen2.5-7b,R_harm_in_complied,t_inst,11,0.4074,0.9728937745094299,0.9289886951446533,1.0,59,0.85247403383255,57,1149,0.1037,0.0285,True,0.7241231799125671,True
+qwen2.5-7b,R_harm_in_complied_at_post,t_post_inst,21,0.7778,0.9569230675697327,0.8875504732131958,1.0,59,0.9401654005050659,57,1149,0.1037,0.0285,True,0.7241231799125671,True

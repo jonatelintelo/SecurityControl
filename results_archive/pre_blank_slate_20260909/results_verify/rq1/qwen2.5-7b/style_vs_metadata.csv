@@ -1,0 +1,326 @@
+model,concept,factor,level_a,level_b,layer,cosine,split_half_floor,at_floor
+qwen2.5-7b,R_role_tool_vs_user,source,advbench,alpaca,12,0.8539043068885803,0.987372487783432,False
+qwen2.5-7b,R_role_tool_vs_user,source,advbench,jbb,12,0.9740013480186462,0.987372487783432,False
+qwen2.5-7b,R_role_tool_vs_user,source,advbench,sorry-bench,12,0.9203715324401855,0.987372487783432,False
+qwen2.5-7b,R_role_tool_vs_user,source,advbench,xstest_safe,12,0.8307521343231201,0.987372487783432,False
+qwen2.5-7b,R_role_tool_vs_user,source,alpaca,jbb,12,0.8097787499427795,0.987372487783432,False
+qwen2.5-7b,R_role_tool_vs_user,source,alpaca,sorry-bench,12,0.882151186466217,0.987372487783432,False
+qwen2.5-7b,R_role_tool_vs_user,source,alpaca,xstest_safe,12,0.9021492004394531,0.987372487783432,False
+qwen2.5-7b,R_role_tool_vs_user,source,jbb,sorry-bench,12,0.9229228496551514,0.987372487783432,False
+qwen2.5-7b,R_role_tool_vs_user,source,jbb,xstest_safe,12,0.807751476764679,0.987372487783432,False
+qwen2.5-7b,R_role_tool_vs_user,source,sorry-bench,xstest_safe,12,0.8735039234161377,0.987372487783432,False
+qwen2.5-7b,R_harm,source_pair,advbench|alpaca,advbench|xstest_safe,16,0.8552153706550598,0.9873148649930954,False
+qwen2.5-7b,R_harm,source_pair,advbench|alpaca,jbb|alpaca,16,0.9251422882080078,0.9873148649930954,False
+qwen2.5-7b,R_harm,source_pair,advbench|alpaca,jbb|xstest_safe,16,0.7718445658683777,0.9873148649930954,False
+qwen2.5-7b,R_harm,source_pair,advbench|alpaca,sorry-bench|alpaca,16,0.24085164070129395,0.9873148649930954,False
+qwen2.5-7b,R_harm,source_pair,advbench|alpaca,sorry-bench|xstest_safe,16,0.1382826864719391,0.9873148649930954,False
+qwen2.5-7b,R_harm,source_pair,advbench|xstest_safe,jbb|alpaca,16,0.7828212976455688,0.9873148649930954,False
+qwen2.5-7b,R_harm,source_pair,advbench|xstest_safe,jbb|xstest_safe,16,0.9403457641601562,0.9873148649930954,False
+qwen2.5-7b,R_harm,source_pair,advbench|xstest_safe,sorry-bench|alpaca,16,0.04504337161779404,0.9873148649930954,False
+qwen2.5-7b,R_harm,source_pair,advbench|xstest_safe,sorry-bench|xstest_safe,16,0.428286612033844,0.9873148649930954,False
+qwen2.5-7b,R_harm,source_pair,jbb|alpaca,jbb|xstest_safe,16,0.8321753740310669,0.9873148649930954,False
+qwen2.5-7b,R_harm,source_pair,jbb|alpaca,sorry-bench|alpaca,16,0.23320750892162323,0.9873148649930954,False
+qwen2.5-7b,R_harm,source_pair,jbb|alpaca,sorry-bench|xstest_safe,16,0.12287314981222153,0.9873148649930954,False
+qwen2.5-7b,R_harm,source_pair,jbb|xstest_safe,sorry-bench|alpaca,16,0.02271941676735878,0.9873148649930954,False
+qwen2.5-7b,R_harm,source_pair,jbb|xstest_safe,sorry-bench|xstest_safe,16,0.43426254391670227,0.9873148649930954,False
+qwen2.5-7b,R_harm,source_pair,sorry-bench|alpaca,sorry-bench|xstest_safe,16,0.5733820796012878,0.9873148649930954,False
+qwen2.5-7b,R_harm,category,,Disinformation,16,0.7515382170677185,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,Economic harm,16,0.8192005753517151,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,Expert advice,16,0.8327329158782959,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,Fraud/Deception,16,0.7464242577552795,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,Government decision-making,16,0.7845039367675781,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,Harassment/Discrimination,16,0.7554758787155151,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,Malware/Hacking,16,0.8269549608230591,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,Physical harm,16,0.7359010577201843,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,Privacy,16,0.7047789096832275,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,Sexual/Adult content,16,0.7171441316604614,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,cat1,16,0.20423442125320435,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,cat10,16,0.2505245804786682,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,cat11,16,0.17137932777404785,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,cat12,16,0.20388856530189514,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,cat14,16,0.17667409777641296,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,cat22,16,0.21079054474830627,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,cat23,16,0.19925278425216675,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,cat24,16,0.19971702992916107,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,cat27,16,0.20576155185699463,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,cat28,16,0.16762462258338928,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,cat32,16,0.14367574453353882,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,cat39,16,0.228338822722435,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,cat44,16,0.09472785890102386,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,,cat7,16,0.09069854766130447,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,Economic harm,16,0.6912186145782471,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,Expert advice,16,0.6831392049789429,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,Fraud/Deception,16,0.617641806602478,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,Government decision-making,16,0.6211795806884766,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,Harassment/Discrimination,16,0.6936860084533691,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,Malware/Hacking,16,0.6347028017044067,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,Physical harm,16,0.6122796535491943,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,Privacy,16,0.582412600517273,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,Sexual/Adult content,16,0.5804468393325806,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,cat1,16,0.10355255752801895,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,cat10,16,0.07608510553836823,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,cat11,16,0.05258718132972717,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,cat12,16,0.06795772910118103,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,cat14,16,0.07811526954174042,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,cat22,16,0.09984584152698517,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,cat23,16,0.09242585301399231,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,cat24,16,0.13204361498355865,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,cat27,16,0.1627831757068634,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,cat28,16,0.1351531594991684,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,cat32,16,0.037957847118377686,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,cat39,16,0.16679543256759644,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,cat44,16,0.026250816881656647,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Disinformation,cat7,16,-0.003202715888619423,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,Expert advice,16,0.755773663520813,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,Fraud/Deception,16,0.7324029207229614,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,Government decision-making,16,0.7711743116378784,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,Harassment/Discrimination,16,0.7376622557640076,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,Malware/Hacking,16,0.7049216032028198,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,Physical harm,16,0.6368332505226135,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,Privacy,16,0.6645896434783936,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,Sexual/Adult content,16,0.5779114365577698,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,cat1,16,0.17480173707008362,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,cat10,16,0.1370185911655426,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,cat11,16,0.1023685485124588,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,cat12,16,0.09753312170505524,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,cat14,16,0.1949615627527237,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,cat22,16,0.10637833923101425,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,cat23,16,0.1408127248287201,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,cat24,16,0.19435584545135498,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,cat27,16,0.18515324592590332,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,cat28,16,0.11989295482635498,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,cat32,16,0.11490656435489655,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,cat39,16,0.18542297184467316,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,cat44,16,0.13032038509845734,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Economic harm,cat7,16,0.060738369822502136,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,Fraud/Deception,16,0.6673879027366638,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,Government decision-making,16,0.7064900398254395,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,Harassment/Discrimination,16,0.7037574052810669,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,Malware/Hacking,16,0.7113338708877563,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,Physical harm,16,0.6666668057441711,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,Privacy,16,0.6473895907402039,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,Sexual/Adult content,16,0.694740891456604,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,cat1,16,0.10336973518133163,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,cat10,16,0.1516670286655426,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,cat11,16,0.09782937914133072,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,cat12,16,0.12613937258720398,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,cat14,16,0.10392557829618454,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,cat22,16,0.13975608348846436,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,cat23,16,0.11575780063867569,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,cat24,16,0.15417876839637756,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,cat27,16,0.1856689602136612,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,cat28,16,0.12350741028785706,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,cat32,16,0.08639121055603027,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,cat39,16,0.16353720426559448,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,cat44,16,0.06237296760082245,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Expert advice,cat7,16,0.03594382107257843,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,Government decision-making,16,0.6903168559074402,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,Harassment/Discrimination,16,0.6477630138397217,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,Malware/Hacking,16,0.7009377479553223,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,Physical harm,16,0.5673598051071167,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,Privacy,16,0.6308270692825317,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,Sexual/Adult content,16,0.5381212830543518,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,cat1,16,0.20618268847465515,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,cat10,16,0.16143441200256348,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,cat11,16,0.09234736859798431,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,cat12,16,0.08691196143627167,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,cat14,16,0.1792900115251541,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,cat22,16,0.10765939205884933,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,cat23,16,0.1416187584400177,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,cat24,16,0.1476406753063202,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,cat27,16,0.1867987960577011,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,cat28,16,0.13720208406448364,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,cat32,16,0.14330968260765076,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,cat39,16,0.1603263020515442,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,cat44,16,0.09935455024242401,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Fraud/Deception,cat7,16,0.05743987485766411,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,Harassment/Discrimination,16,0.6786127090454102,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,Malware/Hacking,16,0.7020680904388428,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,Physical harm,16,0.6386779546737671,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,Privacy,16,0.6296254396438599,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,Sexual/Adult content,16,0.5397571325302124,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,cat1,16,0.16777068376541138,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,cat10,16,0.16409030556678772,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,cat11,16,0.14182773232460022,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,cat12,16,0.1581539511680603,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,cat14,16,0.19282343983650208,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,cat22,16,0.16546258330345154,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,cat23,16,0.13840900361537933,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,cat24,16,0.2068997025489807,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,cat27,16,0.15278738737106323,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,cat28,16,0.15802642703056335,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,cat32,16,0.18646274507045746,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,cat39,16,0.20039334893226624,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,cat44,16,0.1623690128326416,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Government decision-making,cat7,16,0.04819004610180855,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,Malware/Hacking,16,0.6267824172973633,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,Physical harm,16,0.6565027236938477,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,Privacy,16,0.6519975662231445,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,Sexual/Adult content,16,0.6010431051254272,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,cat1,16,0.14082537591457367,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,cat10,16,0.13164746761322021,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,cat11,16,0.10691997408866882,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,cat12,16,0.09769433736801147,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,cat14,16,0.12609359622001648,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,cat22,16,0.14253880083560944,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,cat23,16,0.10569723695516586,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,cat24,16,0.2022322118282318,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,cat27,16,0.23134298622608185,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,cat28,16,0.1523870825767517,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,cat32,16,0.08734282851219177,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,cat39,16,0.21799586713314056,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,cat44,16,0.07464046776294708,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Harassment/Discrimination,cat7,16,0.06335392594337463,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,Physical harm,16,0.6576710939407349,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,Privacy,16,0.5860085487365723,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,Sexual/Adult content,16,0.6068198680877686,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,cat1,16,0.1818920075893402,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,cat10,16,0.20115305483341217,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,cat11,16,0.13171268999576569,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,cat12,16,0.17431820929050446,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,cat14,16,0.1487499177455902,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,cat22,16,0.15695533156394958,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,cat23,16,0.15111710131168365,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,cat24,16,0.1618436574935913,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,cat27,16,0.18269649147987366,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,cat28,16,0.14980721473693848,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,cat32,16,0.16744720935821533,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,cat39,16,0.19113779067993164,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,cat44,16,0.11920411139726639,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Malware/Hacking,cat7,16,0.08306682109832764,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Physical harm,Privacy,16,0.5823096632957458,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Physical harm,Sexual/Adult content,16,0.6959743499755859,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Physical harm,cat1,16,0.2262715995311737,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Physical harm,cat10,16,0.22534596920013428,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Physical harm,cat11,16,0.20485243201255798,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Physical harm,cat12,16,0.2206914871931076,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Physical harm,cat14,16,0.17730292677879333,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Physical harm,cat22,16,0.21471914649009705,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Physical harm,cat23,16,0.18037661910057068,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Physical harm,cat24,16,0.24514275789260864,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Physical harm,cat27,16,0.3060452938079834,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Physical harm,cat28,16,0.18918001651763916,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Physical harm,cat32,16,0.14747214317321777,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Physical harm,cat39,16,0.29979005455970764,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Physical harm,cat44,16,0.12126769125461578,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Physical harm,cat7,16,0.12663906812667847,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Privacy,Sexual/Adult content,16,0.5133906006813049,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Privacy,cat1,16,0.18421322107315063,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Privacy,cat10,16,0.1590149849653244,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Privacy,cat11,16,0.1379903256893158,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Privacy,cat12,16,0.11571907997131348,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Privacy,cat14,16,0.17038965225219727,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Privacy,cat22,16,0.12833039462566376,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Privacy,cat23,16,0.14253121614456177,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Privacy,cat24,16,0.19244259595870972,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Privacy,cat27,16,0.22343991696834564,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Privacy,cat28,16,0.14462029933929443,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Privacy,cat32,16,0.11318817734718323,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Privacy,cat39,16,0.19048327207565308,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Privacy,cat44,16,0.15478380024433136,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Privacy,cat7,16,0.0455540232360363,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Sexual/Adult content,cat1,16,0.13865478336811066,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Sexual/Adult content,cat10,16,0.20368823409080505,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Sexual/Adult content,cat11,16,0.14105823636054993,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Sexual/Adult content,cat12,16,0.1977386474609375,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Sexual/Adult content,cat14,16,0.0792866051197052,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Sexual/Adult content,cat22,16,0.17272090911865234,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Sexual/Adult content,cat23,16,0.1260565221309662,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Sexual/Adult content,cat24,16,0.1543392837047577,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Sexual/Adult content,cat27,16,0.23860332369804382,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Sexual/Adult content,cat28,16,0.18368962407112122,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Sexual/Adult content,cat32,16,0.11169614642858505,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Sexual/Adult content,cat39,16,0.253936231136322,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Sexual/Adult content,cat44,16,-0.0114291962236166,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,Sexual/Adult content,cat7,16,0.0825217217206955,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat1,cat10,16,0.5274917483329773,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat1,cat11,16,0.4459494948387146,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat1,cat12,16,0.4827146530151367,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat1,cat14,16,0.6810696125030518,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat1,cat22,16,0.4753679633140564,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat1,cat23,16,0.5621405839920044,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat1,cat24,16,0.5163860321044922,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat1,cat27,16,0.3842557668685913,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat1,cat28,16,0.41657623648643494,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat1,cat32,16,0.5265535116195679,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat1,cat39,16,0.5485148429870605,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat1,cat44,16,0.47519946098327637,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat1,cat7,16,0.45334523916244507,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat10,cat11,16,0.747665286064148,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat10,cat12,16,0.7387607097625732,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat10,cat14,16,0.5046952366828918,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat10,cat22,16,0.6699060201644897,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat10,cat23,16,0.7448418140411377,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat10,cat24,16,0.395790159702301,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat10,cat27,16,0.3114939033985138,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat10,cat28,16,0.4274213910102844,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat10,cat32,16,0.464839905500412,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat10,cat39,16,0.5747705698013306,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat10,cat44,16,0.30379417538642883,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat10,cat7,16,0.6242708563804626,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat11,cat12,16,0.6987963914871216,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat11,cat14,16,0.5042765140533447,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat11,cat22,16,0.6463841199874878,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat11,cat23,16,0.6297241449356079,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat11,cat24,16,0.4393536448478699,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat11,cat27,16,0.36058419942855835,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat11,cat28,16,0.4616354703903198,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat11,cat32,16,0.4767560362815857,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat11,cat39,16,0.5964165925979614,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat11,cat44,16,0.4481487572193146,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat11,cat7,16,0.5180745124816895,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat12,cat14,16,0.48071783781051636,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat12,cat22,16,0.7270115613937378,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat12,cat23,16,0.5567895770072937,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat12,cat24,16,0.5219656229019165,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat12,cat27,16,0.3451981544494629,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat12,cat28,16,0.5170134902000427,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat12,cat32,16,0.5009278059005737,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat12,cat39,16,0.6288889646530151,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat12,cat44,16,0.436051607131958,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat12,cat7,16,0.45616042613983154,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat14,cat22,16,0.44601118564605713,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat14,cat23,16,0.5805142521858215,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat14,cat24,16,0.48930174112319946,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat14,cat27,16,0.3205530643463135,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat14,cat28,16,0.440238356590271,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat14,cat32,16,0.5587372183799744,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat14,cat39,16,0.5083829164505005,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat14,cat44,16,0.5334572196006775,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat14,cat7,16,0.4477567672729492,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat22,cat23,16,0.5120332837104797,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat22,cat24,16,0.45587167143821716,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat22,cat27,16,0.2903994917869568,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat22,cat28,16,0.4704701900482178,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat22,cat32,16,0.4311671853065491,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat22,cat39,16,0.636807918548584,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat22,cat44,16,0.34937214851379395,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat22,cat7,16,0.4457225203514099,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat23,cat24,16,0.36181044578552246,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat23,cat27,16,0.22256238758563995,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat23,cat28,16,0.3320448398590088,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat23,cat32,16,0.3999321162700653,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat23,cat39,16,0.4712141454219818,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat23,cat44,16,0.35089701414108276,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat23,cat7,16,0.5784561038017273,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat24,cat27,16,0.5378422737121582,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat24,cat28,16,0.6232432723045349,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat24,cat32,16,0.5588713884353638,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat24,cat39,16,0.6219159364700317,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat24,cat44,16,0.5772323608398438,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat24,cat7,16,0.3767116069793701,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat27,cat28,16,0.45954158902168274,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat27,cat32,16,0.35116007924079895,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat27,cat39,16,0.4862956702709198,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat27,cat44,16,0.4293937087059021,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat27,cat7,16,0.2717466354370117,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat28,cat32,16,0.6434944272041321,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat28,cat39,16,0.6136103868484497,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat28,cat44,16,0.3972582519054413,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat28,cat7,16,0.3201723098754883,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat32,cat39,16,0.5933312177658081,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat32,cat44,16,0.46922117471694946,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat32,cat7,16,0.34883883595466614,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat39,cat44,16,0.38276875019073486,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat39,cat7,16,0.3994442820549011,0.9379065334796906,False
+qwen2.5-7b,R_harm,category,cat44,cat7,16,0.2779321074485779,0.9379065334796906,False

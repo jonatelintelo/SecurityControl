@@ -25,6 +25,7 @@ expensive step — would be repeated between them. Here it happens once, in
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from pathlib import Path
@@ -34,7 +35,7 @@ os.environ.setdefault("MKL_NUM_THREADS", "8")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from typing import Dict, List  # noqa: E402
+from typing import Dict, List, Optional, Sequence  # noqa: E402
 
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
@@ -49,7 +50,60 @@ from core.stages import Context, Pipeline, Stage, add_pipeline_args, maybe_list 
 NAME = "rq1"
 CORPUS = "e1_0_corpus"
 
+# Gate artifacts carry the control variant in their name. The two control
+# variables are different directions (measured cos 0.72 against a split-half floor
+# of 0.944), so a run under one must never overwrite or be mistaken for the other.
+# Resolved at import so the stage's `produces` list — and therefore its
+# skip-if-complete check — is variant-aware.
+_CV = os.environ.get("CONTROL_VARIANT", "auto").lower()
+CAUSAL_SUFFIX = "" if _CV == "auto" else f"__{_CV}"
+
 ROLE_CONTRASTS = [("tool", "user"), ("system", "user"), ("assistant", "user")]
+# E1.6 reads the intervention's effect at BOTH corpus positions, because PLAN-INF
+# asks for it "at later layers AND later tokens" and `t_inst` -> `t_post_inst` is
+# an earlier and a later token of the same forward pass. Order fixes the position
+# axis of the captured tensors, so it must match what `build(layer, position)`
+# is asked for.
+READ_POSITIONS = ("t_inst", "t_post_inst")
+
+# The steered-position sweep, pre-registered in the parameter register:
+# "steered positions | Arditi: all | Zhao: all | Ours: SWEPT — all real /
+# instruction span / t_inst only / post-instruction only".
+#
+# Arditi and Zhao both steer every real token, so `all_real` is the literature
+# anchor and stays Stage C's operating point; the other three answer PLAN-INF's
+# question about steering at an *early token* rather than everywhere, and are
+# Stage B's deliverable.
+TOKEN_SETS = ("all_real", "instruction_span", "t_inst_only", "post_instruction")
+
+
+def _steer_mask(r, which: str) -> List[bool]:
+    """Per-item steering mask in UNPADDED coordinates.
+
+    `_build_position_mask` maps these onto the padded grid using each item's own
+    attention mask and raises if the length disagrees, so masks are built against
+    `r.n_tokens` and never against a padded width.
+
+    Always returns a list, never None: `all_real` is handled by the caller
+    passing `position_masks=None`, and an empty span here returns an all-False
+    mask that the caller must detect and skip. Collapsing "steer everything" and
+    "steer nothing" into one return value would make an empty
+    `post_instruction` span silently steer the whole prompt — the loudest
+    possible wrong answer, arriving as a plausible number.
+    """
+    n = int(r.n_tokens)
+    if which == "instruction_span":
+        lo, hi = int(r.content_start), int(r.content_end)
+    elif which == "t_inst_only":
+        lo, hi = int(r.t_inst), int(r.t_inst) + 1
+    elif which == "post_instruction":
+        lo, hi = int(r.t_inst) + 1, int(r.t_post_inst) + 1
+    else:
+        raise ValueError(f"unknown token set {which!r}; known: {TOKEN_SETS}")
+    m = [False] * n
+    for i in range(max(lo, 0), min(max(hi, 0), n)):
+        m[i] = True
+    return m
 MIN_REFUSAL_VARIANCE = 50
 MAX_UNDETERMINED_RATE = 0.30
 # EXPERIMENTS.md > Replicates and nulls: 1000 draws, with convergence reported.
@@ -116,7 +170,45 @@ def _subset_mask(idx: pd.DataFrame, subset) -> np.ndarray:
         return np.ones(len(idx), dtype=bool)
     if subset == "user":
         return idx.role.eq("user").to_numpy()
+    # Behavioural subsets, so that a harm contrast can be fitted with REFUSAL held
+    # constant — PLAN-EXTRACT asks for exactly this and the pooled fit does not
+    # provide it.
+    if subset in ("refused", "complied"):
+        return idx.label.eq(subset).to_numpy()
     return harmful if subset == "harmful" else ~harmful
+
+
+def _stratified_subspace(a: torch.Tensor, idx: pd.DataFrame, base_m: np.ndarray,
+                         mp: np.ndarray, mn: np.ndarray,
+                         min_side: int = 5, min_strata: int = 3) -> Optional[torch.Tensor]:
+    """Row-space basis of a concept's *stratified* directions, or None.
+
+    One unit direction is fitted inside each stratum (per role, per source), and
+    the stack is given an SVD; the returned `[r, d]` matrix spans them. Fitting
+    within a stratum is what keeps composition constant on both sides of the
+    contrast, so the spread across strata reflects the concept rather than the
+    corpus mixture.
+
+    Shared by E1.4b (which asks how many of these axes the *model* needs to
+    reproduce a behavioural effect) and E1.2 pass 2 (which compares the resulting
+    subspaces between concepts). They must build the subspace identically or the
+    `k` measured by one does not describe the basis used by the other.
+    """
+    strat = []
+    for col in ("role", "source"):
+        if col not in idx.columns:
+            continue
+        for lvl in sorted(idx[col].dropna().unique()):
+            m = base_m & idx[col].eq(lvl).to_numpy()
+            p, n = torch.tensor(m & mp), torch.tensor(m & mn)
+            if int(p.sum()) >= min_side and int(n.sum()) >= min_side:
+                v = a[p].float().mean(0) - a[n].float().mean(0)
+                if v.norm() > 1e-8:
+                    strat.append(v / v.norm())
+    if len(strat) < min_strata:
+        return None
+    M = torch.stack(strat)                                     # [n_strata, d]
+    return torch.linalg.svd(M.float(), full_matrices=False).Vh  # [r, d]
 
 
 def _load_cache(ctx: Context):
@@ -637,6 +729,7 @@ def stage_geometry(ctx: Context) -> None:
     # positions, from the cached activations, so the comparison is licensed.
     blob, idx, _, _ = _load_cache(ctx)
     train = idx.split.eq("train").to_numpy()
+    n_layers_model = len(blob["t_post_inst"])   # the model's depth, for relative_depth
     dirs = dict(dirs)
     for position in ("t_inst", "t_post_inst"):
         for a_r, b_r in ROLE_CONTRASTS:
@@ -665,7 +758,11 @@ def stage_geometry(ctx: Context) -> None:
                 floor = min(shf.get(a, {}).get(li, float("nan")),
                             shf.get(b, {}).get(li, float("nan")))
                 rows.append({"concept_a": a, "concept_b": b, "layer": li,
-                             "relative_depth": round(relative_depth(li, len(common)), 4),
+                             # n_layers, not len(common): relative depth is a
+                             # property of the MODEL, and a pair that shares only
+                             # part of the stack would otherwise be reported at a
+                             # depth computed against the wrong denominator.
+                             "relative_depth": round(relative_depth(li, n_layers_model), 4),
                              "cosine": cos, "abs_cosine": abs(cos),
                              "null_p97_5": band["p97.5"], "split_half_floor": floor,
                              "beyond_null": abs(cos) > band["p97.5"],
@@ -798,6 +895,180 @@ def stage_dimensionality(ctx: Context) -> None:
 
 
 # ---------------------------------------------------------------------------
+# stage: harm_controls  (E1.1 — R_harm with refusal held constant)
+# ---------------------------------------------------------------------------
+def stage_harm_controls(ctx: Context) -> None:
+    """Estimate `R_harm` with REFUSAL HELD CONSTANT, and ask what that changes.
+
+    PLAN-EXTRACT specifies this and we had not done it:
+
+        "Using matched harmful and benign prompts, *while controlling for refusal
+         behavior where possible*, we estimate R_harm. Particular attention will be
+         paid to examples in which a model recognizes harmfulness but nevertheless
+         complies, allowing harmfulness representation to be separated from
+         refusal behavior."
+
+    Our `R_harm` is fitted pooled over refusal, so it may carry a refusal
+    component — and if it does, the reported overlap between harm and control is
+    partly an artifact of how harm was estimated rather than a fact about the
+    model. This is the mirror image of the role-composition confound already
+    corrected for `R_control`.
+
+    Two refusal-controlled variants, one per row of the 2x2:
+
+        R_harm_in_refused   harmful vs harmless, among REFUSED items
+        R_harm_in_complied  harmful vs harmless, among COMPLIED items
+
+    The second is literally the cell the plan names ("recognizes harmfulness but
+    nevertheless complies"); the first is the one that is well populated on both
+    models. Where a cell is too thin the variant is skipped rather than fitted on
+    noise.
+
+    The decisive comparisons, all against the split-half floor:
+      * cos(refusal-controlled harm, pooled harm) — is the pooled fit contaminated?
+      * cos(refusal-controlled harm @post, R_control) vs the pooled value — does
+        holding refusal constant reduce the harm/control overlap?
+
+    Both variants are fitted with the **role-balanced** estimator, unlike pooled
+    `R_harm`. That asymmetry is deliberate and load-bearing: pooled `R_harm` is
+    exempt from stratification because every instruction is rendered under all
+    four roles, so its two sides carry identical role composition. Conditioning on
+    the refusal label destroys that guarantee — refusal rate varies by role, which
+    is the same fact that forces `R_control` to be balanced. Fitting these
+    variants plainly would give them a role component, and because the headline
+    compares them against a role-balanced `R_control`, that component would push
+    the cosine DOWN and make the two variables look more separable than they are.
+    """
+    cfg, log = ctx.cfg, ctx.log
+    blob, idx, dirs, val = _load_cache(ctx)
+    train = idx.split.eq("train").to_numpy()
+    test = ~train
+    harmful = idx.harmful.astype(bool).to_numpy()
+
+    VARIANTS = [("R_harm_in_refused", "refused"), ("R_harm_in_complied", "complied")]
+    POSITIONS = ["t_inst", "t_post_inst"]
+    MIN_SIDE = 25
+
+    fitted, rows = {}, []
+    for name, subset in VARIANTS:
+        sub = _subset_mask(idx, subset)
+        n_h, n_s = int((sub & train & harmful).sum()), int((sub & train & ~harmful).sum())
+        if min(n_h, n_s) < MIN_SIDE:
+            log.warning(f"  {name}: minority side {min(n_h, n_s)} < {MIN_SIDE} — skipped "
+                        f"(harmful {n_h}, harmless {n_s} in train)")
+            continue
+
+        # These variants MUST be role-balanced, and pooled `R_harm` must not be.
+        #
+        # Pooled `R_harm` is exempt because every instruction is rendered under all
+        # four roles, so its two sides carry identical role composition by
+        # construction. Conditioning on the refusal label destroys precisely that
+        # property: refusal rate varies by role, so P(role | harmful, refused)
+        # differs from P(role | harmless, refused). Fitting these variants with the
+        # plain estimator would therefore bake a role component into them — and
+        # since the headline compares them against a role-balanced `R_control`, an
+        # unbalanced fit would DEPRESS that cosine and overstate the separability.
+        imb = {c: extract.composition_imbalance(
+                   idx[c].to_numpy()[(sub & train & harmful)].tolist(),
+                   idx[c].to_numpy()[(sub & train & ~harmful)].tolist())
+               for c in ("role", "design") if c in idx.columns}
+        for c, v in imb.items():
+            log.info(f"  {name}: {c} composition TV={v['total_variation']:.3f}"
+                     + ("  <-- balanced" if c == "role" else ""))
+
+        # Length-only baseline, on the SAME conditioned population. Without it an
+        # AUC here is uninterpretable: `R_harm_in_refused` contrasts ~870 harmful
+        # items against ~50 over-refused harmless ones, and harmful instructions
+        # are systematically longer (median 14 words vs 9). A direction that does
+        # not beat this is measuring length, not harm — and at this imbalance a
+        # perfect AUC is exactly what a length cue would produce.
+        fit_sel = sub & train
+        lb = extract.length_only_baseline(
+            idx.n_tokens.to_numpy()[fit_sel].tolist(),
+            harmful[fit_sel].tolist())
+        log.info(f"  {name}: length-only AUC {lb['auc']:.3f} "
+                 f"({lb['n_pos']} harmful vs {lb['n_neg']} harmless)")
+
+        for pos in POSITIONS:
+            key = f"{name}{'_at_post' if pos == 't_post_inst' else ''}"
+            best = None
+            for li in range(len(blob[pos])):
+                a = blob[pos][li]
+                tr_p = torch.tensor(sub & train & harmful)
+                tr_n = torch.tensor(sub & train & ~harmful)
+                te_p = torch.tensor(sub & test & harmful)
+                te_n = torch.tensor(sub & test & ~harmful)
+                if min(map(int, (tr_p.sum(), tr_n.sum(), te_p.sum(), te_n.sum()))) < 2:
+                    continue
+                d, _bal = extract.stratum_balanced_diff_of_means(
+                    a[tr_p], a[tr_n],
+                    idx["role"].to_numpy()[tr_p.numpy()].tolist(),
+                    idx["role"].to_numpy()[tr_n.numpy()].tolist(),
+                    key, li, "residual", pos, "harmful", "harmless")
+                tr_auc = extract.separation(d, a[tr_p], a[tr_n])["auc"]
+                if best is None or tr_auc > best[0]:
+                    te_all = te_p | te_n
+                    cb = extract.cluster_bootstrap_auc(
+                        d.project(a[te_all]), te_p[te_all].tolist(),
+                        idx.uid.to_numpy()[te_all.numpy()].tolist(), seed=cfg.seed)
+                    sh = extract.split_half_stability(a[tr_p], a[tr_n], seed=cfg.seed)
+                    best = (tr_auc, d, cb, sh, li)
+            if best is None:
+                continue
+            _, d, cb, sh, li = best
+            fitted[key] = d
+            rows.append({"model": ctx.model, "concept": key, "position": pos, "layer": li,
+                         "relative_depth": round(relative_depth(li, len(blob[pos])), 4),
+                         "auc": cb["auc"], "auc_ci_low": cb["ci_low"], "auc_ci_high": cb["ci_high"],
+                         "n_test_instructions": cb["n_clusters"],
+                         "split_half_cos": sh["mean"],
+                         "n_train_harmful": n_h, "n_train_harmless": n_s,
+                         "role_tv_before_balancing": imb.get("role", {}).get("total_variation"),
+                         "design_tv": imb.get("design", {}).get("total_variation"),
+                         "role_balanced": True,
+                         "length_only_auc": lb["auc"],
+                         "beats_length_baseline": bool(cb["auc"] > lb["auc"])})
+            log.info(f"  {key:<26} L{li:<3} AUC {cb['auc']:.3f} "
+                     f"[{cb['ci_low']:.2f},{cb['ci_high']:.2f}]  split-half {sh['mean']:.3f}  "
+                     f"(train n: {n_h} harmful / {n_s} harmless)")
+
+    save_df(ctx.out / "harm_controls.csv", pd.DataFrame(rows))
+
+    # ---- what does holding refusal constant change?
+    comp = []
+    def _cos(a, b):
+        return float(a.vector @ b.vector)
+
+    for key, d in fitted.items():
+        pos = d.position
+        pooled_name = "R_harm_at_post" if pos == "t_post_inst" else "R_harm"
+        if pooled_name not in dirs:
+            continue
+        floor = float(val[val.concept == pooled_name].split_half_cos.max())
+        p = dirs[pooled_name][d.layer]
+        c_pool = abs(_cos(d, p))
+        row = {"model": ctx.model, "variant": key, "position": pos, "layer": d.layer,
+               "cos_with_pooled_harm": c_pool, "split_half_floor": floor,
+               "pooled_harm_uncontaminated": bool(c_pool >= floor)}
+        # and the headline: harm/control overlap, pooled vs refusal-controlled
+        for ctrl in ("R_control", "R_control_harmless"):
+            if ctrl in dirs and pos == "t_post_inst":
+                cc = dirs[ctrl][d.layer]
+                row[f"cos_{ctrl}_refctrl"] = abs(_cos(d, cc))
+                row[f"cos_{ctrl}_pooled"] = abs(_cos(p, cc))
+        comp.append(row)
+        log.info(f"  {key:<26} cos with pooled {pooled_name}: {c_pool:.3f} "
+                 f"(split-half floor {floor:.3f}) -> "
+                 f"{'pooled fit is NOT refusal-contaminated' if c_pool >= floor else 'DIFFERENT DIRECTION — pooled fit carries refusal'}")
+        for ctrl in ("R_control", "R_control_harmless"):
+            if f"cos_{ctrl}_refctrl" in row:
+                log.info(f"    overlap with {ctrl}: pooled {row[f'cos_{ctrl}_pooled']:.3f} "
+                         f"-> refusal-controlled {row[f'cos_{ctrl}_refctrl']:.3f}")
+    save_df(ctx.out / "harm_controls_geometry.csv", pd.DataFrame(comp))
+    save_torch(ctx.out / "harm_control_directions.pt", fitted)
+
+
+# ---------------------------------------------------------------------------
 # stage: dimensionality_behavioural (E1.4b)
 # ---------------------------------------------------------------------------
 def _behavioural_null(ctx: Context, alpha: float) -> float:
@@ -886,21 +1157,10 @@ def stage_dimensionality_behavioural(ctx: Context) -> None:
         base_m = train & _subset_mask(idx, subset)
         mp, mn = _side_mask(idx, pos), _side_mask(idx, neg)
 
-        strat = []
-        for col in ("role", "source"):
-            for lvl in sorted(idx[col].unique()):
-                m = base_m & idx[col].eq(lvl).to_numpy()
-                p, n = torch.tensor(m & mp), torch.tensor(m & mn)
-                if int(p.sum()) >= 5 and int(n.sum()) >= 5:
-                    v = a[p].float().mean(0) - a[n].float().mean(0)
-                    if v.norm() > 1e-8:
-                        strat.append(v / v.norm())
-        if len(strat) < 3:
+        U = _stratified_subspace(a, idx, base_m, mp, mn)
+        if U is None:
             log.warning(f"  {concept}: too few strata for a subspace — skipped")
             continue
-
-        M = torch.stack(strat)                                    # [n_strata, d]
-        U = torch.linalg.svd(M.float(), full_matrices=False).Vh   # [r, d] row-space basis
         full = dirs[concept][li]
         v_raw = full.raw().float()                                # raw diff-of-means
 
@@ -927,7 +1187,11 @@ def stage_dimensionality_behavioural(ctx: Context) -> None:
             ref = float(np.mean([refusal.has_refusal_marker(g) for g in gen]))
             eff[k] = ref - base_ref
             rows.append({"model": slug, "concept": concept, "layer": li, "k": k,
-                         "n_strata": len(strat), "alpha": ALPHA,
+                         # U's rows ARE the stratified axes: `_stratified_subspace`
+                         # stacks one unit direction per stratum and returns the
+                         # row-space basis, so this is the count the inline `strat`
+                         # list used to give before that refactor.
+                         "n_strata": int(U.shape[0]), "alpha": ALPHA,
                          "baseline_refusal": base_ref, "refusal": ref,
                          "d_refusal": ref - base_ref,
                          "retained_norm": float(vk.norm()) / float(v_raw.norm())})
@@ -1054,6 +1318,141 @@ def stage_emergence(ctx: Context) -> None:
 # ---------------------------------------------------------------------------
 # stage: style  (E1.7 Level 1 — metadata versus style, and prompt-category variation)
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# stage: geometry_subspace  (E1.2 pass 2)
+# ---------------------------------------------------------------------------
+def stage_geometry_subspace(ctx: Context) -> None:
+    """E1.2 pass 2 — subspace geometry at the `k` that E1.4b measured.
+
+    PLAN-GEOM asks for principal angles, projection measures and canonical
+    correlations, and calls subspace measures "the primary analysis", with cosine
+    as the one-dimensional special case. EXPERIMENTS.md breaks the circularity —
+    subspace measures need `k`, `k` comes from E1.4 — by running E1.2 in two
+    passes, and rules:
+
+        If E1.4 returns k = 1 for every concept, pass 2 is degenerate and pass 1
+        is the analysis — state that outcome explicitly rather than reporting
+        principal angles between one-dimensional subspaces.
+
+    This stage implements that rule, **including the degenerate branch**, which
+    is why it runs unconditionally rather than only when some k > 1: "pass 2 was
+    degenerate" is a finding the paper has to state, and it cannot be stated by a
+    stage that silently declines to run.
+
+    Three named quantities, one spectrum. Between subspaces, the canonical
+    correlations *are* the cosines of the principal angles, and the projection
+    metric is their normalised sum of squares — see `extract.principal_angles`.
+    Reporting them as three independent measurements would triple-count one fact,
+    so the spectrum is computed once and the summaries derived from it. The
+    genuinely independent measurement is the **data-weighted** canonical
+    correlation, which asks whether the activations that actually occur live in
+    the part of the two subspaces that agrees.
+
+    Nulls. A rank-1 cosine band is the wrong reference here: two random
+    `k`-dimensional subspaces overlap more than two random lines, by an amount
+    that grows with `k`, so the pass-1 band would make any `k > 1` overlap look
+    significant by construction. Each pair gets a null matched to its own
+    `(k_a, k_b)`.
+    """
+    import json
+    cfg, log, slug = ctx.cfg, ctx.log, ctx.model
+    blob, idx, dirs, val = _load_cache(ctx)
+    train = idx.split.eq("train").to_numpy()
+
+    kpath = ctx.out / "behavioural_k.json"
+    if not kpath.exists():
+        raise SystemExit(
+            f"[{slug}] E1.2 pass 2 requires behavioural_k.json from E1.4b; run "
+            f"`--only dim_behavioural` first. Pass 2 is defined at the k that "
+            f"E1.4b measures, so guessing k here would defeat its purpose.")
+    k_star = {c: v for c, v in json.loads(kpath.read_text())["k_star"].items()
+              if v is not None}
+    if not k_star:
+        raise SystemExit(f"[{slug}] behavioural_k.json contains no usable k")
+
+    # ---- build each concept's rank-k subspace, by the SAME construction E1.4b
+    # used to measure k. A different basis here would mean the reported k does
+    # not describe the subspace being compared.
+    bases, meta = {}, []
+    for concept, k in sorted(k_star.items()):
+        if concept not in dirs:
+            continue
+        position, pos, neg, subset, _strat = SPECS[concept]
+        sub = val[val.concept == concept]
+        li = int(sub.loc[sub.train_auc.idxmax(), "layer"])
+        a = blob[position][li]
+        U = _stratified_subspace(a, idx, train & _subset_mask(idx, subset),
+                                 _side_mask(idx, pos), _side_mask(idx, neg))
+        if U is None:
+            log.warning(f"  {concept}: too few strata for a subspace — skipped")
+            continue
+        kk = min(int(k), U.shape[0])
+        bases[concept] = (U[:kk], position, li)
+        meta.append({"model": slug, "concept": concept, "k_star": int(k),
+                     "k_used": kk, "position": position, "layer": li,
+                     "n_strata_axes": int(U.shape[0])})
+        log.info(f"  {concept:<22} k*={k} basis {kk}x{U.shape[1]} @L{li} ({position})")
+
+    degenerate = bool(bases) and all(v[0].shape[0] == 1 for v in bases.values())
+    d_model = next(iter(bases.values()))[0].shape[1] if bases else 0
+
+    # ---- pairwise, WITHIN a position: the residual basis differs by layer and by
+    # position, so a cross-position angle is not interpretable.
+    rows = []
+    names = sorted(bases)
+    for i, A in enumerate(names):
+        for B in names[i + 1:]:
+            Ua, pa_, la = bases[A]
+            Ub, pb_, lb = bases[B]
+            if pa_ != pb_:
+                continue
+            pa = extract.principal_angles(Ua, Ub)
+            null = extract.random_subspace_null(d_model, pa["k_a"], pa["k_b"],
+                                                n_draws=1000, seed=cfg.seed)
+            # data-weighted CCA on held-out activations at A's layer
+            test = ~train
+            Xa = (blob[pa_][la][torch.tensor(test)].float() @ Ua.T)
+            Xb = (blob[pb_][la][torch.tensor(test)].float() @ Ub.T)
+            cca = extract.data_canonical_correlations(Xa, Xb)
+            rows.append({
+                "model": slug, "concept_a": A, "concept_b": B, "position": pa_,
+                "layer_a": la, "layer_b": lb, "same_layer": la == lb,
+                "k_a": pa["k_a"], "k_b": pa["k_b"],
+                "projection_metric": pa["projection_metric"],
+                "null_p97_5": null["p97.5"], "null_mean": null["mean"],
+                "beyond_null": pa["projection_metric"] > null["p97.5"],
+                "smallest_angle_deg": pa["smallest_principal_angle_deg"],
+                "largest_angle_deg": pa["largest_principal_angle_deg"],
+                "cos_principal_angles": ";".join(f"{v:.4f}" for v in pa["cos_principal_angles"]),
+                "data_cca": ";".join(f"{v:.4f}" for v in cca),
+                "data_cca_max": max(cca) if cca else float("nan"),
+                "degenerate_rank_one": pa["degenerate_rank_one"],
+            })
+            log.info(f"  {A} vs {B}: proj {pa['projection_metric']:.3f} "
+                     f"(null p97.5 {null['p97.5']:.3f}) "
+                     f"angles {[round(v,1) for v in pa['principal_angles_deg']]} deg"
+                     + (f"  data-CCA max {max(cca):.3f}" if cca else ""))
+
+    save_df(ctx.out / "geometry_subspace.csv", pd.DataFrame(rows))
+    save_json(ctx.out / "geometry_subspace_summary.json", {
+        "model": slug,
+        "k_star": k_star,
+        "bases": meta,
+        "pass2_degenerate": degenerate,
+        "interpretation": (
+            "Every concept has k = 1, so principal angles reduce exactly to the "
+            "pass-1 cosine and pass 2 adds nothing: PASS 1 IS THE ANALYSIS."
+            if degenerate else
+            "At least one concept has k > 1, so subspace measures are not "
+            "reducible to the pass-1 cosine and are the primary geometry."),
+        "note": ("Between subspaces the canonical correlations ARE the cosines of "
+                 "the principal angles and the projection metric is their "
+                 "normalised sum of squares; the three named quantities are one "
+                 "spectrum. `data_cca` is the independent, data-weighted measure."),
+    })
+    log.info(f"[{slug}] E1.2 pass 2: {'DEGENERATE (all k=1)' if degenerate else 'subspace measures apply'}")
+
+
 def stage_style(ctx: Context) -> None:
     """Does the role direction track the role TAG, or the linguistic style?
 
@@ -1161,6 +1560,59 @@ def stage_style(ctx: Context) -> None:
                 train & idx.source.eq(ss).to_numpy())
     _compare("R_harm", li_h, a_h, pair_groups, "source_pair")
 
+    # --- E1.1 checklist: the Zhao replication, as a named artifact.
+    #
+    # O-11 downgraded this on the grounds that the experiment already runs here —
+    # `advbench|alpaca` is a canonical Zhao-style setup and is one of the pairs
+    # refitted above. What was missing is that `style_vs_metadata.csv` records
+    # only the pairwise COSINES between refits, not each refit's separation, so
+    # the one number a like-for-like comparison needs was never emitted.
+    #
+    # Swept over every layer because Zhao report layer-wise; the write-up picks
+    # the comparison point. `published_auc` is deliberately left empty rather than
+    # filled from memory — it must be read off their paper.
+    ZHAO_PAIR = ("advbench", "alpaca")
+    zrows = []
+    if ZHAO_PAIR[0] in harm_src and ZHAO_PAIR[1] in safe_src:
+        hp = idx.source.eq(ZHAO_PAIR[0]).to_numpy()
+        sp = idx.source.eq(ZHAO_PAIR[1]).to_numpy()
+        for li in sorted(blob["t_inst"]):
+            a = blob["t_inst"][li]
+            tr_p, tr_n = torch.tensor(hp & train), torch.tensor(sp & train)
+            te_p, te_n = torch.tensor(hp & ~train), torch.tensor(sp & ~train)
+            if min(map(int, (tr_p.sum(), tr_n.sum(), te_p.sum(), te_n.sum()))) < 5:
+                continue
+            d = extract.diff_of_means(a[tr_p], a[tr_n], "R_harm_zhao", li,
+                                      "residual", "t_inst", "harmful", "harmless")
+            te_all = te_p | te_n
+            cb = extract.cluster_bootstrap_auc(
+                d.project(a[te_all]), te_p[te_all].tolist(),
+                idx.uid.to_numpy()[te_all.numpy()].tolist(), seed=cfg.seed)
+            lb = extract.length_only_baseline(
+                idx.n_tokens.to_numpy()[(hp | sp)].tolist(), hp[(hp | sp)].tolist())
+            sh = extract.split_half_stability(a[tr_p], a[tr_n], seed=cfg.seed)
+            zrows.append({
+                "model": ctx.model, "contrast": f"{ZHAO_PAIR[0]} vs {ZHAO_PAIR[1]}",
+                "position": "t_inst", "layer": li,
+                "relative_depth": round(relative_depth(li, len(blob["t_inst"])), 4),
+                "auc": cb["auc"], "auc_ci_low": cb["ci_low"], "auc_ci_high": cb["ci_high"],
+                "n_test_instructions": cb["n_clusters"],
+                "length_only_auc": lb["auc"], "split_half_cos": sh["mean"],
+                "n_train_harmful": int(tr_p.sum()), "n_train_harmless": int(tr_n.sum()),
+                "published_auc": "",          # fill from Zhao et al. 2507.11878
+                "published_source": "Zhao et al., arXiv 2507.11878",
+            })
+        save_df(ctx.out / "zhao_replication.csv", pd.DataFrame(zrows))
+        if zrows:
+            best = max(zrows, key=lambda r: r["auc"])
+            log.info(f"  Zhao replication ({ZHAO_PAIR[0]} vs {ZHAO_PAIR[1]}): "
+                     f"peak AUC {best['auc']:.3f} at L{best['layer']} "
+                     f"(depth {best['relative_depth']:.2f}), "
+                     f"length-only {best['length_only_auc']:.3f}")
+    else:
+        log.warning(f"  Zhao replication skipped — {ZHAO_PAIR} not both present "
+                    f"(harmful sources {harm_src}, harmless {safe_src})")
+
     # --- Harm across prompt CATEGORY (PLAN-GEOM), same pairing logic.
     cat_groups = {}
     for c in sorted(idx[idx.harmful.astype(bool)].category.dropna().unique()):
@@ -1181,6 +1633,164 @@ def stage_style(ctx: Context) -> None:
 # ---------------------------------------------------------------------------
 # stage: fidelity  (E1.1 criteria that the first consolidation dropped)
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# stage: style_level2  (E1.7 Level 2 — tag versus register, crossed)
+# ---------------------------------------------------------------------------
+def stage_style_level2(ctx: Context) -> None:
+    """Does `R_role` track the role TAG or the linguistic REGISTER?
+
+    PLAN-EXTRACT asks whether *"explicit role metadata and linguistic style
+    produce compatible or conflicting representations."* Level 1 can only measure
+    how the two co-vary in the corpus as it happens to be, because there the tag
+    and the register of the content are not independent. Level 2 crosses them on
+    the frozen E1.7 corpus: the same request in three registers, under every tag.
+
+    Two directions per arm, fitted at the same position and layer so they are
+    comparable at all:
+
+      TAG       role `a` vs role `b`, register held constant (pooled over
+                registers, which is balanced by construction here since every
+                base appears in every register)
+      REGISTER  register `x` vs register `y`, tag held constant
+
+    The decisive quantity is `cos(TAG, REGISTER)` read against the split-half
+    floor of each. Near zero: `R_role` is metadata, indifferent to how the text
+    sounds. Near the floor: the two are the same direction and the role variable
+    is a style detector.
+
+    Two arms, and the difference between them is the point. `generated` is the
+    real test — register redistributed through the text. `template` is a control
+    in which register lives in a fixed framing phrase, so it is trivially
+    separable and upper-bounds how detectable register can be. Orthogonality in
+    the template arm is the stronger statement of the two.
+    """
+    from core.capture import ActivationCapture
+    from core.model_io import load_model, resolve_device
+    from core.positions import render
+
+    cfg, log, slug = ctx.cfg, ctx.log, ctx.model
+    sdir = cfg.results_root / "e1_7_style"
+    if not (sdir / "style_corpus.jsonl").exists():
+        raise SystemExit(
+            f"[{slug}] E1.7 Level 2 needs the frozen style corpus; run "
+            f"`experiments/e1_7_style_corpus.py` first. It is a separate build "
+            f"because it requires generation and E1.0 is deliberately model-free.")
+    items = pools.load_style_corpus(sdir)
+    log.info(f"[{slug}] style corpus: {len(items)} items "
+             f"({len({i.arm for i in items})} arms, {len({i.register for i in items})} registers)")
+
+    device = resolve_device()
+    model, tok = load_model(ctx.spec().model_id, device, logger=log)
+    n_layers = model_meta.num_layers(model.config)
+
+    recs, rendered = [], []
+    for it in items:
+        for role in cfg.roles:
+            R = render(tok, it.text, role, "fixed_slot")
+            rendered.append(R)
+            recs.append({"uid": it.uid, "base_uid": it.base_uid, "arm": it.arm,
+                         "register": it.register, "role": role, "split": it.split})
+    idx = pd.DataFrame(recs)
+    log.info(f"[{slug}] rendering {len(rendered)} items "
+             f"({len(items)} style items x {len(cfg.roles)} role tags)")
+
+    cap = ActivationCapture(model, site="residual")
+    acts = cap.at_positions(tok, rendered, ("t_inst", "t_post_inst"),
+                            list(range(n_layers)), cfg.batch_size, device,
+                            log_every=25, logger=log)
+
+    train = idx.split.eq("train").to_numpy()
+    out = []
+    for arm in sorted(idx.arm.unique()):
+        in_arm = train & idx.arm.eq(arm).to_numpy()
+        for position in ("t_inst", "t_post_inst"):
+            # --- TAG directions, register pooled (balanced by construction)
+            tag_dirs = {}
+            for a_r, b_r in ROLE_CONTRASTS:
+                ma = in_arm & idx.role.eq(a_r).to_numpy()
+                mb = in_arm & idx.role.eq(b_r).to_numpy()
+                if ma.sum() < 10 or mb.sum() < 10:
+                    continue
+                tag_dirs[f"{a_r}_vs_{b_r}"] = (ma, mb)
+            # --- REGISTER directions, tag pooled (also balanced by construction)
+            regs = sorted(idx.register.unique())
+            reg_dirs = {}
+            for i, x in enumerate(regs):
+                for y in regs[i + 1:]:
+                    mx = in_arm & idx.register.eq(x).to_numpy()
+                    my = in_arm & idx.register.eq(y).to_numpy()
+                    if mx.sum() < 10 or my.sum() < 10:
+                        continue
+                    # The register contrast must be PAIRED within base, or it is
+                    # partly a contrast between different requests — the confound
+                    # the whole design exists to remove. The corpus build already
+                    # guarantees it by keeping only bases complete in every
+                    # register, which makes the two sides carry identical base
+                    # sets and so makes the pooled difference algebraically equal
+                    # to the mean within-base difference. Asserted rather than
+                    # assumed, because it is the property everything rests on and
+                    # it lives in a different file.
+                    bx = set(idx.base_uid.to_numpy()[mx])
+                    by = set(idx.base_uid.to_numpy()[my])
+                    if bx != by:
+                        log.warning(
+                            f"  [{arm}/{position}] {x} vs {y}: base sets differ "
+                            f"({len(bx - by)} only-{x}, {len(by - bx)} only-{y}) — "
+                            f"contrast is NOT paired; skipped")
+                        continue
+                    reg_dirs[f"{x}_vs_{y}"] = (mx, my)
+
+            for li in range(n_layers):
+                A = acts[position][li]
+
+                def fit(mp, mn, name):
+                    d = extract.diff_of_means(A[torch.tensor(mp)], A[torch.tensor(mn)],
+                                              name, li, "residual", position, "p", "n")
+                    sh = extract.split_half_stability(A[torch.tensor(mp)],
+                                                      A[torch.tensor(mn)], seed=cfg.seed)
+                    return d, sh["mean"]
+
+                fitted_tag = {k: fit(*v, f"tag_{k}") for k, v in tag_dirs.items()}
+                fitted_reg = {k: fit(*v, f"reg_{k}") for k, v in reg_dirs.items()}
+                for tk, (td, tf) in fitted_tag.items():
+                    for rk, (rd, rf) in fitted_reg.items():
+                        out.append({
+                            "model": slug, "arm": arm, "position": position, "layer": li,
+                            "relative_depth": round(relative_depth(li, n_layers), 4),
+                            "tag_contrast": tk, "register_contrast": rk,
+                            "cos_tag_register": abs(float(td.vector @ rd.vector)),
+                            "tag_split_half": tf, "register_split_half": rf,
+                            "floor": min(tf, rf),
+                            # Below the floor means the two directions differ by
+                            # more than either differs from itself — the only
+                            # reading under which "distinct" is defensible.
+                            "distinct": bool(abs(float(td.vector @ rd.vector)) < min(tf, rf)),
+                        })
+
+    df = pd.DataFrame(out)
+    save_df(ctx.out / "style_level2.csv", df)
+
+    summary = {"model": slug, "n_rows": int(len(df)),
+               "corpus": json.loads((sdir / "style_corpus_meta.json").read_text())}
+    for arm, g in df.groupby("arm"):
+        best = g.loc[g.cos_tag_register.idxmax()]
+        summary[f"{arm}"] = {
+            "median_cos_tag_register": round(float(g.cos_tag_register.median()), 4),
+            "max_cos_tag_register": round(float(g.cos_tag_register.max()), 4),
+            "median_floor": round(float(g.floor.median()), 4),
+            "frac_distinct": round(float(g.distinct.mean()), 4),
+            "worst_case": {"layer": int(best.layer), "position": best.position,
+                           "tag": best.tag_contrast, "register": best.register_contrast,
+                           "cos": round(float(best.cos_tag_register), 4),
+                           "floor": round(float(best.floor), 4)},
+        }
+        log.info(f"  [{arm}] cos(tag, register) median "
+                 f"{g.cos_tag_register.median():.3f} max {g.cos_tag_register.max():.3f} "
+                 f"vs floor {g.floor.median():.3f} — distinct in "
+                 f"{g.distinct.mean():.1%} of cells")
+    save_json(ctx.out / "style_level2_summary.json", summary)
+
+
 def stage_fidelity(ctx: Context) -> None:
     """Two E1.1 checks: the role paper's own read site, and cross-corpus transfer.
 
@@ -1334,7 +1944,11 @@ def _delta(steered: torch.Tensor, base: torch.Tensor, direction, gap: float) -> 
     per_item = ((direction.project(steered).float() - direction.project(base).float()) / gap)
     v = per_item.numpy()
     g = np.random.default_rng(0)
-    boot = [float(np.mean(g.choice(v, size=len(v), replace=True))) for _ in range(2000)]
+    # Vectorised resample rather than a Python loop over draws — identical
+    # estimator. This runs once per matrix cell, and E1.6 now reads EVERY layer
+    # downstream of the steer layer (order 20k cells per model, up from ~2k), so
+    # the loop form would add tens of minutes of pure CPU to every causal run.
+    boot = v[g.integers(0, len(v), size=(2000, len(v)))].mean(axis=1)
     return {"delta": float(v.mean()),
             "ci_low": float(np.percentile(boot, 2.5)),
             "ci_high": float(np.percentile(boot, 97.5))}
@@ -1423,13 +2037,31 @@ def stage_causal(ctx: Context) -> None:
     log.info(f"[{slug}] control variable: {ctrl_key} (variant='{ctrl_variant}', "
              f"requested '{variant}')")
 
-    def build(layer) -> Dict[str, object]:
+    def build(layer, position: str = "t_post_inst") -> Dict[str, object]:
+        """Read-out directions at ONE position.
+
+        Position matters and cannot be mixed. The residual basis differs between
+        `t_inst` and `t_post_inst`, so projecting a `t_inst` activation onto a
+        `t_post_inst`-fitted direction is exactly the cross-position comparison
+        the analysis protocol forbids — it would produce a number with no
+        interpretation rather than an error.
+
+        `R_control` therefore has **no `t_inst` entry**: refused-versus-complied
+        is a property of the state after the instruction has been read, and no
+        `t_inst` fit of it exists. That asymmetry is a fact about the variable,
+        not a missing feature, so the token-resolved readout reports `R_harm` and
+        `R_role` at `t_inst` and all three at `t_post_inst`.
+        """
         c = {}
-        if "R_harm_at_post" in dirs:
-            c["R_harm"] = dirs["R_harm_at_post"][layer]
-        c["R_control"] = dirs[ctrl_key][layer]
-        c["R_role"] = _role_direction(blob, idx, "t_post_inst", layer,
-                                      "tool", "user", "R_role_tool_vs_user")
+        if position == "t_post_inst":
+            if "R_harm_at_post" in dirs:
+                c["R_harm"] = dirs["R_harm_at_post"][layer]
+            c["R_control"] = dirs[ctrl_key][layer]
+        else:
+            if "R_harm" in dirs:
+                c["R_harm"] = dirs["R_harm"][layer]
+        c["R_role"] = _role_direction(blob, idx, position, layer, "tool", "user",
+                                      f"R_role_tool_vs_user@{position}")
         return c
 
     # ---- probe set: balanced, held-out, one role and one design so that the
@@ -1456,13 +2088,19 @@ def stage_causal(ctx: Context) -> None:
         raise ValueError("re-rendered corpus does not align with the cached activation index")
     texts_tr = [rendered.text.iloc[i] for i in sel_tr]
     texts_te = [rendered.text.iloc[i] for i in sel_te]
+    # `Rendered` objects for the train probe set: Stage B's steered-position masks
+    # are per item, built from each item's own token spans.
+    rendered_tr = [rendered.rendered.iloc[i] for i in sel_tr]
+    # The `Rendered` objects carry each item's own token positions; the readout
+    # needs them because `t_inst` sits at a different index in every row.
+    rendered_te = [rendered.rendered.iloc[i] for i in sel_te]
     harm_te = harmful[sel_te]
 
     # ---- precondition on the primitive itself
     mid = max(1, int(0.45 * n_layers))
     sanity = steering_sanity(model, tok, texts_tr, build(mid)["R_harm"], mid,
                              device, cfg.batch_size, seed=cfg.seed)
-    save_json(ctx.out / "steering_sanity.json", sanity)
+    save_json(ctx.out / f"steering_sanity{CAUSAL_SUFFIX}.json", sanity)
     if not sanity["deterministic"]:
         raise SystemExit("steering is non-deterministic; the measurement is unreliable")
     log.info(f"  sanity @L{mid}: determinism KL {sanity['determinism_kl']:.1e} "
@@ -1502,33 +2140,115 @@ def stage_causal(ctx: Context) -> None:
                              "margin_shift": float((st["refusal_margin"]
                                                     - base_stats_tr["refusal_margin"]).mean())})
     prof_df = pd.DataFrame(prof)
-    save_df(ctx.out / "causal_layer_profile.csv", prof_df)
+    save_df(ctx.out / f"causal_layer_profile{CAUSAL_SUFFIX}.csv", prof_df)
 
     # Steer layers named on TRAIN: the depth at which each source moves the
     # behavioural readout most, plus fixed sensitivity depths so the verdict is
     # never read off a single selected layer.
-    picked = (prof_df.assign(absshift=prof_df.margin_shift.abs())
-              .groupby("source").absshift.idxmax().to_dict())
-    chosen = sorted({int(prof_df.loc[i, "steer_layer"]) for i in picked.values()})
+    # EXPERIMENTS.md: "top-3 layers per source from A, plus fixed sensitivity
+    # layers at relative depth {0.25, 0.5, 0.75}". Top-3, not the argmax: a single
+    # best layer per source makes Stage C's layer set hostage to one noisy
+    # train-side maximum.
+    TOP_PER_SOURCE = 3
+    chosen = sorted({
+        int(r.steer_layer)
+        for _, g in prof_df.assign(absshift=prof_df.margin_shift.abs()).groupby("source")
+        for _, r in g.nlargest(TOP_PER_SOURCE, "absshift").iterrows()})
     fixed = sorted({max(1, int(f * (n_layers - 1))) for f in (0.25, 0.5, 0.75)})
     steer_layers = sorted(set(chosen) | set(fixed))
     steer_layers = [l for l in steer_layers if l < n_layers - 1]
-    log.info(f"  stage A picked {chosen} (per-source argmax on train); "
+    log.info(f"  stage A top-{TOP_PER_SOURCE}/source {chosen}; "
              f"sensitivity depths {fixed}; steering at {steer_layers}")
+
+    # =====================================================================
+    # Stage B — refine, on the TRAIN split.
+    # The alpha and token-position profiles. This is where the pre-registered
+    # steered-position sweep lives: Stage A fixes alpha=+/-1 and steers every
+    # real token, Stage C is the verdict and must not be used to choose anything.
+    # =====================================================================
+    log.info(f"[{slug}] stage B: alpha x token-position profile on train, "
+             f"{len(steer_layers)} layers x {len(ALPHAS)*len(SIGNS)} alpha x "
+             f"{len(TOKEN_SETS)} token sets")
+    brows = []
+    for L in steer_layers:
+        cs = build(L)
+        for tset in TOKEN_SETS:
+            if tset == "all_real":
+                pmasks = None
+            else:
+                pmasks = [_steer_mask(r, tset) for r in rendered_tr]
+                empty = sum(1 for m in pmasks if not any(m))
+                if empty:
+                    # Skipped, not silently steered everywhere. An empty span is a
+                    # fact about the chat template, so it is logged once per cell
+                    # rather than averaged into a profile that looks complete.
+                    log.info(f"    L{L} {tset}: {empty}/{len(pmasks)} items have an "
+                             f"empty span — token set skipped at this layer")
+                    continue
+            for name, d in cs.items():
+                for a in ALPHAS:
+                    for sgn in SIGNS:
+                        st = next_token_stats(model, tok, texts_tr, d, L, sgn * a,
+                                              device, cfg.batch_size,
+                                              position_masks=pmasks)
+                        kl = float(kl_from_baseline(base_stats_tr["logprobs"],
+                                                    st["logprobs"]).mean())
+                        brows.append({
+                            "model": slug, "stage": "B", "steer_layer": L,
+                            "relative_depth": round(relative_depth(L, n_layers), 4),
+                            "source": name, "token_set": tset,
+                            "alpha": sgn * a, "abs_alpha": a, "mean_kl": kl,
+                            "margin_shift": float((st["refusal_margin"]
+                                                   - base_stats_tr["refusal_margin"]).mean())})
+        log.info(f"    L{L}: {len([r for r in brows if r['steer_layer'] == L])} cells")
+    b_df = pd.DataFrame(brows)
+    save_df(ctx.out / f"causal_stage_b{CAUSAL_SUFFIX}.csv", b_df)
+    if len(b_df):
+        for tset, g in b_df.groupby("token_set"):
+            log.info(f"  stage B {tset:<18} mean |margin shift| "
+                     f"{g.margin_shift.abs().mean():.4f}  mean KL {g.mean_kl.mean():.4f}")
 
     # =====================================================================
     # Stage C — the verdict, on the TEST split.
     # =====================================================================
     rows = []
     for L in steer_layers:
-        read_layers = sorted({l for l in (L + 1, int((L + n_layers) / 2), n_layers - 1) if l > L})
+        # EVERY layer downstream of the steer layer, as EXPERIMENTS.md requires:
+        # "Read layers are free within a forward pass, so every layer downstream
+        # of the steer layer is read." An earlier version read three of them
+        # (L+1, midpoint, last), which reduced a dense depth profile to three
+        # samples of it.
+        read_layers = list(range(L + 1, n_layers))
         if not read_layers:
             continue
+        # ...but the GATE's test family stays those three, pre-registered.
+        #
+        # Reading a layer is free; *testing* it is not. Two reasons, and the
+        # second is the stronger one:
+        #
+        # 1. Adjacent read layers of one steered forward pass are near-duplicates,
+        #    so folding ~30 of them into the BH family multiplies the family
+        #    without adding evidence, and every real effect pays for it.
+        # 2. `range(L+1, n_layers)` has a length that DEPENDS ON L — 27 layers when
+        #    steering at 5, 7 when steering at 25. An all-layer family would
+        #    therefore penalise early steer layers ~4x harder than late ones for
+        #    a purely positional reason. Defined relative to L, these three make
+        #    every steer layer contribute equally.
+        #
+        # Fixed in advance, not chosen after seeing the profile: selecting gate
+        # layers by which ones looked strongest is the exact researcher degree of
+        # freedom the pre-registration exists to remove.
+        gate_layers = {l for l in (L + 1, int((L + n_layers) / 2), n_layers - 1) if l > L}
         steer_cs = build(L)
-        read_cs = {l: build(l) for l in read_layers}
+        # Read at BOTH corpus positions: PLAN-INF asks for the effect "at later
+        # layers and later tokens", and `t_inst` -> `t_post_inst` is precisely an
+        # earlier and a later token of the same forward pass. Each position uses
+        # directions fitted at that position (see `build`).
+        read_cs = {(l, p): build(l, p) for l in read_layers for p in READ_POSITIONS}
 
         base_caps = steer_and_capture(model, tok, texts_te, None, L, read_layers,
-                                      0.0, device, cfg.batch_size)
+                                      0.0, device, cfg.batch_size,
+                                      read_rendered=rendered_te, read_which=READ_POSITIONS)
         base_stats = next_token_stats(model, tok, texts_te, None, L, 0.0, device, cfg.batch_size)
 
         # Behavioural baseline by GENERATION, labelled with the published
@@ -1543,8 +2263,8 @@ def stage_causal(ctx: Context) -> None:
                  f"harmless {base_ref[~harm_te].mean():.3f})")
 
         # Each concept's own class-mean separation, from its own fitted contrast.
-        gaps = {l: {nm: _class_gap(d) for nm, d in read_cs[l].items()}
-                for l in read_layers}
+        gaps = {key: {nm: _class_gap(d) for nm, d in cs.items()}
+                for key, cs in read_cs.items()}
 
         # Magnitude-matched random reference at this layer. NOT a capability
         # bound (see the docstring) — it is the denominator of `content_ratio`,
@@ -1570,7 +2290,9 @@ def stage_causal(ctx: Context) -> None:
                 for sgn in SIGNS:
                     alpha = sgn * a
                     caps = steer_and_capture(model, tok, texts_te, sd, L, read_layers,
-                                             alpha, device, cfg.batch_size)
+                                             alpha, device, cfg.batch_size,
+                                             read_rendered=rendered_te,
+                                             read_which=READ_POSITIONS)
                     st = next_token_stats(model, tok, texts_te, sd, L, alpha, device, cfg.batch_size)
                     kl_per = kl_from_baseline(base_stats["logprobs"], st["logprobs"])
                     kl = float(kl_per.mean())
@@ -1585,19 +2307,25 @@ def stage_causal(ctx: Context) -> None:
                     d_ref_harmful = float(ref[harm_te].mean() - base_ref[harm_te].mean())
                     d_ref_harmless = float(ref[~harm_te].mean() - base_ref[~harm_te].mean())
                     for l in read_layers:
-                        for tgt, td in read_cs[l].items():
-                            dd = _delta(caps[l][:, 0, :], base_caps[l][:, 0, :], td, gaps[l][tgt])
-                            # secondary readout: did separability degrade?
-                            try:
-                                auc_s = extract.auc(td.project(caps[l][:, 0, :])[harm_te],
-                                                    td.project(caps[l][:, 0, :])[~harm_te])
-                                auc_b = extract.auc(td.project(base_caps[l][:, 0, :])[harm_te],
-                                                    td.project(base_caps[l][:, 0, :])[~harm_te])
-                            except Exception:
-                                auc_s = auc_b = float("nan")
-                            rows.append({
+                        for pi, rpos in enumerate(READ_POSITIONS):
+                            cs = read_cs[(l, rpos)]
+                            A, B = caps[l][:, pi, :], base_caps[l][:, pi, :]
+                            for tgt, td in cs.items():
+                                dd = _delta(A, B, td, gaps[(l, rpos)][tgt])
+                                # secondary readout: did separability degrade?
+                                try:
+                                    auc_s = extract.auc(td.project(A)[harm_te],
+                                                        td.project(A)[~harm_te])
+                                    auc_b = extract.auc(td.project(B)[harm_te],
+                                                        td.project(B)[~harm_te])
+                                except Exception:
+                                    auc_s = auc_b = float("nan")
+                                rows.append({
                                 "model": slug, "stage": "C", "steer_layer": L,
-                                "read_layer": l, "source": src, "target": tgt,
+                                "read_layer": l, "read_position": rpos,
+                                "gate_read_layer": l in gate_layers,
+                                "relative_read_depth": round(relative_depth(l, n_layers), 4),
+                                "source": src, "target": tgt,
                                 "alpha": alpha, "abs_alpha": a,
                                 "delta": dd["delta"], "ci_low": dd["ci_low"],
                                 "ci_high": dd["ci_high"],
@@ -1611,21 +2339,22 @@ def stage_causal(ctx: Context) -> None:
                                 "d_refusal_harmless": d_ref_harmless,
                                 "margin_shift": float((st["refusal_margin"]
                                                        - base_stats["refusal_margin"]).mean()),
-                                "class_gap": gaps[l][tgt],
-                            })
+                                "class_gap": gaps[(l, rpos)][tgt],
+                                })
         log.info(f"  L{L}: {len([r for r in rows if r['steer_layer'] == L])} cells")
 
     mat = pd.DataFrame(rows)
-    save_df(ctx.out / "causal_matrix.csv", mat)
+    save_df(ctx.out / f"causal_matrix{CAUSAL_SUFFIX}.csv", mat)
 
     # =====================================================================
     # The gate
     # =====================================================================
     verdict = _adjudicate(mat, log, slug)
-    save_json(ctx.out / "causal_gate.json", verdict)
+    save_json(ctx.out / f"causal_gate{CAUSAL_SUFFIX}.json", verdict)
 
 
-def _adjudicate(mat: pd.DataFrame, log, slug: str) -> Dict[str, object]:
+def _adjudicate(mat: pd.DataFrame, log, slug: str,
+                opts: Optional[Dict[str, object]] = None) -> Dict[str, object]:
     """Gate 1, adjudicated across a swept capability bound.
 
     There is no published cutoff for "the intervention preserved capability", so
@@ -1634,10 +2363,24 @@ def _adjudicate(mat: pd.DataFrame, log, slug: str) -> Dict[str, object]:
     only reported as such if it is stable across the bounds where any cell
     survives; otherwise the sweep itself is the finding.
     """
+    # GATE 1 is adjudicated at `t_post_inst` ONLY.
+    #
+    # The matrix now carries a second read position (`t_inst`), added so the
+    # token-resolved readout PLAN-INF asks for exists. Adjudicating over both
+    # would silently change what the gate means: it would double the FDR family,
+    # mix two incomparable residual bases into one asymmetry test, and count the
+    # same intervention twice. The token profile is *additional evidence about
+    # the readout*, not additional gate cells.
+    if "read_position" in mat.columns:
+        mat = mat[mat.read_position == "t_post_inst"]
+    # The READ-LAYER family is NOT filtered here — it is an adjudication option
+    # (`gate_layers`) applied inside `_adjudicate_at`, so that the sweep can vary
+    # it. See `ADJUDICATION_DEFAULTS`.
+
     bounds = [0.1, 0.25, 0.5, 1.0, 2.0]
     per_bound = {}
     for b in bounds:
-        v = _adjudicate_at(mat, b)
+        v = _adjudicate_at(mat, b, opts)
         per_bound[str(b)] = v
         log.info(f"  KL_harmless <= {b:<4}: n_live={v['n_live']:<4} "
                  f"G1 {v['G1_diagonal_dominance']['rate']} "
@@ -1656,6 +2399,7 @@ def _adjudicate(mat: pd.DataFrame, log, slug: str) -> Dict[str, object]:
         overall = "bound-sensitive"
 
     out = {"model": slug, "n_cells": int(len(mat)),
+           "adjudication_options": {**ADJUDICATION_DEFAULTS, **(opts or {})},
            "capability_bounds_swept": bounds,
            "bounds_with_testable_pairs": testable,
            "per_bound": per_bound,
@@ -1706,8 +2450,49 @@ def _two_sample_p(d1: float, lo1: float, hi1: float,
     return float(erfc(z / sqrt(2)))
 
 
-def _adjudicate_at(mat: pd.DataFrame, kl_bound: float) -> Dict[str, object]:
-    """G1 sanity, G2 asymmetry, G3 behavioural dissociation at one capability bound."""
+# Every discretionary choice in the adjudication, in one place. The verdict has
+# been shown to move when these change (O-12), so they are named, defaulted to the
+# pre-registered settings, and swept by `tools/gate_sensitivity.py`. A verdict that
+# holds only at one setting is not a verdict.
+ADJUDICATION_DEFAULTS: Dict[str, object] = {
+    "null_q": 95.0,          # percentile of |delta| over random directions
+    "null_group": "alpha",   # "alpha" | "alpha_layer" | "pooled"
+    "g2_rule": "any",        # "any" | "both" — how many directions must beat the null
+    "fdr_q": 0.05,           # Benjamini-Hochberg level
+    "beh_null_q": 95.0,      # percentile for the behavioural null band
+    # Which read layers form the BH-FDR family. E1.6 READS every layer downstream
+    # of the steer layer; that dense profile is description and needs no
+    # multiplicity correction. Which of it is TESTED is a separate choice, and
+    # rather than defend one, it is swept — the same treatment the capability
+    # bound already gets (O-12), and free, because `tools/gate_sensitivity.py`
+    # re-adjudicates saved matrices on CPU.
+    #
+    #   "all"       every downstream layer. Uses all the evidence; a larger BH
+    #               family only makes the verdict HARDER to obtain, which is the
+    #               right failure mode for a go/no-go gate. Caveat: the family
+    #               size grows with distance from the output, so early steer
+    #               layers face a larger family than late ones — a
+    #               conservativeness gradient, not a false-positive risk.
+    #   "relative3" L+1, midpoint, last. Equal family size at every steer depth,
+    #               and adjacent layers are near-duplicates so little independent
+    #               evidence is lost.
+    "gate_layers": "all",    # "all" | "relative3"
+}
+
+
+def _adjudicate_at(mat: pd.DataFrame, kl_bound: float,
+                   opts: Optional[Dict[str, object]] = None) -> Dict[str, object]:
+    """G1 sanity, G2 asymmetry, G3 behavioural dissociation at one capability bound.
+
+    `opts` overrides any of `ADJUDICATION_DEFAULTS`; omitted keys take the
+    pre-registered value.
+    """
+    o = {**ADJUDICATION_DEFAULTS, **(opts or {})}
+    # Restrict the TEST family to the chosen read layers before anything is
+    # counted — including the random rows, so the null band is built from the
+    # same layers the real cells are tested at.
+    if str(o["gate_layers"]) == "relative3" and "gate_read_layer" in mat.columns:
+        mat = mat[mat.gate_read_layer.astype(bool)]
     real = mat[(mat.source != "random") & (mat.target.notna())]
     live = real[real.kl_harmless <= kl_bound]
     rnd = mat[mat.source == "random"]
@@ -1721,25 +2506,66 @@ def _adjudicate_at(mat: pd.DataFrame, kl_bound: float) -> Dict[str, object]:
     # behavioural band at 0.39 while no in-range real cell exceeded 0.27, so the
     # dissociation condition could never fire; at matched alpha the same real
     # directions move refusal 4-8x more than random.)
-    def _band(df: pd.DataFrame, col: str, by: Sequence[str]) -> Dict:
-        return {k: (float(np.percentile(g[col].abs().dropna(), 95))
-                    if len(g[col].dropna()) else float("nan"))
-                for k, g in df.groupby(list(by))}
+    def _band(df: pd.DataFrame, col: str, by: Sequence[str], q: float) -> Dict:
+        """Null band per group, with keys the callers can actually look up.
 
-    null_by = _band(rnd, "delta", ["target", "abs_alpha"])
+        **`groupby` on a single-element LIST yields TUPLE keys** — `(0.25,)`, not
+        `0.25`. `beh_nb` looked up the scalar, missed every key, and fell through
+        to its `float("inf")` default, so `moved_behaviour = shift > inf` was
+        ALWAYS FALSE and **G3 could never fire**. The gate is `G2 AND G3`, so
+        every FAIL it has ever recorded was FAIL by construction rather than by
+        evidence. The same mismatch hit `nb` under `null_group="pooled"`, which
+        also groups by one column.
+
+        Single-column keys are therefore unwrapped to scalars here, so a caller
+        indexing by the natural value is right and cannot silently miss.
+        """
+        if not by:
+            v = df[col].abs().dropna()
+            return {(): float(np.percentile(v, q)) if len(v) else float("nan")}
+        out = {}
+        for k, g in df.groupby(list(by)):
+            if len(by) == 1 and isinstance(k, tuple):
+                k = k[0]
+            out[k] = (float(np.percentile(g[col].abs().dropna(), q))
+                      if len(g[col].dropna()) else float("nan"))
+        return out
+
+    _GROUPS = {"alpha": ["target", "abs_alpha"],
+               "alpha_layer": ["target", "abs_alpha", "steer_layer"],
+               "pooled": ["target"]}
+    grp = _GROUPS[str(o["null_group"])]
+    null_by = _band(rnd, "delta", grp, float(o["null_q"]))
     beh_col = "d_refusal" if "d_refusal" in mat.columns else "margin_shift"
-    beh_by = _band(rnd, beh_col, ["abs_alpha"])
-    def beh_nb(abs_alpha):
-        return beh_by.get(abs_alpha, float("inf"))
+    beh_grp = [] if o["null_group"] == "pooled" else ["abs_alpha"]
+    beh_by = _band(rnd, beh_col, beh_grp, float(o["beh_null_q"]))
 
-    def nb(target, abs_alpha):
+    def beh_nb(abs_alpha):
+        return beh_by.get(() if not beh_grp else abs_alpha, float("inf"))
+
+    def nb(target, abs_alpha, steer_layer=None):
+        if o["null_group"] == "pooled":
+            return null_by.get(target, float("inf"))
+        if o["null_group"] == "alpha_layer":
+            return null_by.get((target, abs_alpha, steer_layer), float("inf"))
         return null_by.get((target, abs_alpha), float("inf"))
+
+    # A band that is not finite makes its criterion unsatisfiable, and an
+    # unsatisfiable criterion reads exactly like a negative result. Checked here
+    # so it surfaces as a loud failure instead of a quiet FAIL.
+    _alphas_present = sorted(live.abs_alpha.dropna().unique()) if len(live) else []
+    _dead = [a for a in _alphas_present if not np.isfinite(beh_nb(a))]
+    if _dead:
+        raise ValueError(
+            f"behavioural null band is not finite for abs_alpha={_dead} — G3 could "
+            f"never fire and the gate would report FAIL by construction. "
+            f"beh_by keys={list(beh_by)[:6]} (check _band key types)")
 
     out: Dict[str, object] = {
         "kl_bound": kl_bound, "n_live": int(len(live)),
-        "null_band_delta_by_target_alpha": {f"{k[0]}@{k[1]}": round(v, 4)
-                                            for k, v in null_by.items()},
-        "null_band_behaviour_by_alpha": {str(k): round(v, 4) for k, v in beh_by.items()}}
+        "adjudication_options": dict(o),
+        "null_band_delta": {str(k): round(v, 4) for k, v in null_by.items()},
+        "null_band_behaviour": {str(k): round(v, 4) for k, v in beh_by.items()}}
     if not len(live):
         out.update(verdict="undecidable",
                    G1_diagonal_dominance={"rate": None, "n": 0},
@@ -1785,7 +2611,9 @@ def _adjudicate_at(mat: pd.DataFrame, kl_bound: float) -> Dict[str, object]:
                 # tight enough that such pairs separate readily, so magnitude is
                 # required as well as separation: at least one of the two directed
                 # effects must exceed its target's random-direction null band.
-                big = (abs(r1.delta) > nb(B, a) or abs(r2.delta) > nb(A, a))
+                b1 = abs(r1.delta) > nb(B, a, L)
+                b2 = abs(r2.delta) > nb(A, a, L)
+                big = (b1 or b2) if o["g2_rule"] == "any" else (b1 and b2)
                 pv = _two_sample_p(r1.delta, r1.ci_low, r1.ci_high,
                                    r2.delta, r2.ci_low, r2.ci_high)
                 asym.append({"steer_layer": L, "read_layer": rl, "abs_alpha": a,
@@ -1797,7 +2625,7 @@ def _adjudicate_at(mat: pd.DataFrame, kl_bound: float) -> Dict[str, object]:
     if len(asym_df):
         # FDR across the whole family of asymmetry tests at this bound
         # (ordered pairs x steer layer x read layer x alpha), as pre-registered.
-        asym_df["fdr_reject"] = _bh_fdr(asym_df.p.values, q=0.05)
+        asym_df["fdr_reject"] = _bh_fdr(asym_df.p.values, q=float(o["fdr_q"]))
         asym_df["qualifies"] = (asym_df.cis_disjoint & asym_df.beyond_null
                                 & asym_df.fdr_reject)
     else:
@@ -1843,8 +2671,8 @@ def _adjudicate_at(mat: pd.DataFrame, kl_bound: float) -> Dict[str, object]:
             shift = abs(float(sub[beh_col].iloc[0]))
             moved_behaviour = shift > beh_nb(aa)
             unmoved = [t for t, d in zip(sub.target, sub.delta.abs())
-                       if np.isfinite(d) and np.isfinite(nb(t, aa))
-                       and d <= nb(t, aa) and t != src]
+                       if np.isfinite(d) and np.isfinite(nb(t, aa, L))
+                       and d <= nb(t, aa, L) and t != src]
             if moved_behaviour and unmoved:
                 diss.append({"steer_layer": L, "read_layer": rl, "alpha": al, "source": src,
                              "behaviour_shift": float(sub[beh_col].iloc[0]),
@@ -1886,20 +2714,38 @@ PIPELINE = Pipeline(NAME, [
           doc="E1.3 — projections and correlations between them"),
     Stage("dimensionality", stage_dimensionality, produces=["dimensionality.csv"],
           requires=["extract"], doc="E1.4 — stratified directions -> r_eff"),
+    Stage("harm_controls", stage_harm_controls,
+          produces=["harm_controls.csv", "harm_controls_geometry.csv"],
+          requires=["extract"],
+          doc="E1.1 — R_harm with refusal held constant (PLAN-EXTRACT)"),
     Stage("dim_behavioural", stage_dimensionality_behavioural,
           produces=["dimensionality_behavioural.csv", "behavioural_k.json"],
           requires=["extract"], needs_gpu=True,
           doc="E1.4b — smallest k reproducing the full steering effect"),
+    Stage("geometry_subspace", stage_geometry_subspace,
+          produces=["geometry_subspace.csv", "geometry_subspace_summary.json"],
+          requires=["extract", "dim_behavioural"],
+          doc="E1.2 pass 2 — principal angles / projection / CCA at E1.4b's k"),
     Stage("emergence", stage_emergence, produces=["emergence_curves.csv", "emergence_summary.csv"], requires=["extract"],
           doc="E1.5 — separation vs relative depth"),
     Stage("style", stage_style,
-          produces=["style_vs_metadata.csv", "style_summary.json"],
+          produces=["style_vs_metadata.csv", "style_summary.json",
+                    "zhao_replication.csv"],
           requires=["extract"],
           doc="E1.7 Level 1 — metadata vs style; variation across prompt categories"),
+    # No `requires`: this stage consumes the FROZEN style corpus and the model,
+    # not any artifact of `extract`. Declaring a dependency it does not use would
+    # be misleading and would block running it on its own.
+    Stage("style_level2", stage_style_level2,
+          produces=["style_level2.csv", "style_level2_summary.json"],
+          needs_gpu=True,
+          doc="E1.7 Level 2 — tag vs register, crossed on the frozen style corpus"),
     Stage("fidelity", stage_fidelity, produces=["fidelity.json"], requires=["extract"],
           needs_gpu=True,
           doc="E1.1 — pre_mlp fidelity + cross-corpus transfer (dropped in the first consolidation)"),
-    Stage("causal", stage_causal, produces=["causal_matrix.csv", "causal_gate.json"],
+    Stage("causal", stage_causal,
+          produces=[f"causal_matrix{CAUSAL_SUFFIX}.csv", f"causal_gate{CAUSAL_SUFFIX}.json",
+                    f"causal_stage_b{CAUSAL_SUFFIX}.csv"],
           requires=["extract"], needs_gpu=True,
           doc="E1.6 — causal distinguishability; GO/NO-GO GATE 1"),
 ])
@@ -1911,7 +2757,7 @@ def main() -> None:
     if maybe_list(PIPELINE, args):
         return
     cfg = load_config()
-    log = get_logger(NAME, cfg.dir(NAME))
+    log = get_logger(NAME, cfg.dir(NAME), suffix=f"__{'+'.join(cfg.models)}")
     from core.io_utils import write_run_manifest
     write_run_manifest(cfg, NAME)
     PIPELINE.run(cfg, log, only=args.only, start=args.start,

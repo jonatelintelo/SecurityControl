@@ -12,6 +12,27 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import numpy as np, pandas as pd
 from experiments.rq1 import _adjudicate
 
+
+def _post(m):
+    """Keep only the `t_post_inst` read position.
+
+    `causal_matrix*.csv` carries a second read position (`t_inst`), added for the
+    token-resolved readout. Every gate-level quantity is defined at
+    `t_post_inst`; consuming both would double-count each intervention and mix
+    two incomparable residual bases.
+
+    It deliberately does NOT restrict read LAYERS. The matrix carries every layer
+    downstream of the steer layer, and which of those form the test family is an
+    adjudication option (`gate_layers`) applied inside `_adjudicate_at`, so that
+    it can be swept. Filtering here would silently pin that sweep to one arm.
+    Older matrices lack the column.
+    """
+    if "read_position" in m.columns:
+        m = m[m.read_position == "t_post_inst"]
+    return m
+
+
+
 log = logging.getLogger("cmp"); log.setLevel(logging.INFO)
 h = logging.StreamHandler(sys.stdout); h.setFormatter(logging.Formatter("%(message)s")); log.addHandler(h)
 
@@ -24,7 +45,7 @@ for slug, variant in RUNS:
     if not p.exists():
         print(f"missing {p}"); continue
     print(f"\n{'='*76}\n{slug}  control={variant}\n{'='*76}")
-    mat = pd.read_csv(p)
+    mat = _post(pd.read_csv(p))
     v = _adjudicate(mat, log, f"{slug}/{variant}")
     Path(f"results/rq1/{slug}/causal_gate__{variant}.json").write_text(
         json.dumps(v, indent=2, default=str))

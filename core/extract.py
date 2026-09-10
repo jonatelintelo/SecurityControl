@@ -410,6 +410,98 @@ def random_cosine_band(d_model: int, n_samples: int = 2000, seed: int = 0) -> Di
 
 
 # ---------------------------------------------------------------------------
+# subspace geometry (E1.2 pass 2)
+# ---------------------------------------------------------------------------
+def _orthonormal_rows(A: torch.Tensor) -> torch.Tensor:
+    """Return an orthonormal row basis for the row space of `A` ([k, d])."""
+    Q = torch.linalg.qr(A.float().T, mode="reduced").Q      # [d, r]
+    return Q.T                                              # [r, d]
+
+
+def principal_angles(A: torch.Tensor, B: torch.Tensor) -> Dict[str, object]:
+    """Principal angles between two subspaces, given as row bases `[k, d]`.
+
+    PLAN-GEOM names three quantities — principal angles, projection measures and
+    canonical correlations. **Between subspaces these are three readouts of one
+    spectrum, not three independent measurements**, and reporting them as
+    independent would triple-count a single fact:
+
+    * the singular values of `Q_A Q_B^T` are `cos θ_i`;
+    * the canonical correlations of two subspaces *are* those same `cos θ_i`;
+    * the projection metric is `‖P_A P_B‖_F² = Σ_i cos² θ_i`, normalised here by
+      `min(k_A, k_B)` so it lands in `[0, 1]`.
+
+    So this returns the spectrum once and derives the named summaries from it.
+    The genuinely distinct measurement — canonical correlations weighted by the
+    data distribution rather than by the subspaces alone — is
+    :func:`data_canonical_correlations`.
+    """
+    Qa, Qb = _orthonormal_rows(A), _orthonormal_rows(B)
+    s = torch.linalg.svdvals(Qa @ Qb.T).clamp(0.0, 1.0)
+    k = int(min(Qa.shape[0], Qb.shape[0]))
+    angles = torch.arccos(s)
+    return {
+        "k_a": int(Qa.shape[0]), "k_b": int(Qb.shape[0]),
+        "cos_principal_angles": [float(v) for v in s],
+        "principal_angles_rad": [float(v) for v in angles],
+        "principal_angles_deg": [float(v) * 180.0 / np.pi for v in angles],
+        # the two named summaries, both functions of the spectrum above
+        "projection_metric": float((s ** 2).sum() / max(k, 1)),
+        "smallest_principal_angle_deg": float(angles.min()) * 180.0 / np.pi if k else float("nan"),
+        "largest_principal_angle_deg": float(angles.max()) * 180.0 / np.pi if k else float("nan"),
+        # `cos θ_1` reduces to |cos| between two unit vectors when k_a = k_b = 1,
+        # which is the pass-1 quantity: pass 2 strictly generalises pass 1.
+        "degenerate_rank_one": bool(Qa.shape[0] == 1 and Qb.shape[0] == 1),
+    }
+
+
+def data_canonical_correlations(Xa: torch.Tensor, Xb: torch.Tensor,
+                                eps: float = 1e-6) -> List[float]:
+    """Canonical correlations between two sets of projected scores.
+
+    Unlike the subspace angles, this is weighted by how the *data* actually
+    occupies each subspace: two subspaces can be geometrically close while the
+    activations that matter live in the part where they differ, or vice versa.
+    `Xa` is `[n, k_a]`, `Xb` is `[n, k_b]` — activations already projected onto
+    each basis.
+    """
+    A = Xa.float() - Xa.float().mean(0, keepdim=True)
+    B = Xb.float() - Xb.float().mean(0, keepdim=True)
+    n = A.shape[0]
+    if n < max(A.shape[1], B.shape[1]) + 2:
+        return []
+    Caa = A.T @ A / (n - 1) + eps * torch.eye(A.shape[1])
+    Cbb = B.T @ B / (n - 1) + eps * torch.eye(B.shape[1])
+    Cab = A.T @ B / (n - 1)
+    ia = torch.linalg.inv(torch.linalg.cholesky(Caa))
+    ib = torch.linalg.inv(torch.linalg.cholesky(Cbb))
+    s = torch.linalg.svdvals(ia @ Cab @ ib.T).clamp(0.0, 1.0)
+    return [float(v) for v in s]
+
+
+def random_subspace_null(d_model: int, k_a: int, k_b: int,
+                         n_draws: int = 1000, seed: int = 0) -> Dict[str, float]:
+    """Null band for the projection metric between two *subspaces*.
+
+    A rank-1 cosine null (:func:`random_cosine_band`) is the wrong reference for
+    a subspace comparison: two random `k`-dimensional subspaces overlap more than
+    two random lines do, and by an amount that grows with `k`. Using the rank-1
+    band would make any `k > 1` overlap look significant by construction.
+    """
+    g = torch.Generator().manual_seed(seed)
+    vals = []
+    for _ in range(n_draws):
+        A = _orthonormal_rows(torch.randn(k_a, d_model, generator=g))
+        B = _orthonormal_rows(torch.randn(k_b, d_model, generator=g))
+        s = torch.linalg.svdvals(A @ B.T).clamp(0.0, 1.0)
+        vals.append(float((s ** 2).sum() / max(min(k_a, k_b), 1)))
+    v = torch.tensor(vals)
+    return {"mean": float(v.mean()), "sd": float(v.std()),
+            "p95": float(v.quantile(0.95)), "p97.5": float(v.quantile(0.975)),
+            "n_draws": int(n_draws), "k_a": int(k_a), "k_b": int(k_b)}
+
+
+# ---------------------------------------------------------------------------
 # controls required by the playbook
 # ---------------------------------------------------------------------------
 def balanced_auc(
