@@ -1,0 +1,15 @@
+=== 2026-09-10T20:54:50+00:00 [gpu] tests/smoke_read_positions.py  ===
+MODELS=<default> BATCH_SIZE=<default> RESULTS_ROOT=./results
+[ok  ] prompts are ragged (so per-item indexing is actually exercised)
+         token counts [33, 44, 30, 40, 35]
+[ok  ] every downstream layer was read
+         22 layers, 2..23
+[ok  ] per-item read matches ActivationCapture.at_positions
+         max |delta| = 0.000e+00 (worst at )
+[ok  ] the two positions read different tokens
+         max |delta| = 1.486e+00
+[ok  ] steering reaches the capture (hook order: steer then capture)
+         max |steered - baseline| = 1.868e+01 at L2
+
+PASS
+=== 2026-09-10T20:55:37+00:00 done ===

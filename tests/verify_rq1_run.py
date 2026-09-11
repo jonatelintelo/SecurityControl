@@ -212,6 +212,39 @@ def main() -> int:
                   f"{len(L)} rows; median floor "
                   f"{L.floor.median():.3f}" if "floor" in L.columns else "MISSING")
 
+        # The pinned CONTROL_VARIANT must agree with THIS run's own labels.
+        #
+        # The variant is a data-dependent choice — `under` needs a populated
+        # harmful-and-complied cell, `over` needs over-refusal on harmless — but
+        # it is pinned per job in `blank_slate.sh` from counts measured in EARLIER
+        # runs. In a clean start those counts no longer exist, so the pin is an
+        # assumption until it is checked against the labels this run produced.
+        #
+        # One direction already fails loudly: pinning a variant whose direction
+        # was not extracted raises in `stage_causal`. The other is silent — if a
+        # richer contrast became available and we ran the weaker one anyway,
+        # nothing would say so. That is what this checks.
+        lc = d / "labels_checks.json"
+        if lc.exists():
+            import json as _json
+            rv = _json.loads(lc.read_text()).get("checks", {}).get("refusal_variance", {})
+            supported = {v for v, key in (("under", "within_harmful"),
+                                          ("over", "within_harmless"))
+                         if rv.get(key, {}).get("usable")}
+            ran = {p.stem.replace("causal_gate__", "")
+                   for p in d.glob("causal_gate__*.json")}
+            check(f"{m}: every variant run is supported by this run's labels",
+                  ran <= supported or not ran,
+                  f"ran {sorted(ran) or '-'}; labels support {sorted(supported) or '-'}"
+                  + (f"  UNSUPPORTED: {sorted(ran - supported)}" if ran - supported else ""))
+            missed = supported - ran
+            check(f"{m}: no usable control contrast was left unrun",
+                  not missed,
+                  f"labels support {sorted(supported)} but only {sorted(ran)} was run"
+                  f" — {sorted(missed)} is estimable on this run's data and would be a "
+                  f"stronger contrast" if missed else
+                  f"ran every supported variant: {sorted(ran)}")
+
         # Gate artifacts carry a control-variant suffix (`__under` / `__over`) so
         # that runs which differ in the control variable cannot be conflated.
         # Globbing rather than naming one file matters: a check that silently
