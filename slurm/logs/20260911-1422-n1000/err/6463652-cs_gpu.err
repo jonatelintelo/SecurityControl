@@ -1,0 +1,15 @@
+[2026-09-11 20:29:40] [INFO] pipeline rq1: ['labels', 'extract', 'nulls', 'geometry', 'projections', 'dimensionality', 'harm_controls', 'dim_behavioural', 'geometry_subspace', 'emergence', 'style', 'style_level2', 'fidelity', 'causal']
+[2026-09-11 20:29:40] [INFO] [labels/qwen3.5-9b] already complete (2 artifacts) — skipping
+[2026-09-11 20:29:40] [INFO] [extract/qwen3.5-9b] already complete (5 artifacts) — skipping
+[2026-09-11 20:29:40] [INFO] [nulls/qwen3.5-9b] already complete (1 artifacts) — skipping
+[2026-09-11 20:29:40] [INFO] [geometry/qwen3.5-9b] already complete (2 artifacts) — skipping
+[2026-09-11 20:29:40] [INFO] [projections/qwen3.5-9b] already complete (2 artifacts) — skipping
+[2026-09-11 20:29:40] [INFO] [dimensionality/qwen3.5-9b] already complete (1 artifacts) — skipping
+[2026-09-11 20:29:40] [INFO] [harm_controls/qwen3.5-9b] already complete (2 artifacts) — skipping
+[2026-09-11 20:29:40] [INFO] [dim_behavioural/qwen3.5-9b] already complete (2 artifacts) — skipping
+[2026-09-11 20:29:40] [INFO] [geometry_subspace/qwen3.5-9b] already complete (2 artifacts) — skipping
+[2026-09-11 20:29:40] [INFO] [emergence/qwen3.5-9b] already complete (2 artifacts) — skipping
+[2026-09-11 20:29:40] [INFO] [style/qwen3.5-9b] already complete (3 artifacts) — skipping
+[2026-09-11 20:29:40] [INFO] [style_level2/qwen3.5-9b] already complete (2 artifacts) — skipping
+[2026-09-11 20:29:40] [INFO] [fidelity/qwen3.5-9b] already complete (1 artifacts) — skipping
+[2026-09-11 20:29:40] [INFO] [causal/qwen3.5-9b] already complete (3 artifacts) — skipping

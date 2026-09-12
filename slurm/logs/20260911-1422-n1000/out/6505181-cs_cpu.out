@@ -1,0 +1,3 @@
+=== 2026-09-12T15:39:07+00:00 [cpu] tools/soft_refusal_split.py  ===
+RESULTS_ROOT=./results FAST_DEV=0 SEED=0
+=== 2026-09-12T15:39:19+00:00 done rc=0 ===

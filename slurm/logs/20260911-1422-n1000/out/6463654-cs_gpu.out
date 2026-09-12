@@ -1,0 +1,3 @@
+=== 2026-09-11T14:54:34+00:00 [gpu] experiments/rq1.py  ===
+MODELS=llama3.1-8b BATCH_SIZE=<default> RESULTS_ROOT=./results
+=== 2026-09-11T18:08:39+00:00 done ===

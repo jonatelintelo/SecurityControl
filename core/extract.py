@@ -248,8 +248,23 @@ def auc(positive_scores: torch.Tensor, negative_scores: torch.Tensor) -> float:
     n = negative_scores.detach().float().flatten()
     if p.numel() == 0 or n.numel() == 0:
         return float("nan")
-    allv = torch.cat([p, n])
-    ranks = allv.argsort().argsort().float() + 1.0
+    allv = torch.cat([p, n]).double()
+    # AVERAGE ranks, not `argsort().argsort()`. The naive version assigns tied
+    # scores arbitrary distinct ranks, which counts a tie as a win or a loss
+    # instead of a half. That is not hypothetical here: `length_only_baseline`
+    # computes this AUC on INTEGER TOKEN COUNTS, where ties are abundant by
+    # construction, and that baseline is what every direction must beat — so a
+    # deflated baseline makes a direction look better than it is.
+    # Measured bias at our scale (200 vs 200) is small, ~0.001-0.002 AUC,
+    # because arbitrary tie-breaks largely cancel; it is 0.25 on the degenerate
+    # two-element case and exactly 0.5-vs-0.0 when every score is tied. Small is
+    # not a reason to keep a biased estimator in the control that guards C1/C2.
+    order = allv.argsort()
+    ranks = torch.empty_like(allv)
+    ranks[order] = torch.arange(1, allv.numel() + 1, dtype=torch.float64)
+    uniq, inv, counts = torch.unique(allv, return_inverse=True, return_counts=True)
+    tie_sums = torch.zeros(uniq.numel(), dtype=torch.float64).index_add_(0, inv, ranks)
+    ranks = (tie_sums / counts)[inv]
     r_pos = ranks[: p.numel()].sum()
     n_p, n_n = float(p.numel()), float(n.numel())
     return float((r_pos - n_p * (n_p + 1) / 2) / (n_p * n_n))

@@ -1,0 +1,44 @@
+[2026-09-11 14:32:48] [INFO] ==============================================================================
+[2026-09-11 14:32:48] [INFO] E1.0 — build, verify and freeze the corpus (candidate until E1.1 Stage 1)
+[2026-09-11 14:32:48] [INFO] ==============================================================================
+[2026-09-11 14:32:48] [INFO] Building: 16 harmful + 16 harmless, 16 attack intents, seed=0
+[2026-09-11 14:33:02] [INFO]   harmful    16  {'advbench': 6, 'jbb': 5, 'sorry-bench': 5}
+[2026-09-11 14:33:02] [INFO]   harmless   16  {'alpaca': 8, 'xstest_safe': 8}
+[2026-09-11 14:33:02] [INFO]   attacks    16  {'strongreject': 16}
+[2026-09-11 14:33:02] [INFO] Building E1.0b transfer corpus: 16 C4 passages
+[2026-09-11 14:33:05] [INFO]   transfer   16  {'c4': 16}
+[2026-09-11 14:33:05] [INFO] Crossing [qwen2.5-0.5b]: 32 instructions x 4 roles (system,user,tool,assistant) x 2 designs = 256 rendered items
+[2026-09-11 14:33:05] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 14:33:05] [INFO]   [ok  ] no_duplicate_instructions: {'n': 32, 'unique': 32}
+[2026-09-11 14:33:05] [INFO]   [ok  ] split_no_leak: {'n_train': 24, 'n_test': 8, 'leaked': 0}
+[2026-09-11 14:33:05] [INFO]   [ok  ] split_labelled: {}
+[2026-09-11 14:33:05] [INFO]   [ok  ] split_label_balance: {'train_harmful_frac': 0.5, 'test_harmful_frac': 0.5}
+[2026-09-11 14:33:05] [INFO]   [ok  ] split_source_balance: {'max_share_drift': 0.083, 'train_shares': {'advbench': 0.167, 'alpaca': 0.25, 'jbb': 0.167, 'sorry-bench': 0.167, 'xstest_safe': 0.25}, 'test_shares': {'advbench': 0.25, 'alpaca': 0.25, 'jbb': 0.125, 'sorry-bench': 0.125, 'xstest_safe': 0.25}}
+[2026-09-11 14:33:05] [INFO]   [ok  ] source_balance_harmful: {'advbench': 6, 'jbb': 5, 'sorry-bench': 5, 'ratio_max_over_min': 1.2, 'max_allowed_ratio': 3.0, 'exhausted_sources': [], 'note': 'guards against SWAMPING (measured pathology: 65x), not near-equality; a source the draw exhausted cannot be balanced against without discarding the others down to it'}
+[2026-09-11 14:33:05] [INFO]   [ok  ] source_balance_harmless: {'alpaca': 8, 'xstest_safe': 8, 'ratio_max_over_min': 1.0, 'max_allowed_ratio': 3.0, 'exhausted_sources': [], 'note': 'guards against SWAMPING (measured pathology: 65x), not near-equality; a source the draw exhausted cannot be balanced against without discarding the others down to it'}
+[2026-09-11 14:33:05] [INFO]   [ok  ] length_cap_applied: {'max_words': 80, 'dropped_by_pool': {'harmful': {'sorry-bench': 3}}, 'note': 'extreme length outliers excluded so R_harm cannot encode length; see MAX_INSTRUCTION_WORDS for why this is a design rule, not a threshold tuned to pass a check'}
+[2026-09-11 14:33:05] [INFO]   [ok  ] attack_pool_disjoint: {'exact': 0, 'near_duplicate': 0, 'n_attack': 16, 'threshold': 0.8}
+[2026-09-11 14:33:05] [INFO]   [ok  ] length_balance: {'median_words_harmful': 15, 'median_words_harmless': 10, 'median_ratio': 1.5, 'max_words': 59, 'max_over_median': 4.5}
+[2026-09-11 14:33:05] [INFO]   [ok  ] source_recorded: {'distinct_sources': 5}
+[2026-09-11 14:33:05] [INFO]   [ok  ] no_chat_special_tokens: {'n_offending': 0, 'uids': []}
+[2026-09-11 14:33:05] [INFO]   [ok  ] dataset_sources_loaded: {}
+[2026-09-11 14:33:05] [INFO]   [ok  ] transfer_no_duplicates: {'n': 16, 'unique': 16}
+[2026-09-11 14:33:05] [INFO]   [ok  ] transfer_split: {'n_train': 12, 'n_test': 4}
+[2026-09-11 14:33:05] [INFO]   [ok  ] transfer_length: {'min_words': 27, 'max_words': 60}
+[2026-09-11 14:33:05] [INFO]   [ok  ] transfer_disjoint_from_fitting: {'overlap': 0}
+[2026-09-11 14:33:05] [INFO]   [ok  ] transfer_no_chat_special_tokens: {}
+[2026-09-11 14:33:05] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 14:33:05] [INFO] Corpus-wide rendering sweep (tokenizer only, no weights):
+[2026-09-11 14:33:25] [INFO]   qwen2.5-0.5b/fitting: 256 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=0/64 (0.00%)
+[2026-09-11 14:33:25] [INFO]     bleed tool/fixed_slot          head=[] tail=['\n'] after ['.', '?']  harmful=0.312 harmless=0.812 (|d|=0.500 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:33:25] [INFO]     bleed tool/natural_slot        head=[] tail=['\n'] after ['.', '?']  harmful=0.312 harmless=0.812 (|d|=0.500 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:33:26] [INFO]   qwen2.5-0.5b/transfer: 128 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=0/32 (0.00%)
+[2026-09-11 14:33:26] [INFO]     bleed tool/fixed_slot          head=[] tail=['\n'] after ['.', '?']  harmful=0.000 harmless=0.875 (|d|=0.875 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:33:26] [INFO]     bleed tool/natural_slot        head=[] tail=['\n'] after ['.', '?']  harmful=0.000 harmless=0.875 (|d|=0.875 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:33:26] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 14:33:26] [INFO] Length confound (reported, not gated):
+[2026-09-11 14:33:26] [INFO]   qwen2.5-0.5b/fixed_slot: role median spread 19 tok, harmful/harmless median ratio 1.1 -> length-only baseline required for role AND harm
+[2026-09-11 14:33:26] [INFO]   qwen2.5-0.5b/natural_slot: role median spread 27 tok, harmful/harmless median ratio 1.081 -> length-only baseline required for role AND harm
+[2026-09-11 14:33:27] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 14:33:27] [INFO] E1.0 complete — 23 checks pass, corpus written to results_shakedown/e1_0_corpus
+[2026-09-11 14:33:27] [INFO] Status: CANDIDATE. E1.1 Stage 1 labels it on both models; the freeze follows only if the harmful-and-complied cell is adequate on each.

@@ -9,6 +9,7 @@ directions (cos 0.72 vs a split-half floor of 0.944).
 import json, logging, sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from core.config import RQ1_MODELS
 import numpy as np, pandas as pd
 from experiments.rq1 import _adjudicate
 
@@ -36,7 +37,19 @@ def _post(m):
 log = logging.getLogger("cmp"); log.setLevel(logging.INFO)
 h = logging.StreamHandler(sys.stdout); h.setFormatter(logging.Formatter("%(message)s")); log.addHandler(h)
 
-RUNS = [("qwen2.5-7b", "under"), ("qwen2.5-7b", "over"), ("qwen3.5-9b", "over")]
+# DISCOVERED, not listed. The matched cross-model arm is `over` on every model;
+# the `under` arm exists only where that model's harmful-and-complied cell was
+# large enough to fit refused-vs-complied, which is a property of the model's
+# refusal behaviour and is therefore not knowable when this file is written.
+# A hardcoded list silently drops a model when the roster grows.
+RUNS = [(slug, variant)
+        for slug in RQ1_MODELS
+        for variant in ("under", "over")
+        if Path(f"results/rq1/{slug}/causal_matrix__{variant}.csv").exists()]
+if not RUNS:
+    raise SystemExit("no causal_matrix__*.csv found for any roster model")
+print(f"gate comparison over {len(RUNS)} runs: "
+      + ", ".join(f"{m}/{v}" for m, v in RUNS))
 BOUND = "0.5"
 
 summary = []

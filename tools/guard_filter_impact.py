@@ -11,9 +11,10 @@ Case (b) would bias WHICH compliances survive, toward the most harmful prompts.
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from core.config import RQ1_MODELS
 import pandas as pd
 
-for slug in ["qwen2.5-7b", "qwen3.5-9b", "qwen3.5-35b-a3b"]:
+for slug in RQ1_MODELS:
     p = Path("results/rq1")/slug/"refusal_labels.csv"
     if not p.exists(): continue
     d = pd.read_csv(p)

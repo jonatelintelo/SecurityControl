@@ -1,0 +1,115 @@
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:68: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu", mmap=True) if mmap else \
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+Traceback (most recent call last):
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/tools/harm_control_crosscheck.py", line 67, in <module>
+    save_df(d/"harm_controls_by_layer.csv", df)
+TypeError: unsupported operand type(s) for /: 'Direction' and 'str'
+[2026-09-12 12:10:06] [INFO] judge: openai/gpt-oss-20b (not on the roster: ['qwen2.5-7b', 'qwen3.5-9b', 'llama3.1-8b', 'yi-6b-chat', 'qwen3.5-35b-a3b', 'nemotron-3-nano-30b-a3b'])
+[2026-09-12 12:10:06] [INFO] judging 280 of 280 rows, greedy, max_new=12
+[2026-09-12 12:10:09] [INFO] Loading openai/gpt-oss-20b: {'model_id': 'openai/gpt-oss-20b', 'architecture': 'GptOssForCausalLM', 'model_type': 'gpt_oss', 'num_layers': 24, 'hidden_size': 2880, 'num_experts': 32, 'is_multimodal': False}
+Traceback (most recent call last):
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/tools/adjudicate_labels.py", line 187, in <module>
+    raise SystemExit(main())
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/tools/adjudicate_labels.py", line 141, in main
+    model, tok = load_model(JUDGE_MODEL, device, logger=log)
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/core/model_io.py", line 45, in load_model
+    model = AutoModelForCausalLM.from_pretrained(
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/transformers/models/auto/auto_factory.py", line 402, in from_pretrained
+    return model_class.from_pretrained(
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/transformers/modeling_utils.py", line 4270, in from_pretrained
+    hf_quantizer, config, device_map = get_hf_quantizer(
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/transformers/quantizers/auto.py", line 358, in get_hf_quantizer
+    hf_quantizer.validate_environment(
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/transformers/quantizers/quantizer_mxfp4.py", line 79, in validate_environment
+    device = torch.accelerator.current_accelerator() or torch.device("cpu")
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/torch/__init__.py", line 2562, in __getattr__
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+AttributeError: module 'torch' has no attribute 'accelerator'
+[2026-09-12 12:10:37] [INFO] [qwen2.5-7b] 895 undetermined (11.2% of 8000); reasons={'guard_says_response_safe': 887, 'under_4_words': 8}
+[2026-09-12 12:10:37] [INFO] [qwen3.5-9b] 163 undetermined (2.0% of 8000); reasons={'guard_says_response_safe': 151, 'under_4_words': 12}
+[2026-09-12 12:10:37] [INFO] [llama3.1-8b] 262 undetermined (3.3% of 8000); reasons={'guard_says_response_safe': 257, 'under_4_words': 5}
+[2026-09-12 12:10:37] [INFO] [yi-6b-chat] 481 undetermined (6.0% of 8000); reasons={'guard_says_response_safe': 467, 'under_4_words': 12, 'repeated_3gram': 2}
+[2026-09-12 12:10:37] [INFO] [qwen3.5-35b-a3b] 160 undetermined (2.0% of 8000); reasons={'guard_says_response_safe': 140, 'under_4_words': 20}
+[2026-09-12 12:10:37] [INFO] [nemotron-3-nano-30b-a3b] 242 undetermined (3.0% of 8000); reasons={'guard_says_response_safe': 223, 'under_4_words': 19}
+[2026-09-12 12:10:40] [INFO] Loading openai/gpt-oss-20b: {'model_id': 'openai/gpt-oss-20b', 'architecture': 'GptOssForCausalLM', 'model_type': 'gpt_oss', 'num_layers': 24, 'hidden_size': 2880, 'num_experts': 32, 'is_multimodal': False}
+Traceback (most recent call last):
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/tools/adjudicate_undetermined.py", line 206, in <module>
+    raise SystemExit(main())
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/tools/adjudicate_undetermined.py", line 127, in main
+    model, tok = load_model(JUDGE_MODEL, device, logger=log)
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/core/model_io.py", line 45, in load_model
+    model = AutoModelForCausalLM.from_pretrained(
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/transformers/models/auto/auto_factory.py", line 402, in from_pretrained
+    return model_class.from_pretrained(
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/transformers/modeling_utils.py", line 4270, in from_pretrained
+    hf_quantizer, config, device_map = get_hf_quantizer(
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/transformers/quantizers/auto.py", line 358, in get_hf_quantizer
+    hf_quantizer.validate_environment(
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/transformers/quantizers/quantizer_mxfp4.py", line 79, in validate_environment
+    device = torch.accelerator.current_accelerator() or torch.device("cpu")
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/torch/__init__.py", line 2562, in __getattr__
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+AttributeError: module 'torch' has no attribute 'accelerator'
+[2026-09-12 12:10:50] [WARNING] [qwen2.5-7b] no undetermined_adjudicated.csv — run tools/adjudicate_undetermined.py first; skipping
+[2026-09-12 12:10:50] [WARNING] [qwen3.5-9b] no undetermined_adjudicated.csv — run tools/adjudicate_undetermined.py first; skipping
+[2026-09-12 12:10:50] [WARNING] [llama3.1-8b] no undetermined_adjudicated.csv — run tools/adjudicate_undetermined.py first; skipping
+[2026-09-12 12:10:50] [WARNING] [yi-6b-chat] no undetermined_adjudicated.csv — run tools/adjudicate_undetermined.py first; skipping
+[2026-09-12 12:10:50] [WARNING] [qwen3.5-35b-a3b] no undetermined_adjudicated.csv — run tools/adjudicate_undetermined.py first; skipping
+[2026-09-12 12:10:50] [WARNING] [nemotron-3-nano-30b-a3b] no undetermined_adjudicated.csv — run tools/adjudicate_undetermined.py first; skipping
+[2026-09-12 12:10:50] [ERROR] nothing refitted — needs adjudicated labels and a fitted R_control
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:68: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu", mmap=True) if mmap else \
+[2026-09-12 12:10:59] [INFO] [qwen2.5-7b] L20  n: hard=2876 comp=237 soft=887
+[2026-09-12 12:10:59] [INFO] [qwen2.5-7b]   mean projection  complied=-10.6593  soft=+5.6217  refused=+48.3709
+[2026-09-12 12:10:59] [INFO] [qwen2.5-7b]   soft position between poles = 0.276  -> MARKER DETECTOR (soft refusals side with compliances)
+[2026-09-12 12:10:59] [INFO] [qwen2.5-7b]   AUC soft vs complied = 0.702 [0.626,0.775] (n_instr=250)
+[2026-09-12 12:10:59] [INFO] [qwen2.5-7b]   AUC soft vs refused  = 0.049 (1.0 would mean soft refusals are their own class)
+[2026-09-12 12:11:00] [INFO] [qwen2.5-7b]   (D) soft-vs-hard axis: AUC=0.955 (length-only 0.548), cos with R_control=-0.973 vs null |cos| p97.5=0.032 -> not distinguishable from R_control
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-12 12:11:01] [WARNING] [qwen3.5-9b] no R_control direction (the `under` contrast was not estimable on this model) — E needs it; skipping
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:68: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu", mmap=True) if mmap else \
+[2026-09-12 12:11:05] [INFO] [llama3.1-8b] L31  n: hard=3637 comp=106 soft=257
+[2026-09-12 12:11:05] [INFO] [llama3.1-8b]   mean projection  complied=-16.6954  soft=-15.7080  refused=+9.0116
+[2026-09-12 12:11:05] [INFO] [llama3.1-8b]   soft position between poles = 0.038  -> MARKER DETECTOR (soft refusals side with compliances)
+[2026-09-12 12:11:05] [INFO] [llama3.1-8b]   AUC soft vs complied = 0.553 [0.410,0.681] (n_instr=82)
+[2026-09-12 12:11:05] [INFO] [llama3.1-8b]   AUC soft vs refused  = 0.009 (1.0 would mean soft refusals are their own class)
+[2026-09-12 12:11:06] [INFO] [llama3.1-8b]   (D) soft-vs-hard axis: AUC=0.992 (length-only 0.565), cos with R_control=-0.935 vs null |cos| p97.5=0.029 -> not distinguishable from R_control
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:68: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu", mmap=True) if mmap else \
+[2026-09-12 12:11:11] [INFO] [yi-6b-chat] L31  n: hard=2914 comp=616 soft=470
+[2026-09-12 12:11:11] [INFO] [yi-6b-chat]   mean projection  complied=+64.3338  soft=+66.6532  refused=+180.7099
+[2026-09-12 12:11:11] [INFO] [yi-6b-chat]   soft position between poles = 0.020  -> MARKER DETECTOR (soft refusals side with compliances)
+[2026-09-12 12:11:11] [INFO] [yi-6b-chat]   AUC soft vs complied = 0.510 [0.426,0.596] (n_instr=184)
+[2026-09-12 12:11:11] [INFO] [yi-6b-chat]   AUC soft vs refused  = 0.056 (1.0 would mean soft refusals are their own class)
+[2026-09-12 12:11:12] [INFO] [yi-6b-chat]   (D) soft-vs-hard axis: AUC=0.959 (length-only 0.692), cos with R_control=-0.928 vs null |cos| p97.5=0.029 -> not distinguishable from R_control
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:68: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu", mmap=True) if mmap else \
+[2026-09-12 12:11:16] [INFO] [qwen3.5-35b-a3b] L34  n: hard=3836 comp=24 soft=140
+[2026-09-12 12:11:16] [INFO] [qwen3.5-35b-a3b]   mean projection  complied=-4.0966  soft=-2.8456  refused=+0.9132
+[2026-09-12 12:11:16] [INFO] [qwen3.5-35b-a3b]   soft position between poles = 0.250  -> MARKER DETECTOR (soft refusals side with compliances)
+[2026-09-12 12:11:16] [INFO] [qwen3.5-35b-a3b]   AUC soft vs complied = 0.745 [0.482,0.906] (n_instr=32)
+[2026-09-12 12:11:16] [INFO] [qwen3.5-35b-a3b]   AUC soft vs refused  = 0.031 (1.0 would mean soft refusals are their own class)
+[2026-09-12 12:11:18] [INFO] [qwen3.5-35b-a3b]   (D) soft-vs-hard axis: AUC=0.983 (length-only 0.564), cos with R_control=-0.870 vs null |cos| p97.5=0.045 -> not distinguishable from R_control
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:68: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu", mmap=True) if mmap else \
+[2026-09-12 12:11:22] [INFO] [nemotron-3-nano-30b-a3b] L50  n: hard=3711 comp=66 soft=223
+[2026-09-12 12:11:22] [INFO] [nemotron-3-nano-30b-a3b]   mean projection  complied=+11.8202  soft=+52.1611  refused=+360.9156
+[2026-09-12 12:11:22] [INFO] [nemotron-3-nano-30b-a3b]   soft position between poles = 0.116  -> MARKER DETECTOR (soft refusals side with compliances)
+[2026-09-12 12:11:22] [INFO] [nemotron-3-nano-30b-a3b]   AUC soft vs complied = 0.614 [0.432,0.763] (n_instr=57)
+[2026-09-12 12:11:22] [INFO] [nemotron-3-nano-30b-a3b]   AUC soft vs refused  = 0.028 (1.0 would mean soft refusals are their own class)
+[2026-09-12 12:11:24] [INFO] [nemotron-3-nano-30b-a3b]   (D) soft-vs-hard axis: AUC=0.978 (length-only 0.644), cos with R_control=-0.914 vs null |cos| p97.5=0.039 -> not distinguishable from R_control
+[2026-09-12 12:11:24] [INFO] wrote soft_refusal_projection.csv (5 models) and soft_refusal_axis.csv (5)

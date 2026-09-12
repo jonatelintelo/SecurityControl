@@ -1,37 +1,0 @@
-[2026-09-09 19:55:02] [INFO] pipeline rq1: ['labels', 'extract', 'nulls', 'geometry', 'projections', 'dimensionality', 'harm_controls', 'dim_behavioural', 'geometry_subspace', 'emergence', 'style', 'style_level2', 'fidelity', 'causal']
-[2026-09-09 19:55:02] [INFO] ------------------------------------------------------------------------------
-[2026-09-09 19:55:02] [INFO] [labels/qwen2.5-7b] E1.1 input — refusal labels; gates R_control identifiability
-[2026-09-09 19:55:27] [INFO] Loading Qwen/Qwen2.5-7B-Instruct: {'model_id': 'Qwen/Qwen2.5-7B-Instruct', 'architecture': 'Qwen2ForCausalLM', 'model_type': 'qwen2', 'num_layers': 28, 'hidden_size': 3584, 'num_experts': None, 'is_multimodal': False}
-Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   9%|▉         | 30/339 [00:00<00:01, 265.22it/s]Loading weights:  17%|█▋        | 57/339 [00:00<00:01, 167.75it/s]Loading weights:  22%|██▏       | 76/339 [00:00<00:02, 131.42it/s]Loading weights:  27%|██▋       | 91/339 [00:00<00:02, 115.33it/s]Loading weights:  31%|███       | 104/339 [00:00<00:01, 117.55it/s]Loading weights:  35%|███▍      | 117/339 [00:00<00:01, 119.26it/s]Loading weights:  38%|███▊      | 130/339 [00:01<00:01, 104.54it/s]Loading weights:  42%|████▏     | 142/339 [00:01<00:01, 106.69it/s]Loading weights:  45%|████▌     | 154/339 [00:01<00:01, 108.30it/s]Loading weights:  49%|████▉     | 166/339 [00:01<00:01, 109.99it/s]Loading weights:  53%|█████▎    | 178/339 [00:01<00:01, 94.59it/s] Loading weights:  56%|█████▌    | 190/339 [00:01<00:01, 97.23it/s]Loading weights:  60%|█████▉    | 202/339 [00:01<00:01, 102.83it/s]Loading weights:  63%|██████▎   | 214/339 [00:01<00:01, 105.80it/s]Loading weights:  66%|██████▋   | 225/339 [00:01<00:01, 106.77it/s]Loading weights:  70%|██████▉   | 236/339 [00:02<00:00, 106.46it/s]Loading weights:  73%|███████▎  | 247/339 [00:02<00:00, 104.81it/s]Loading weights:  76%|███████▌  | 258/339 [00:02<00:00, 103.73it/s]Loading weights:  81%|████████  | 274/339 [00:02<00:00, 118.32it/s]Loading weights:  86%|████████▌ | 290/339 [00:02<00:00, 122.67it/s]Loading weights:  89%|████████▉ | 303/339 [00:02<00:00, 122.44it/s]Loading weights:  93%|█████████▎| 316/339 [00:02<00:00, 121.93it/s]Loading weights:  97%|█████████▋| 329/339 [00:02<00:00, 112.81it/s]Loading weights: 100%|██████████| 339/339 [00:02<00:00, 116.40it/s]
-[2026-09-09 19:55:39] [INFO] Decoder stack at 'model.layers' (28 layers)
-[2026-09-09 19:55:40] [INFO] [qwen2.5-7b] rendered 3200 items
-[2026-09-09 19:55:40] [INFO] [qwen2.5-7b] generating at max budget 256 (ladder [48, 128, 256])
-[2026-09-09 19:55:47] [INFO]     generated 16/3200
-[2026-09-09 19:57:41] [INFO]     generated 336/3200
-[2026-09-09 19:59:24] [INFO]     generated 656/3200
-[2026-09-09 20:01:26] [INFO]     generated 976/3200
-[2026-09-09 20:03:31] [INFO]     generated 1296/3200
-[2026-09-09 20:05:32] [INFO]     generated 1616/3200
-[2026-09-09 20:07:38] [INFO]     generated 1936/3200
-[2026-09-09 20:09:45] [INFO]     generated 2256/3200
-[2026-09-09 20:11:52] [INFO]     generated 2576/3200
-[2026-09-09 20:13:56] [INFO]     generated 2896/3200
-[2026-09-09 20:15:54] [INFO] [qwen2.5-7b]   budget   48: undetermined 0.0%, refused 1210, complied 1990, truncated 91.2%, agreement-with-next 0.9988
-[2026-09-09 20:15:54] [INFO] [qwen2.5-7b]   budget  128: undetermined 0.0%, refused 1214, complied 1986, truncated 51.8%, agreement-with-next 0.9994
-[2026-09-09 20:15:54] [INFO] [qwen2.5-7b]   budget  256: undetermined 0.0%, refused 1216, complied 1984, truncated 35.0%, agreement-with-next None
-[2026-09-09 20:15:54] [INFO] [qwen2.5-7b] chosen budget = 48 (rule: smallest with undetermined < 30% and >= 95% agreement with the next rung)
-[2026-09-09 20:15:55] [INFO] [qwen2.5-7b] degeneracy: 0/3200 (0.00%) {}
-Traceback (most recent call last):
-  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/experiments/rq1.py", line 2736, in <module>
-    main()
-  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/experiments/rq1.py", line 2731, in main
-    PIPELINE.run(cfg, log, only=args.only, start=args.start,
-  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/core/stages.py", line 114, in run
-    stage.fn(ctx)
-  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/experiments/rq1.py", line 306, in stage_labels
-    disagree = refusal.rule_disagreement(responses, truncated)
-  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/core/refusal.py", line 200, in rule_disagreement
-    labels = [label_all_rules(t, tr) for t, tr in zip(responses, truncated)]
-  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/core/refusal.py", line 200, in <listcomp>
-    labels = [label_all_rules(t, tr) for t, tr in zip(responses, truncated)]
-NameError: name 'label_all_rules' is not defined

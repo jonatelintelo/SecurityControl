@@ -1,5 +1,0 @@
-=== 2026-09-10T20:54:48+00:00 [cpu] tests/check_names.py  ===
-RESULTS_ROOT=./results FAST_DEV=0 SEED=0
-
-PASS — every name resolves
-=== 2026-09-10T20:54:49+00:00 done rc=0 ===

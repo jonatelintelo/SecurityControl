@@ -18,7 +18,7 @@ downstream experiment inherits it, so it is verified first and independently.
     need.
 
 The corpus produced here is a **candidate**. It is frozen only after E1.1 Stage 1
-labels it on both models and the harmful-and-complied cell is shown adequate on
+labels it on every roster model and the harmful-and-complied cell is shown adequate on
 each — cell size is a property of a model's refusal behaviour, so freezing before
 labelling would mean widening for one model silently changes the other's corpus.
 
@@ -80,27 +80,51 @@ def _sweep(cfg: Config, items: Sequence, kind: str, log) -> Tuple[pd.DataFrame, 
             raise RuntimeError(f"{spec.model_id} has no fast tokenizer; offset mapping is required")
 
         n_render, errors, bad_inst, bad_span, mism = 0, [], 0, 0, 0
+        bleed_rows: List[Dict] = []
         for ins in items:
             for design in cfg.designs:
                 content_lens = {}
-                for role in cfg.roles:
+                for role in cfg.roles_for(slug):
                     try:
                         R = render(tok, ins.text, role, design)
                     except Exception as e:
                         errors.append(f"{ins.uid}/{role}/{design}: {type(e).__name__}: {str(e)[:60]}")
                         continue
                     n_render += 1
-                    ids = tok(R.text, add_special_tokens=False)["input_ids"]
 
-                    # `t_inst` must be the last token of the instruction itself.
-                    tail = ins.text.rstrip()[-40:]
-                    if not tok.decode(ids[: R.t_inst + 1]).rstrip().endswith(tail):
+                    # Position checks are done on CHARACTER OFFSETS, not on decoded
+                    # text. The decode-based version silently applied a different
+                    # standard per template: it `.rstrip()`ed, so a template whose
+                    # next character is `\n` (Qwen's tool wrapper) passed while one
+                    # whose next character is `"` (Llama's tool wrapper, which
+                    # quotes content) failed — for the SAME underlying phenomenon,
+                    # a BPE merge across the instruction boundary. Offsets make the
+                    # check template-blind and state the real requirement: the
+                    # token span must COVER the instruction exactly, and may
+                    # overhang only by template characters, which `render` records
+                    # as bleed.
+                    enc = tok(R.text, add_special_tokens=False, return_offsets_mapping=True)
+                    offs = enc["offset_mapping"]
+                    c0 = R.text.index(ins.text)
+                    c1 = c0 + len(ins.text)
+                    # `t_inst` must be the token carrying the instruction's LAST
+                    # character, and nothing beyond the template's next characters.
+                    if not (offs[R.t_inst][0] < c1 <= offs[R.t_inst][1]):
                         bad_inst += 1
-                    # The content span must decode back to exactly the instruction.
-                    if tok.decode(ids[R.content_start:R.content_end]).strip() != ins.text.strip():
+                    # The span must cover the instruction completely.
+                    if not (offs[R.content_start][0] <= c0 and offs[R.content_end - 1][1] >= c1):
                         bad_span += 1
 
                     content_lens[role] = R.content_end - R.content_start
+                    # NOT named `head`/`tail`: those shadow DataFrame.head and
+                    # DataFrame.tail, so `g.tail` below resolves to the method
+                    # and the attribute access fails at runtime rather than here.
+                    bleed_rows.append({"role": role, "design": design,
+                                       "harmful": bool(ins.harmful),
+                                       "last_char": ins.text[-1:],
+                                       "bleed_head": R.bleed_head,
+                                       "bleed_tail": R.bleed_tail,
+                                       "has_bleed": bool(R.bleed_head or R.bleed_tail)})
                     index_rows.append({
                         "model": slug, "kind": kind, "uid": ins.uid, "source": ins.source,
                         "harmful": ins.harmful, "split": ins.split, "role": role,
@@ -108,6 +132,7 @@ def _sweep(cfg: Config, items: Sequence, kind: str, log) -> Tuple[pd.DataFrame, 
                         "content_tokens": R.content_end - R.content_start,
                         "t_inst": R.t_inst, "t_post_inst": R.t_post_inst,
                         "slot_is_fixed": R.slot_is_fixed,
+                        "bleed_head": R.bleed_head, "bleed_tail": R.bleed_tail,
                     })
 
                 if len(set(content_lens.values())) > 1:
@@ -115,6 +140,73 @@ def _sweep(cfg: Config, items: Sequence, kind: str, log) -> Tuple[pd.DataFrame, 
                     mismatch_rows.append({"model": slug, "kind": kind, "uid": ins.uid,
                                           "source": ins.source, "design": design,
                                           **content_lens, "text": ins.text[:120]})
+
+        # ---- template bleed at t_inst -------------------------------------
+        # A BPE merge across the instruction boundary pulls one template
+        # character into `t_inst`, so that token is `.` on one item and `.\n` on
+        # another. The rate differs sharply by label (harmful ~0.31 vs harmless
+        # ~0.81 on Qwen's tool role), which looks like a confound.
+        #
+        # TESTED AND FALSIFIED: "the bleed is a deterministic function of the
+        # instruction's FINAL CHARACTER, so it carries nothing that character
+        # does not." Llama's tool role breaks it — final character `m` merges
+        # with the closing quote on some items and not others, because BPE
+        # merges are decided by a longer context than one character. Do not
+        # re-derive that invariant; it is not true.
+        #
+        # What IS true, and is therefore what is gated: the bleed is confined to
+        # the `tool` role and is at most ONE template character at each end of
+        # the span. Bleed appearing on `user` or `system`, or growing past one
+        # character, would mean span resolution is wrong rather than that a
+        # template is quirky — and that must fail loudly.
+        #
+        # ALSO CORRECTED BY EVIDENCE: an earlier version of this gate forbade
+        # bleed at the HEAD of the span. That generalised from Qwen, whose tool
+        # template only appends. Llama's tool template QUOTES the content, so the
+        # opening quote merges into the instruction's first token exactly as the
+        # closing one merges into its last. Head bleed is the same phenomenon
+        # and gets the same bound, not a prohibition.
+        #
+        # The by-label asymmetry is REPORTED, not gated. It is driven by source
+        # punctuation (AdvBench imperatives vs XSTest questions), which no
+        # rendering choice can change, and it is controlled downstream by the
+        # surface/length-only baseline that `R_harm` must beat. It must also be
+        # stated in the write-up: for the `tool` role at `t_inst`, the read
+        # token carries one extra template character more often on harmless
+        # items than on harmful ones.
+        MAX_BLEED_CHARS = 1
+        BLEED_ROLES = {"tool"}
+        bl = pd.DataFrame(bleed_rows)
+        bleed_report, bleed_bad = {}, []
+        if len(bl):
+            for (role, design), g in bl.groupby(["role", "design"]):
+                if not g.has_bleed.any():
+                    continue
+                tails = sorted({t for t in g.bleed_tail.unique() if t})
+                heads = sorted({h for h in g.bleed_head.unique() if h})
+                r_h = float(g[g.harmful].has_bleed.mean()) if g.harmful.any() else 0.0
+                r_l = float(g[~g.harmful].has_bleed.mean()) if (~g.harmful).any() else 0.0
+                too_long = [t for t in tails + heads if len(t) > MAX_BLEED_CHARS]
+                bleed_report[f"{role}/{design}"] = {
+                    "bleed_tail_chars": tails, "bleed_head_chars": heads,
+                    "rate_harmful": round(r_h, 4), "rate_harmless": round(r_l, 4),
+                    "abs_diff_reported_not_gated": round(abs(r_h - r_l), 4),
+                    "final_chars_that_can_merge": sorted(
+                        {c for c, h in g.groupby("last_char") if h.has_bleed.any()})}
+                if role not in BLEED_ROLES:
+                    bleed_bad.append(f"{role}/{design}: bleed outside the tool role")
+                if too_long:
+                    bleed_bad.append(f"{role}/{design}: bleed longer than "
+                                     f"{MAX_BLEED_CHARS} char: {too_long}")
+        checks[f"bleed_structurally_bounded_{kind}_{slug}"] = {
+            "ok": not bleed_bad,
+            "gated": {"roles_allowed": sorted(BLEED_ROLES),
+                      "max_chars_each_end": MAX_BLEED_CHARS,
+                      "head_bleed_allowed": True},
+            "violations": bleed_bad, "per_role_design": bleed_report,
+            "note": ("by-label rate difference is a corpus property (source "
+                     "punctuation), REPORTED not gated; controlled downstream by "
+                     "the surface/length-only baseline R_harm must beat")}
 
         n_pairs = len(items) * len(cfg.designs)
         rate = mism / n_pairs if n_pairs else 0.0
@@ -129,6 +221,13 @@ def _sweep(cfg: Config, items: Sequence, kind: str, log) -> Tuple[pd.DataFrame, 
         log.info(f"  {slug}/{kind}: {n_render} renders, {len(errors)} errors, "
                  f"bad_t_inst={bad_inst}, bad_span={bad_span}, "
                  f"cross-role length mismatch={mism}/{n_pairs} ({rate:.2%})")
+        for k, v in bleed_report.items():
+            log.info(f"    bleed {k:24s} head={v['bleed_head_chars']} "
+                     f"tail={v['bleed_tail_chars']} after "
+                     f"{v['final_chars_that_can_merge']}  harmful={v['rate_harmful']:.3f} "
+                     f"harmless={v['rate_harmless']:.3f} "
+                     f"(|d|={v['abs_diff_reported_not_gated']:.3f} — reported, not gated: "
+                     f"source punctuation, covered by the surface baseline)")
 
     return pd.DataFrame(index_rows), checks, pd.DataFrame(mismatch_rows)
 
@@ -187,9 +286,16 @@ def run(cfg: Config) -> None:
     if pools.SOURCE_FAILURES:
         log.warning(f"  dataset sources that failed to load: {pools.SOURCE_FAILURES}")
 
-    n_items = len(fitting) * len(cfg.roles) * len(cfg.designs)
-    log.info(f"Crossing: {len(fitting)} instructions x {len(cfg.roles)} roles "
-             f"x {len(cfg.designs)} designs = {n_items} rendered items per model")
+    # Per model, not one number: a model whose chat template cannot express all
+    # four role classes renders fewer items, and reporting a single figure here
+    # would hide that. The instruction set is identical across models either way
+    # — only the crossing width differs.
+    n_items = {slug: len(fitting) * len(cfg.roles_for(slug)) * len(cfg.designs)
+               for slug in cfg.models}
+    for slug, n in n_items.items():
+        rr = cfg.roles_for(slug)
+        log.info(f"Crossing [{slug}]: {len(fitting)} instructions x {len(rr)} roles "
+                 f"({','.join(rr)}) x {len(cfg.designs)} designs = {n} rendered items")
 
     # ------------------------------------------------------------ verify
     checks = pools.verify_corpus(fitting, attacks)
@@ -250,7 +356,8 @@ def run(cfg: Config) -> None:
         "n_harmful": len(harmful), "n_harmless": len(harmless),
         "n_attack": len(attacks), "n_transfer": len(transfer),
         "train_fraction": cfg.train_fraction,
-        "roles": list(cfg.roles), "designs": list(cfg.designs),
+        "roles": {slug: cfg.roles_for(slug) for slug in cfg.models},
+        "default_roles": list(cfg.roles), "designs": list(cfg.designs),
         "rendered_items_per_model": n_items,
         "source_composition": {
             "harmful": pools.describe_pool(harmful),

@@ -1,0 +1,2 @@
+=== 2026-09-11T19:24:04+00:00 [gpu] experiments/rq1.py  ===
+MODELS=nemotron-3-nano-30b-a3b BATCH_SIZE=<default> RESULTS_ROOT=./results_verify

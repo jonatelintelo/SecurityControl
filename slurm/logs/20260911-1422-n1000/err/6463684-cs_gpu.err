@@ -1,0 +1,68 @@
+[2026-09-12 01:19:36] [INFO] pipeline rq1: ['causal']
+[2026-09-12 01:19:36] [INFO] ------------------------------------------------------------------------------
+[2026-09-12 01:19:36] [INFO] [causal/qwen3.5-35b-a3b] E1.6 — causal distinguishability; GO/NO-GO GATE 1
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-12 01:19:59] [INFO] [qwen3.5-35b-a3b] control variable: R_control (variant='under', requested 'under')
+[2026-09-12 01:19:59] [INFO] [qwen3.5-35b-a3b] probe sets: train 80, test 100 (balanced harmful/harmless)
+[2026-09-12 01:20:02] [INFO] Loading Qwen/Qwen3.5-35B-A3B: {'model_id': 'Qwen/Qwen3.5-35B-A3B', 'architecture': 'Qwen3_5MoeForConditionalGeneration', 'model_type': 'qwen3_5_moe', 'num_layers': 40, 'hidden_size': 2048, 'num_experts': 256, 'is_multimodal': True}
+Fetching 14 files:   0%|          | 0/14 [00:00<?, ?it/s]Fetching 14 files: 100%|██████████| 14/14 [00:00<00:00, 2195.48it/s]
+Loading weights:   0%|          | 0/693 [00:00<?, ?it/s]Loading weights:   2%|▏         | 13/693 [00:00<00:08, 84.66it/s]Loading weights:   3%|▎         | 22/693 [00:00<00:09, 71.38it/s]Loading weights:   5%|▍         | 32/693 [00:00<00:11, 55.42it/s]Loading weights:   7%|▋         | 46/693 [00:00<00:09, 70.24it/s]Loading weights:   8%|▊         | 54/693 [00:00<00:10, 61.96it/s]Loading weights:   9%|▉         | 61/693 [00:01<00:13, 46.78it/s]Loading weights:  11%|█▏        | 79/693 [00:01<00:08, 71.75it/s]Loading weights:  13%|█▎        | 88/693 [00:01<00:10, 57.13it/s]Loading weights:  15%|█▍        | 101/693 [00:01<00:09, 60.29it/s]Loading weights:  17%|█▋        | 118/693 [00:01<00:07, 78.46it/s]Loading weights:  18%|█▊        | 128/693 [00:02<00:10, 53.77it/s]Loading weights:  20%|█▉        | 136/693 [00:02<00:11, 47.82it/s]Loading weights:  22%|██▏       | 152/693 [00:02<00:10, 53.65it/s]Loading weights:  25%|██▍       | 170/693 [00:02<00:08, 60.86it/s]Loading weights:  27%|██▋       | 188/693 [00:03<00:07, 66.62it/s]Loading weights:  28%|██▊       | 196/693 [00:03<00:08, 60.63it/s]Loading weights:  32%|███▏      | 220/693 [00:03<00:05, 87.48it/s]Loading weights:  33%|███▎      | 231/693 [00:03<00:05, 82.35it/s]Loading weights:  35%|███▍      | 241/693 [00:03<00:06, 70.39it/s]Loading weights:  37%|███▋      | 257/693 [00:03<00:05, 72.74it/s]Loading weights:  38%|███▊      | 266/693 [00:04<00:06, 66.93it/s]Loading weights:  42%|████▏     | 290/693 [00:04<00:05, 80.37it/s]Loading weights:  44%|████▍     | 307/693 [00:04<00:04, 84.47it/s]Loading weights:  47%|████▋     | 326/693 [00:04<00:04, 91.12it/s]Loading weights:  48%|████▊     | 336/693 [00:04<00:04, 82.73it/s]Loading weights:  52%|█████▏    | 359/693 [00:05<00:03, 94.27it/s]Loading weights:  54%|█████▍    | 376/693 [00:05<00:03, 94.52it/s]Loading weights:  57%|█████▋    | 395/693 [00:05<00:03, 93.71it/s]Loading weights:  58%|█████▊    | 405/693 [00:05<00:04, 58.80it/s]Loading weights:  61%|██████    | 424/693 [00:06<00:03, 70.38it/s]Loading weights:  62%|██████▏   | 433/693 [00:06<00:04, 56.84it/s]Loading weights:  64%|██████▍   | 445/693 [00:06<00:04, 61.98it/s]Loading weights:  65%|██████▌   | 453/693 [00:06<00:04, 51.99it/s]Loading weights:  67%|██████▋   | 463/693 [00:06<00:03, 59.10it/s]Loading weights:  68%|██████▊   | 471/693 [00:07<00:04, 51.52it/s]Loading weights:  69%|██████▉   | 478/693 [00:07<00:05, 36.53it/s]Loading weights:  72%|███████▏  | 496/693 [00:07<00:03, 55.87it/s]Loading weights:  73%|███████▎  | 505/693 [00:07<00:03, 49.35it/s]Loading weights:  74%|███████▍  | 514/693 [00:07<00:03, 55.54it/s]Loading weights:  75%|███████▌  | 522/693 [00:08<00:03, 49.70it/s]Loading weights:  77%|███████▋  | 532/693 [00:08<00:02, 54.95it/s]Loading weights:  78%|███████▊  | 539/693 [00:08<00:03, 45.29it/s]Loading weights:  79%|███████▊  | 545/693 [00:08<00:04, 32.86it/s]Loading weights:  82%|████████▏ | 565/693 [00:08<00:02, 55.79it/s]Loading weights:  83%|████████▎ | 573/693 [00:09<00:02, 50.15it/s]Loading weights:  84%|████████▍ | 583/693 [00:09<00:02, 41.16it/s]Loading weights:  87%|████████▋ | 601/693 [00:09<00:02, 43.28it/s]Loading weights:  88%|████████▊ | 607/693 [00:10<00:01, 44.35it/s]Loading weights:  88%|████████▊ | 613/693 [00:10<00:01, 40.17it/s]Loading weights:  91%|█████████▏| 634/693 [00:10<00:00, 61.86it/s]Loading weights:  93%|█████████▎| 642/693 [00:10<00:00, 52.03it/s]Loading weights:  94%|█████████▎| 649/693 [00:10<00:00, 52.70it/s]Loading weights:  95%|█████████▍| 655/693 [00:10<00:00, 44.69it/s]Loading weights:  97%|█████████▋| 670/693 [00:11<00:00, 58.87it/s]Loading weights:  98%|█████████▊| 677/693 [00:11<00:00, 41.45it/s]Loading weights:  99%|█████████▊| 683/693 [00:11<00:00, 36.28it/s]Loading weights: 100%|██████████| 693/693 [00:11<00:00, 59.04it/s]
+[2026-09-12 01:20:24] [INFO] Decoder stack at 'model.layers' (40 layers)
+[2026-09-12 01:21:10] [INFO]   sanity @L18: determinism KL 0.0e+00 (ok); raw_norm 1.15
+[2026-09-12 01:21:10] [INFO]     alpha=0.5: real KL 0.1359 vs magnitude-matched random 0.0172 (content gap +0.1187)
+[2026-09-12 01:21:10] [INFO]     alpha=1.0: real KL 0.5410 vs magnitude-matched random 0.0590 (content gap +0.4821)
+[2026-09-12 01:21:10] [INFO]     alpha=2.0: real KL 2.4769 vs magnitude-matched random 0.2581 (content gap +2.2188)
+[2026-09-12 01:21:10] [INFO] [qwen3.5-35b-a3b] stage A: layer profile on train, all 40 layers, alpha=+/-1
+[2026-09-12 01:32:39] [INFO]   stage A top-3/source [28, 31, 33, 34, 35, 36, 37]; sensitivity depths [9, 19, 29]; steering at [9, 19, 28, 29, 31, 33, 34, 35, 36, 37]
+[2026-09-12 01:32:39] [INFO] [qwen3.5-35b-a3b] stage B: alpha x token-position profile on train, 10 layers x 10 alpha x 4 token sets
+[2026-09-12 01:38:44] [INFO]     L9: 120 cells
+[2026-09-12 01:44:43] [INFO]     L19: 120 cells
+[2026-09-12 01:50:36] [INFO]     L28: 120 cells
+[2026-09-12 01:56:19] [INFO]     L29: 120 cells
+[2026-09-12 02:02:04] [INFO]     L31: 120 cells
+[2026-09-12 02:07:51] [INFO]     L33: 120 cells
+[2026-09-12 02:13:35] [INFO]     L34: 120 cells
+[2026-09-12 02:19:18] [INFO]     L35: 120 cells
+[2026-09-12 02:25:02] [INFO]     L36: 120 cells
+[2026-09-12 02:30:47] [INFO]     L37: 120 cells
+[2026-09-12 02:30:47] [INFO]   stage B all_real           mean |margin shift| 4.2104  mean KL 2.2665
+[2026-09-12 02:30:47] [INFO]   stage B instruction_span   mean |margin shift| 0.1391  mean KL 0.0257
+[2026-09-12 02:30:47] [INFO]   stage B post_instruction   mean |margin shift| 4.1762  mean KL 2.2041
+[2026-09-12 02:30:47] [INFO]   stage B t_inst_only        mean |margin shift| 0.0679  mean KL 0.0024
+[2026-09-12 02:31:32] [INFO]   L9: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-12 02:34:14] [INFO]   L9: magnitude-matched random KL (harmless) by alpha 0.25:0.0040, 0.5:0.0065, 1.0:0.0151, 2.0:0.0434, 4.0:0.1541
+[2026-09-12 03:04:07] [INFO]   L9: 6000 cells
+[2026-09-12 03:04:52] [INFO]   L19: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-12 03:07:30] [INFO]   L19: magnitude-matched random KL (harmless) by alpha 0.25:0.0127, 0.5:0.0431, 1.0:0.1571, 2.0:0.6609, 4.0:4.0324
+[2026-09-12 03:36:48] [INFO]   L19: 4000 cells
+[2026-09-12 03:37:33] [INFO]   L28: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-12 03:40:13] [INFO]   L28: magnitude-matched random KL (harmless) by alpha 0.25:0.0218, 0.5:0.0784, 1.0:0.2945, 2.0:1.2185, 4.0:6.0836
+[2026-09-12 04:09:42] [INFO]   L28: 2200 cells
+[2026-09-12 04:10:27] [INFO]   L29: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-12 04:13:04] [INFO]   L29: magnitude-matched random KL (harmless) by alpha 0.25:0.0179, 0.5:0.0690, 1.0:0.2673, 2.0:1.0105, 4.0:5.1989
+[2026-09-12 04:42:32] [INFO]   L29: 2000 cells
+[2026-09-12 04:43:16] [INFO]   L31: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-12 04:45:54] [INFO]   L31: magnitude-matched random KL (harmless) by alpha 0.25:0.0122, 0.5:0.0459, 1.0:0.1759, 2.0:0.7521, 4.0:7.4480
+[2026-09-12 05:15:26] [INFO]   L31: 1600 cells
+[2026-09-12 05:16:10] [INFO]   L33: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-12 05:18:49] [INFO]   L33: magnitude-matched random KL (harmless) by alpha 0.25:0.0109, 0.5:0.0415, 1.0:0.1903, 2.0:1.0568, 4.0:6.5483
+[2026-09-12 05:48:23] [INFO]   L33: 1200 cells
+[2026-09-12 05:49:07] [INFO]   L34: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-12 05:51:46] [INFO]   L34: magnitude-matched random KL (harmless) by alpha 0.25:0.0075, 0.5:0.0282, 1.0:0.1333, 2.0:0.7156, 4.0:4.6219
+[2026-09-12 06:21:18] [INFO]   L34: 1000 cells
+[2026-09-12 06:22:03] [INFO]   L35: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-12 06:24:45] [INFO]   L35: magnitude-matched random KL (harmless) by alpha 0.25:0.0066, 0.5:0.0248, 1.0:0.1066, 2.0:0.5094, 4.0:3.4712
+[2026-09-12 06:54:29] [INFO]   L35: 800 cells
+[2026-09-12 06:55:14] [INFO]   L36: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-12 06:57:56] [INFO]   L36: magnitude-matched random KL (harmless) by alpha 0.25:0.0055, 0.5:0.0211, 1.0:0.0979, 2.0:0.5605, 4.0:4.0221
+[2026-09-12 07:27:46] [INFO]   L36: 600 cells
+[2026-09-12 07:28:31] [INFO]   L37: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-12 07:31:16] [INFO]   L37: magnitude-matched random KL (harmless) by alpha 0.25:0.0043, 0.5:0.0163, 1.0:0.0755, 2.0:0.4374, 4.0:3.5979
+[2026-09-12 08:01:09] [INFO]   L37: 400 cells
+[2026-09-12 08:01:11] [INFO]   KL_harmless <= 0.1 : n_live=3249 G1 0.7793 G2 78/362 G3 162 -> PASS
+[2026-09-12 08:01:12] [INFO]   KL_harmless <= 0.25: n_live=4488 G1 0.768 G2 166/573 G3 235 -> PASS
+[2026-09-12 08:01:14] [INFO]   KL_harmless <= 0.5 : n_live=5505 G1 0.764 G2 203/657 G3 324 -> PASS
+[2026-09-12 08:01:16] [INFO]   KL_harmless <= 1.0 : n_live=6252 G1 0.7678 G2 261/764 G3 411 -> PASS
+[2026-09-12 08:01:19] [INFO]   KL_harmless <= 2.0 : n_live=7101 G1 0.7812 G2 313/948 G3 556 -> PASS
+[2026-09-12 08:01:19] [INFO] [qwen3.5-35b-a3b] GATE 1 — PASS (testable at bounds [0.1, 0.25, 0.5, 1.0, 2.0])

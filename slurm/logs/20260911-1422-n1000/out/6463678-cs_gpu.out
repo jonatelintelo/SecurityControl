@@ -1,0 +1,3 @@
+=== 2026-09-11T18:15:35+00:00 [gpu] experiments/rq1.py --only causal ===
+MODELS=llama3.1-8b BATCH_SIZE=<default> RESULTS_ROOT=./results_verify
+=== 2026-09-11T20:06:11+00:00 done ===

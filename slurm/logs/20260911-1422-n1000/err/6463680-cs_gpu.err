@@ -1,0 +1,15 @@
+[2026-09-11 18:30:15] [INFO] pipeline rq1: ['labels', 'extract', 'nulls', 'geometry', 'projections', 'dimensionality', 'harm_controls', 'dim_behavioural', 'geometry_subspace', 'emergence', 'style', 'style_level2', 'fidelity', 'causal']
+[2026-09-11 18:30:15] [INFO] [labels/yi-6b-chat] already complete (2 artifacts) — skipping
+[2026-09-11 18:30:15] [INFO] [extract/yi-6b-chat] already complete (5 artifacts) — skipping
+[2026-09-11 18:30:16] [INFO] [nulls/yi-6b-chat] already complete (1 artifacts) — skipping
+[2026-09-11 18:30:16] [INFO] [geometry/yi-6b-chat] already complete (2 artifacts) — skipping
+[2026-09-11 18:30:16] [INFO] [projections/yi-6b-chat] already complete (2 artifacts) — skipping
+[2026-09-11 18:30:16] [INFO] [dimensionality/yi-6b-chat] already complete (1 artifacts) — skipping
+[2026-09-11 18:30:16] [INFO] [harm_controls/yi-6b-chat] already complete (2 artifacts) — skipping
+[2026-09-11 18:30:16] [INFO] [dim_behavioural/yi-6b-chat] already complete (2 artifacts) — skipping
+[2026-09-11 18:30:17] [INFO] [geometry_subspace/yi-6b-chat] already complete (2 artifacts) — skipping
+[2026-09-11 18:30:17] [INFO] [emergence/yi-6b-chat] already complete (2 artifacts) — skipping
+[2026-09-11 18:30:17] [INFO] [style/yi-6b-chat] already complete (3 artifacts) — skipping
+[2026-09-11 18:30:17] [INFO] [style_level2/yi-6b-chat] already complete (2 artifacts) — skipping
+[2026-09-11 18:30:17] [INFO] [fidelity/yi-6b-chat] already complete (1 artifacts) — skipping
+[2026-09-11 18:30:17] [INFO] [causal/yi-6b-chat] already complete (3 artifacts) — skipping

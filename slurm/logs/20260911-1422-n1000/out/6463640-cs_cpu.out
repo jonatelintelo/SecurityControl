@@ -1,0 +1,46 @@
+=== 2026-09-11T14:31:13+00:00 [cpu] tests/test_verifier_teeth.py  ===
+RESULTS_ROOT=./results FAST_DEV=0 SEED=0
+source tree: /home/b6aj/jtelintelo.b6aj/SecurityControl/results_archive/pre_5model_20260911/results
+model: qwen2.5-7b
+
+baseline verifier exit code on the UNMUTATED tree: 1
+  (a non-zero baseline is fine — the archived run is incomplete; what
+   matters is that each mutation adds a NEW failing check)
+
+[ok  ] train/test leakage
+         mutation: duplicated one test instruction into train
+         caught by: corpus: no train/test leakage by instruction
+         caught by: qwen2.5-7b: activation cache is present where the run recorded it
+[ok  ] a role class silently dropped
+         mutation: dropped the `tool` role from qwen2.5-7b
+         caught by: qwen2.5-7b: activation cache is present where the run recorded it
+         caught by: roster: R_role is the same class set on every model
+[ok  ] direction loses to its length baseline
+         mutation: set length_only_auc=0.999 for R_harm (direction can no longer beat it)
+         caught by: qwen2.5-7b: activation cache is present where the run recorded it
+         caught by: qwen2.5-7b: every direction beats its length-only baseline
+[ok  ] G3 null band = inf (the real bug)
+         mutation: set every behavioural null band to inf in causal_gate__under.json
+         caught by: qwen2.5-7b: activation cache is present where the run recorded it
+         caught by: qwen2.5-7b__under: every null band is finite and positive (G3-bug guard)
+[ok  ] CI from 3 instructions
+         mutation: set n_test_instructions=3 on 5 reported fits
+         caught by: qwen2.5-7b: activation cache is present where the run recorded it
+         caught by: qwen2.5-7b: every reported CI has >= 20 test instructions (union, weaker check)
+[ok  ] E1.1d not role-balanced
+         mutation: set role_balanced=False on every E1.1d variant
+         caught by: qwen2.5-7b: E1.1d variants are role-balanced
+         caught by: qwen2.5-7b: activation cache is present where the run recorded it
+[ok  ] undetermined leaked into the R_control fit
+         mutation: added the undetermined items to R_control's negative class
+         caught by: qwen2.5-7b: R_control fit excludes the undetermined pool (E is held out)
+         caught by: qwen2.5-7b: activation cache is present where the run recorded it
+[ok  ] minority class gutted, union intact
+         mutation: set R_harm n_test_pos=2 while leaving n_test_instructions untouched
+         caught by: qwen2.5-7b: activation cache is present where the run recorded it
+         caught by: qwen2.5-7b: every reported CI has >= 20 MINORITY-class test items
+[ok  ] layer selected on test (source mutation)
+         invariant fired: layer selected on TEST auc at: rq1_mutated.py:667: li = int(sub.loc[sub.auc.idxmax(), "layer"])
+
+PASS - all 9 mutations were caught
+=== 2026-09-11T14:32:10+00:00 done rc=0 ===

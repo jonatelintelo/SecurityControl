@@ -1,0 +1,128 @@
+=== 2026-09-12T15:20:18+00:00 [cpu] tools/audit_independent.py  ===
+RESULTS_ROOT=./results FAST_DEV=0 SEED=0
+INDEPENDENT RECOMPUTATION AUDIT — results
+Every number below is recomputed from raw artifacts with a separate
+implementation (numpy/pandas only, no core.extract) and compared.
+
+
+==============================================================================
+qwen2.5-7b
+==============================================================================
+  [ok  ] labels 2x2 matches the recorded check
+          within_harmful: labels say 2876/237, checks say 2876/237; within_harmless: labels say 145/3847, checks say 145/3847
+  [ok  ] R_harm AUC recomputed from activations (L16)
+          independent 0.9522 vs artifact 0.9522 (n_pos=1000, n_neg=992)
+  [ok  ] r_eff is a valid participation ratio (>=1)
+          independent r_eff on held-out activations @L16 = 34.23
+  [ok  ] geometry cosines recomputed from the saved vectors
+          11 sampled pairs recomputed; all agree to 2e-3
+  [ok  ] gate[over] bound 0.1: pair count recomputed from the matrix
+          independent 287 off-diagonal pairs vs artifact n_pairs_tested=287
+  [ok  ] gate[under] bound 0.1: pair count recomputed from the matrix
+          independent 287 off-diagonal pairs vs artifact n_pairs_tested=287
+  [ok  ] emergence peak AUC == test AUC at the train-selected layer
+          8 concepts checked; all agree
+  [ok  ] every saved direction is unit length
+          196 vectors; all |v|=1
+
+==============================================================================
+qwen3.5-9b
+==============================================================================
+  [ok  ] labels 2x2 matches the recorded check
+          within_harmful: labels say 3829/20, checks say 3829/20; within_harmless: labels say 284/3704, checks say 284/3704
+  [ok  ] R_harm AUC recomputed from activations (L15)
+          independent 0.9652 vs artifact 0.9652 (n_pos=1000, n_neg=992)
+  [ok  ] r_eff is a valid participation ratio (>=1)
+          independent r_eff on held-out activations @L15 = 41.23
+  [ok  ] geometry cosines recomputed from the saved vectors
+          8 sampled pairs recomputed; all agree to 2e-3
+  [ok  ] gate[over] bound 0.1: pair count recomputed from the matrix
+          independent 364 off-diagonal pairs vs artifact n_pairs_tested=364
+  [ok  ] emergence peak AUC == test AUC at the train-selected layer
+          6 concepts checked; all agree
+  [ok  ] every saved direction is unit length
+          160 vectors; all |v|=1
+
+==============================================================================
+llama3.1-8b
+==============================================================================
+  [ok  ] labels 2x2 matches the recorded check
+          within_harmful: labels say 3637/106, checks say 3637/106; within_harmless: labels say 226/3769, checks say 226/3769
+  [ok  ] R_harm AUC recomputed from activations (L11)
+          independent 0.9642 vs artifact 0.9642 (n_pos=1000, n_neg=992)
+  [ok  ] r_eff is a valid participation ratio (>=1)
+          independent r_eff on held-out activations @L11 = 58.47
+  [ok  ] geometry cosines recomputed from the saved vectors
+          14 sampled pairs recomputed; all agree to 2e-3
+  [ok  ] gate[over] bound 0.1: pair count recomputed from the matrix
+          independent 381 off-diagonal pairs vs artifact n_pairs_tested=381
+  [ok  ] gate[under] bound 0.1: pair count recomputed from the matrix
+          independent 327 off-diagonal pairs vs artifact n_pairs_tested=327
+  [ok  ] emergence peak AUC == test AUC at the train-selected layer
+          8 concepts checked; all agree
+  [ok  ] every saved direction is unit length
+          224 vectors; all |v|=1
+
+==============================================================================
+yi-6b-chat
+==============================================================================
+  [ok  ] labels 2x2 matches the recorded check
+          within_harmful: labels say 2914/616, checks say 2914/616; within_harmless: labels say 484/3505, checks say 484/3505
+  [ok  ] R_harm AUC recomputed from activations (L17)
+          independent 0.9415 vs artifact 0.9415 (n_pos=1000, n_neg=992)
+  [ok  ] r_eff is a valid participation ratio (>=1)
+          independent r_eff on held-out activations @L17 = 31.25
+  [ok  ] geometry cosines recomputed from the saved vectors
+          14 sampled pairs recomputed; all agree to 2e-3
+  [ok  ] gate[over] bound 0.1: pair count recomputed from the matrix
+          independent 1116 off-diagonal pairs vs artifact n_pairs_tested=1116
+  [ok  ] gate[under] bound 0.1: pair count recomputed from the matrix
+          independent 1114 off-diagonal pairs vs artifact n_pairs_tested=1114
+  [ok  ] emergence peak AUC == test AUC at the train-selected layer
+          8 concepts checked; all agree
+  [ok  ] every saved direction is unit length
+          224 vectors; all |v|=1
+
+==============================================================================
+qwen3.5-35b-a3b
+==============================================================================
+  [ok  ] labels 2x2 matches the recorded check
+          within_harmful: labels say 3836/24, checks say 3836/24; within_harmless: labels say 214/3766, checks say 214/3766
+  [ok  ] R_harm AUC recomputed from activations (L27)
+          independent 0.9775 vs artifact 0.9775 (n_pos=1000, n_neg=992)
+  [ok  ] r_eff is a valid participation ratio (>=1)
+          independent r_eff on held-out activations @L27 = 42.66
+  [ok  ] geometry cosines recomputed from the saved vectors
+          8 sampled pairs recomputed; all agree to 2e-3
+  [ok  ] gate[over] bound 0.1: pair count recomputed from the matrix
+          independent 394 off-diagonal pairs vs artifact n_pairs_tested=394
+  [ok  ] gate[under] bound 0.1: pair count recomputed from the matrix
+          independent 362 off-diagonal pairs vs artifact n_pairs_tested=362
+  [ok  ] emergence peak AUC == test AUC at the train-selected layer
+          8 concepts checked; all agree
+  [ok  ] every saved direction is unit length
+          280 vectors; all |v|=1
+
+==============================================================================
+nemotron-3-nano-30b-a3b
+==============================================================================
+  [ok  ] labels 2x2 matches the recorded check
+          within_harmful: labels say 3711/66, checks say 3711/66; within_harmless: labels say 471/3510, checks say 471/3510
+  [ok  ] R_harm AUC recomputed from activations (L25)
+          independent 0.9771 vs artifact 0.9771 (n_pos=1000, n_neg=992)
+  [ok  ] r_eff is a valid participation ratio (>=1)
+          independent r_eff on held-out activations @L25 = 37.02
+  [ok  ] geometry cosines recomputed from the saved vectors
+          10 sampled pairs recomputed; all agree to 2e-3
+  [ok  ] gate[over] bound 0.1: pair count recomputed from the matrix
+          independent 664 off-diagonal pairs vs artifact n_pairs_tested=664
+  [ok  ] gate[under] bound 0.1: pair count recomputed from the matrix
+          independent 593 off-diagonal pairs vs artifact n_pairs_tested=593
+  [ok  ] emergence peak AUC == test AUC at the train-selected layer
+          8 concepts checked; all agree
+  [ok  ] every saved direction is unit length
+          364 vectors; all |v|=1
+
+==============================================================================
+47/47 independent checks agree with the artifacts
+=== 2026-09-12T15:20:39+00:00 done rc=0 ===

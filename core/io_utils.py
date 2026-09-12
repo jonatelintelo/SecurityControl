@@ -51,8 +51,22 @@ def save_torch(path: Path, obj: Any) -> None:
     torch.save(obj, path)
 
 
-def load_torch(path: Path) -> Any:
-    return torch.load(path, map_location="cpu")
+def load_torch(path: Path, mmap: bool = False) -> Any:
+    """Load a torch artifact.
+
+    `mmap=True` maps tensors lazily instead of reading the whole file into RAM.
+    Use it for the ACTIVATION BLOB, which is 1.3-1.8 GB per model: an analysis
+    tool that opens one and then runs over the roster needs gigabytes it does
+    not use, and is simply OOM-killed on a login node — measured, not
+    hypothetical (0.25 GB resident with mmap vs 1.3 GB without, on Qwen2.5).
+
+    Not the default. Memory-mapped tensors are read-only and are backed by the
+    file for the object's lifetime, which is right for read-only analysis and
+    wrong for anything that mutates or outlives the file. `directions.pt` also
+    carries custom objects rather than plain tensors, so it is loaded normally.
+    """
+    return torch.load(path, map_location="cpu", mmap=True) if mmap else \
+        torch.load(path, map_location="cpu")
 
 
 def save_df(path: Path, df: pd.DataFrame) -> None:

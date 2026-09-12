@@ -7,7 +7,9 @@
 
 **Run identity.** Commit `<<git_commit>>`, `run_manifest__<model>.json` per model,
 `results/` primary and `results_verify/` reproduction at identical configuration.
-Roster: `qwen2.5-7b`, `qwen3.5-9b` (dense, one family) and `qwen3.5-35b-a3b` (MoE).
+Roster: six models, four vendors, both architectures — `qwen2.5-7b`, `qwen3.5-9b`,
+`llama3.1-8b`, `yi-6b-chat` (dense) and `qwen3.5-35b-a3b`, `nemotron-3-nano-30b-a3b`
+(MoE).
 
 ---
 
@@ -34,6 +36,58 @@ split-half stability, random-direction null. Layer selected on **train**.
 `R_role` reported from both estimators the plan requires — the multiclass probe and the
 activation-space contrast.
 
+### C1b — WHAT `R_control` ENCODES: explicit refusal, not compliance broadly
+`soft_refusal_projection.csv`, `soft_refusal_axis.csv`, `soft_refusal_summary.json`,
+`label_audit/undetermined_adjudicated.csv`
+
+**State this; do not let a reader infer it from the variable's name.**
+
+`R_control` is fitted as `refused` vs `complied` on harmful prompts, where
+`refused` means the response contains a prefix from Arditi's list. On every model
+a third group exists and is excluded from the fit: harmful prompts where the rule
+found no refusal marker but Llama-Guard, reading the full generation, found no
+harmful content. **The degeneracy gate fires on none of them** — 22% of Qwen2.5's
+harmful side, and reading them shows soft refusals ("that is illegal and
+unethical... instead, let's...").
+
+Because they are held out, carry no refusal marker, and are read at `t_post_inst`
+(the prompt's last token, so response length and truncation cannot reach the
+activation), where they project is a clean test of what the direction encodes:
+
+**This conclusion reversed, and the reversal is the point.** Projecting the whole
+`undetermined` pool put it near the compliance pole on every model, and
+`soft_refusal_summary.json` still records that reading as *"MARKER DETECTOR"*.
+**That artifact is superseded** — the inference assumed the pool was soft refusals.
+It is not. Adjudicated by two off-roster judges, it splits **847 `complied` / 513
+`refused`** (plus 843 the judges disputed). A pool that is 62% compliance projecting
+with the compliances is what a *correct* `R_control` does, and says nothing about
+markers.
+
+Splitting the pool by what the readers said each item *is* (`soft_refusal_split.csv`,
+both judges agreeing, at `t_post_inst`):
+
+| model | judge=refused: position / AUC vs complied | judge=complied: position / AUC |
+|---|---|---|
+| qwen2.5-7b | **0.60** / **0.912** | −0.11 / 0.431 |
+| qwen3.5-35b-a3b | **0.61** / **0.986** | 0.04 / 0.565 |
+| nemotron-3-nano-30b-a3b | **0.30** / **0.760** | 0.05 / 0.569 |
+| yi-6b-chat | **0.26** / **0.674** | −0.08 / 0.435 |
+| llama3.1-8b | *too few items to fit* | 0.03 / 0.551 |
+
+**`R_control` separates reader-confirmed soft refusals from compliances** — a gap of
++0.25 to +0.71 in position, AUC 0.67–0.99 against 0.43–0.57 — on held-out items that
+carry **no refusal marker at all**. It is therefore a **control variable, not a
+vocabulary detector**: the missing marker does not fool it.
+
+*Report the reversal, not just the conclusion.* The first version of this test is
+what the pooled projection looked like, and pooling two populations that a reader
+can tell apart is the error. `soft_refusal_probe.py` produces the superseded
+artifact and `soft_refusal_split.py` the decisive one; the tools say so in their
+own docstrings.
+
+**Residual caveat, unchanged:** `llama3.1-8b` has too few judge-confirmed soft
+refusals to fit, so the claim rests on five of six models.
+
 ## C2 — `R_harm` is separable from refusal behaviour
 `harm_controls.csv`, `harm_controls_geometry.csv`
 
@@ -51,6 +105,7 @@ against a **matched random-subspace null** (a rank-1 band is the wrong reference
 If every `k = 1`, state the degeneracy explicitly and defer to pass 1.
 
 ## C4 — dimensionality
+*(see also C1b: the soft-vs-hard refusal contrast is NOT a second axis of `R_control` — |cos| ~0.95 with it, far outside the random band.)*
 `dimensionality.csv` (spectral `r_eff`), `behavioural_k.json` (smallest `k` reproducing
 the intervention effect). The behavioural `k` is the one `main.tex` asks for; report both
 and say where they disagree.
@@ -98,10 +153,42 @@ the matched cross-model comparison is the `over` variant on all three.
 `published_auc` **must be read off Zhao et al. (2507.11878), not recalled**.
 
 ## C10 — limitations, stated not buried
-- **One dense family.** Two Qwen models plus a Qwen MoE. Cross-family is deferred by the
-  scoped plan (PEP item 7); Llama-3.1 is sequenced after this run.
-- **O-1: the refusal label is an unvalidated instrument.** `results/label_audit/` is
-  built and awaiting a human pass. Every `R_control` claim inherits this.
+- **Four vendors, not more.** Qwen (x3), Meta, 01-AI, NVIDIA — six models, both
+  architectures. Related work for calibration: the role paper (2603.12277) used 10
+  models over 5 families, Arditi (2406.11717) 13 over 5, Zhao (2507.11878) 3 over 2.
+  We sit above Zhao, below the two larger studies. Say the numbers; do not imply
+  broader coverage.
+- **Count families as VENDORS (4), not template families (5).** `qwen2.5` and
+  `qwen3.5` are separate template families but the same organisation. Using 5 would
+  overstate the cross-family claim.
+- **No chain-of-thought role class.** The role paper uses five role classes
+  including CoT; we use four. Not an oversight and not a cost decision: on every
+  roster model `cot` is either silently dropped or rendered as a tag the model was
+  never trained on (see EXPERIMENTS.md). CoT is a *channel inside an assistant
+  turn*, not a role. State this explicitly — it is the most likely place a reader
+  familiar with 2603.12277 will expect a five-way comparison.
+- **`t_inst` template bleed on the `tool` role.** On Qwen2.5, Llama-3.1 and
+  Nemotron-3, the read token absorbs one template character (`\n`, or `"` on
+  Llama, which quotes tool content), and it does so **more often on harmless items
+  than harmful ones** (~0.81 vs ~0.31) because the sources differ in final
+  punctuation. Bounded (tool role only, ≤1 char) and verified; controlled by the
+  surface baseline `R_harm` must beat. Report the rates — do not omit them.
+- **O-1: the refusal label is validated only by AUTOMATED instruments.**
+  `results/label_audit/` is adjudicated by **three** off-roster readers, each blind
+  to the rule label: `google/gemma-3-27b-it`, `Mixtral-8x7B-Instruct-v0.1` and a
+  Claude session. (`openai/gpt-oss-20b` was the intended judge and could **not** be
+  loaded — its MXFP4 quantiser calls `torch.accelerator`, which needs torch >= 2.6
+  against our pinned 2.5.1.) Report agreement and Cohen's kappa from
+  `adjudicator_agreement.csv`. The readers agree with **each other** (kappa
+  0.67-0.89) far better than with the prefix rule (0.54-0.71), and the pipeline's
+  final `rule+Guard` label agrees with gemma at 0.907 and with Claude at 0.868.
+  Report it as what it is: **not a human audit**. A language model judging language-model
+  outputs can fail where the rule fails — hedged preambles, partial compliance,
+  refuse-then-answer — so agreement bounds the instrument *less* tightly than a
+  human pass would. Disagreements are fully informative and should be read.
+  **O-1 remains open** until a person reads a sample; `adjudicator=human:<name>`
+  rows can be mixed into the same sheet and are scored separately.
+  Every `R_control` claim inherits this.
 - Control-family CIs are conditional on the labels; greedy decoding is bit-reproducible
   only at fixed batch size, so run-to-run label drift adds uncertainty on top.
 - Attention-component analysis is RQ3 and absent here; no claim in this document is a

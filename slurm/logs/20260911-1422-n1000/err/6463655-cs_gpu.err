@@ -1,0 +1,15 @@
+[2026-09-11 18:09:04] [INFO] pipeline rq1: ['labels', 'extract', 'nulls', 'geometry', 'projections', 'dimensionality', 'harm_controls', 'dim_behavioural', 'geometry_subspace', 'emergence', 'style', 'style_level2', 'fidelity', 'causal']
+[2026-09-11 18:09:04] [INFO] [labels/llama3.1-8b] already complete (2 artifacts) — skipping
+[2026-09-11 18:09:04] [INFO] [extract/llama3.1-8b] already complete (5 artifacts) — skipping
+[2026-09-11 18:09:04] [INFO] [nulls/llama3.1-8b] already complete (1 artifacts) — skipping
+[2026-09-11 18:09:04] [INFO] [geometry/llama3.1-8b] already complete (2 artifacts) — skipping
+[2026-09-11 18:09:04] [INFO] [projections/llama3.1-8b] already complete (2 artifacts) — skipping
+[2026-09-11 18:09:04] [INFO] [dimensionality/llama3.1-8b] already complete (1 artifacts) — skipping
+[2026-09-11 18:09:04] [INFO] [harm_controls/llama3.1-8b] already complete (2 artifacts) — skipping
+[2026-09-11 18:09:04] [INFO] [dim_behavioural/llama3.1-8b] already complete (2 artifacts) — skipping
+[2026-09-11 18:09:04] [INFO] [geometry_subspace/llama3.1-8b] already complete (2 artifacts) — skipping
+[2026-09-11 18:09:04] [INFO] [emergence/llama3.1-8b] already complete (2 artifacts) — skipping
+[2026-09-11 18:09:04] [INFO] [style/llama3.1-8b] already complete (3 artifacts) — skipping
+[2026-09-11 18:09:04] [INFO] [style_level2/llama3.1-8b] already complete (2 artifacts) — skipping
+[2026-09-11 18:09:04] [INFO] [fidelity/llama3.1-8b] already complete (1 artifacts) — skipping
+[2026-09-11 18:09:04] [INFO] [causal/llama3.1-8b] already complete (3 artifacts) — skipping

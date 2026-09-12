@@ -1,0 +1,63 @@
+=== 2026-09-12T14:02:35+00:00 [cpu] tools/harm_control_crosscheck.py  ===
+RESULTS_ROOT=./results FAST_DEV=0 SEED=0
+
+==========================================================================
+qwen2.5-7b
+==========================================================================
+  t_inst: cos(in_refused, in_complied) across 28 layers — min +0.437 median +0.609 max +0.865
+     split-half floor 0.997 -> DIVERGE at every layer
+     cos(in_refused, pooled) — median +0.858 max +0.984
+     cos(in_complied, pooled) — median +0.716 max +0.826
+  t_post_inst: cos(in_refused, in_complied) across 28 layers — min +0.392 median +0.655 max +0.770
+     split-half floor 0.999 -> DIVERGE at every layer
+     cos(in_refused, pooled) — median +0.865 max +0.894
+     cos(in_complied, pooled) — median +0.781 max +0.896
+
+==========================================================================
+qwen3.5-9b
+==========================================================================
+  t_inst: only one variant estimable — no comparison
+  t_post_inst: only one variant estimable — no comparison
+
+==========================================================================
+llama3.1-8b
+==========================================================================
+  t_inst: cos(in_refused, in_complied) across 32 layers — min +0.254 median +0.356 max +0.765
+     split-half floor 0.996 -> DIVERGE at every layer
+     cos(in_refused, pooled) — median +0.784 max +0.964
+     cos(in_complied, pooled) — median +0.503 max +0.692
+  t_post_inst: cos(in_refused, in_complied) across 32 layers — min +0.346 median +0.497 max +0.816
+     split-half floor 0.999 -> DIVERGE at every layer
+     cos(in_refused, pooled) — median +0.819 max +0.946
+     cos(in_complied, pooled) — median +0.491 max +0.914
+
+==========================================================================
+yi-6b-chat
+==========================================================================
+  t_inst: cos(in_refused, in_complied) across 32 layers — min +0.765 median +0.796 max +0.944
+     split-half floor 0.998 -> DIVERGE at every layer
+     cos(in_refused, pooled) — median +0.906 max +0.978
+     cos(in_complied, pooled) — median +0.907 max +0.952
+  t_post_inst: cos(in_refused, in_complied) across 32 layers — min +0.619 median +0.750 max +0.848
+     split-half floor 0.997 -> DIVERGE at every layer
+     cos(in_refused, pooled) — median +0.878 max +0.926
+     cos(in_complied, pooled) — median +0.897 max +0.945
+
+==========================================================================
+qwen3.5-35b-a3b
+==========================================================================
+  t_inst: only one variant estimable — no comparison
+  t_post_inst: only one variant estimable — no comparison
+
+==========================================================================
+nemotron-3-nano-30b-a3b
+==========================================================================
+  t_inst: cos(in_refused, in_complied) across 52 layers — min +0.144 median +0.345 max +0.454
+     split-half floor 0.998 -> DIVERGE at every layer
+     cos(in_refused, pooled) — median +0.885 max +0.980
+     cos(in_complied, pooled) — median +0.366 max +0.532
+  t_post_inst: cos(in_refused, in_complied) across 52 layers — min +0.433 median +0.546 max +0.732
+     split-half floor 0.999 -> DIVERGE at every layer
+     cos(in_refused, pooled) — median +0.864 max +0.905
+     cos(in_complied, pooled) — median +0.551 max +0.773
+=== 2026-09-12T14:03:04+00:00 done rc=0 ===

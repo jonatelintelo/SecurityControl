@@ -1,0 +1,81 @@
+[2026-09-11 14:44:26] [INFO] ==============================================================================
+[2026-09-11 14:44:26] [INFO] E1.0 — build, verify and freeze the corpus (candidate until E1.1 Stage 1)
+[2026-09-11 14:44:26] [INFO] ==============================================================================
+[2026-09-11 14:44:26] [INFO] Building: 500 harmful + 500 harmless, 150 attack intents, seed=0
+[2026-09-11 14:44:40] [INFO]   harmful   500  {'advbench': 206, 'jbb': 89, 'sorry-bench': 205}
+[2026-09-11 14:44:40] [INFO]   harmless  500  {'alpaca': 250, 'xstest_safe': 250}
+[2026-09-11 14:44:40] [INFO]   attacks   150  {'strongreject': 150}
+[2026-09-11 14:44:40] [INFO] Building E1.0b transfer corpus: 150 C4 passages
+[2026-09-11 14:44:44] [INFO]   transfer  150  {'c4': 150}
+[2026-09-11 14:44:44] [INFO] Crossing [qwen2.5-7b]: 1000 instructions x 4 roles (system,user,tool,assistant) x 2 designs = 8000 rendered items
+[2026-09-11 14:44:44] [INFO] Crossing [qwen3.5-9b]: 1000 instructions x 4 roles (system,user,tool,assistant) x 2 designs = 8000 rendered items
+[2026-09-11 14:44:44] [INFO] Crossing [llama3.1-8b]: 1000 instructions x 4 roles (system,user,tool,assistant) x 2 designs = 8000 rendered items
+[2026-09-11 14:44:44] [INFO] Crossing [yi-6b-chat]: 1000 instructions x 4 roles (system,user,tool,assistant) x 2 designs = 8000 rendered items
+[2026-09-11 14:44:44] [INFO] Crossing [qwen3.5-35b-a3b]: 1000 instructions x 4 roles (system,user,tool,assistant) x 2 designs = 8000 rendered items
+[2026-09-11 14:44:44] [INFO] Crossing [nemotron-3-nano-30b-a3b]: 1000 instructions x 4 roles (system,user,tool,assistant) x 2 designs = 8000 rendered items
+[2026-09-11 14:44:44] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 14:44:44] [INFO]   [ok  ] no_duplicate_instructions: {'n': 1000, 'unique': 1000}
+[2026-09-11 14:44:44] [INFO]   [ok  ] split_no_leak: {'n_train': 751, 'n_test': 249, 'leaked': 0}
+[2026-09-11 14:44:44] [INFO]   [ok  ] split_labelled: {}
+[2026-09-11 14:44:44] [INFO]   [ok  ] split_label_balance: {'train_harmful_frac': 0.499, 'test_harmful_frac': 0.502}
+[2026-09-11 14:44:44] [INFO]   [ok  ] split_source_balance: {'max_share_drift': 0.004, 'train_shares': {'advbench': 0.205, 'alpaca': 0.25, 'jbb': 0.089, 'sorry-bench': 0.205, 'xstest_safe': 0.25}, 'test_shares': {'advbench': 0.209, 'alpaca': 0.249, 'jbb': 0.088, 'sorry-bench': 0.205, 'xstest_safe': 0.249}}
+[2026-09-11 14:44:44] [INFO]   [ok  ] source_balance_harmful: {'advbench': 206, 'jbb': 89, 'sorry-bench': 205, 'ratio_max_over_min': 2.31, 'max_allowed_ratio': 3.0, 'exhausted_sources': ['jbb'], 'note': 'guards against SWAMPING (measured pathology: 65x), not near-equality; a source the draw exhausted cannot be balanced against without discarding the others down to it'}
+[2026-09-11 14:44:44] [INFO]   [ok  ] source_balance_harmless: {'alpaca': 250, 'xstest_safe': 250, 'ratio_max_over_min': 1.0, 'max_allowed_ratio': 3.0, 'exhausted_sources': ['xstest_safe'], 'note': 'guards against SWAMPING (measured pathology: 65x), not near-equality; a source the draw exhausted cannot be balanced against without discarding the others down to it'}
+[2026-09-11 14:44:44] [INFO]   [ok  ] length_cap_applied: {'max_words': 80, 'dropped_by_pool': {'harmful': {'sorry-bench': 3}}, 'note': 'extreme length outliers excluded so R_harm cannot encode length; see MAX_INSTRUCTION_WORDS for why this is a design rule, not a threshold tuned to pass a check'}
+[2026-09-11 14:44:44] [INFO]   [ok  ] attack_pool_disjoint: {'exact': 0, 'near_duplicate': 0, 'n_attack': 150, 'threshold': 0.8}
+[2026-09-11 14:44:44] [INFO]   [ok  ] length_balance: {'median_words_harmful': 14, 'median_words_harmless': 9, 'median_ratio': 1.56, 'max_words': 74, 'max_over_median': 6.7}
+[2026-09-11 14:44:44] [INFO]   [ok  ] source_recorded: {'distinct_sources': 5}
+[2026-09-11 14:44:44] [INFO]   [ok  ] no_chat_special_tokens: {'n_offending': 0, 'uids': []}
+[2026-09-11 14:44:44] [INFO]   [ok  ] dataset_sources_loaded: {}
+[2026-09-11 14:44:44] [INFO]   [ok  ] transfer_no_duplicates: {'n': 150, 'unique': 150}
+[2026-09-11 14:44:44] [INFO]   [ok  ] transfer_split: {'n_train': 112, 'n_test': 38}
+[2026-09-11 14:44:44] [INFO]   [ok  ] transfer_length: {'min_words': 25, 'max_words': 60}
+[2026-09-11 14:44:44] [INFO]   [ok  ] transfer_disjoint_from_fitting: {'overlap': 0}
+[2026-09-11 14:44:44] [INFO]   [ok  ] transfer_no_chat_special_tokens: {}
+[2026-09-11 14:44:44] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 14:44:44] [INFO] Corpus-wide rendering sweep (tokenizer only, no weights):
+[2026-09-11 14:45:05] [INFO]   qwen2.5-7b/fitting: 8000 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=6/2000 (0.30%)
+[2026-09-11 14:45:05] [INFO]     bleed tool/fixed_slot          head=[] tail=['\n'] after [' ', '!', '"', "'", '.', '?', '”']  harmful=0.408 harmless=0.922 (|d|=0.514 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:45:05] [INFO]     bleed tool/natural_slot        head=[] tail=['\n'] after [' ', '!', '"', "'", '.', '?', '”']  harmful=0.408 harmless=0.922 (|d|=0.514 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:45:09] [INFO]   qwen3.5-9b/fitting: 8000 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=0/2000 (0.00%)
+[2026-09-11 14:45:09] [INFO]     bleed tool/fixed_slot          head=[] tail=['\n'] after [' ']  harmful=0.000 harmless=0.002 (|d|=0.002 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:45:09] [INFO]     bleed tool/natural_slot        head=[] tail=['\n'] after [' ']  harmful=0.000 harmless=0.002 (|d|=0.002 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:45:20] [INFO]   llama3.1-8b/fitting: 8000 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=28/2000 (1.40%)
+[2026-09-11 14:45:20] [INFO]     bleed tool/fixed_slot          head=['"'] tail=['"'] after [' ', '!', '"', "'", '.', '?', 'b', 'd', 'e', 'g', 'm', 'n', 's', 'y']  harmful=0.438 harmless=0.924 (|d|=0.486 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:45:20] [INFO]     bleed tool/natural_slot        head=['"'] tail=['"'] after [' ', '!', '"', "'", '.', '?', 'b', 'd', 'e', 'g', 'm', 'n', 's', 'y']  harmful=0.438 harmless=0.924 (|d|=0.486 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:45:22] [INFO]   yi-6b-chat/fitting: 8000 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=0/2000 (0.00%)
+[2026-09-11 14:45:26] [INFO]   qwen3.5-35b-a3b/fitting: 8000 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=0/2000 (0.00%)
+[2026-09-11 14:45:26] [INFO]     bleed tool/fixed_slot          head=[] tail=['\n'] after [' ']  harmful=0.000 harmless=0.002 (|d|=0.002 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:45:26] [INFO]     bleed tool/natural_slot        head=[] tail=['\n'] after [' ']  harmful=0.000 harmless=0.002 (|d|=0.002 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:45:30] [INFO]   nemotron-3-nano-30b-a3b/fitting: 8000 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=4/2000 (0.20%)
+[2026-09-11 14:45:30] [INFO]     bleed tool/fixed_slot          head=[] tail=['\n'] after ['!', '"', "'", '.', '?', '”']  harmful=0.408 harmless=0.920 (|d|=0.512 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:45:30] [INFO]     bleed tool/natural_slot        head=[] tail=['\n'] after ['!', '"', "'", '.', '?', '”']  harmful=0.408 harmless=0.920 (|d|=0.512 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:45:32] [INFO]   qwen2.5-7b/transfer: 1200 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=0/300 (0.00%)
+[2026-09-11 14:45:32] [INFO]     bleed tool/fixed_slot          head=[] tail=['\n'] after ['!', '"', ',', '.', '?']  harmful=0.000 harmless=0.640 (|d|=0.640 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:45:32] [INFO]     bleed tool/natural_slot        head=[] tail=['\n'] after ['!', '"', ',', '.', '?']  harmful=0.000 harmless=0.640 (|d|=0.640 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:45:34] [INFO]   qwen3.5-9b/transfer: 1200 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=0/300 (0.00%)
+[2026-09-11 14:45:36] [INFO]   llama3.1-8b/transfer: 1200 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=6/300 (2.00%)
+[2026-09-11 14:45:36] [INFO]     bleed tool/fixed_slot          head=['"'] tail=['"'] after ['!', '"', ',', '.', '?', 'I', 'd', 'e', 'f', 'g', 'h', 'm', 'n', 'r', 's', 't', 'u', 'y']  harmful=0.000 harmless=0.840 (|d|=0.840 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:45:36] [INFO]     bleed tool/natural_slot        head=['"'] tail=['"'] after ['!', '"', ',', '.', '?', 'I', 'd', 'e', 'f', 'g', 'h', 'm', 'n', 'r', 's', 't', 'u', 'y']  harmful=0.000 harmless=0.840 (|d|=0.840 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:45:37] [INFO]   yi-6b-chat/transfer: 1200 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=0/300 (0.00%)
+[2026-09-11 14:45:39] [INFO]   qwen3.5-35b-a3b/transfer: 1200 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=0/300 (0.00%)
+[2026-09-11 14:45:41] [INFO]   nemotron-3-nano-30b-a3b/transfer: 1200 renders, 0 errors, bad_t_inst=0, bad_span=0, cross-role length mismatch=2/300 (0.67%)
+[2026-09-11 14:45:41] [INFO]     bleed tool/fixed_slot          head=[] tail=['\n'] after ['!', '"', ',', '.', '?']  harmful=0.000 harmless=0.640 (|d|=0.640 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:45:41] [INFO]     bleed tool/natural_slot        head=[] tail=['\n'] after ['!', '"', ',', '.', '?']  harmful=0.000 harmless=0.640 (|d|=0.640 — reported, not gated: source punctuation, covered by the surface baseline)
+[2026-09-11 14:45:41] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 14:45:41] [INFO] Length confound (reported, not gated):
+[2026-09-11 14:45:41] [INFO]   llama3.1-8b/fixed_slot: role median spread 13 tok, harmful/harmless median ratio 1.083 -> length-only baseline required for role AND harm
+[2026-09-11 14:45:41] [INFO]   llama3.1-8b/natural_slot: role median spread 21 tok, harmful/harmless median ratio 1.103 -> length-only baseline required for role AND harm
+[2026-09-11 14:45:41] [INFO]   nemotron-3-nano-30b-a3b/fixed_slot: role median spread 15 tok, harmful/harmless median ratio 1.116 -> length-only baseline required for role AND harm
+[2026-09-11 14:45:41] [INFO]   nemotron-3-nano-30b-a3b/natural_slot: role median spread 26 tok, harmful/harmless median ratio 1.171 -> length-only baseline required for role AND harm
+[2026-09-11 14:45:41] [INFO]   qwen2.5-7b/fixed_slot: role median spread 19 tok, harmful/harmless median ratio 1.128 -> length-only baseline required for role AND harm
+[2026-09-11 14:45:41] [INFO]   qwen2.5-7b/natural_slot: role median spread 27 tok, harmful/harmless median ratio 1.167 -> length-only baseline required for role AND harm
+[2026-09-11 14:45:41] [INFO]   qwen3.5-35b-a3b/fixed_slot: role median spread 15 tok, harmful/harmless median ratio 1.091 -> length-only baseline required for role AND harm
+[2026-09-11 14:45:41] [INFO]   qwen3.5-35b-a3b/natural_slot: role median spread 27 tok, harmful/harmless median ratio 1.167 -> length-only baseline required for role AND harm
+[2026-09-11 14:45:41] [INFO]   qwen3.5-9b/fixed_slot: role median spread 15 tok, harmful/harmless median ratio 1.091 -> length-only baseline required for role AND harm
+[2026-09-11 14:45:41] [INFO]   qwen3.5-9b/natural_slot: role median spread 27 tok, harmful/harmless median ratio 1.167 -> length-only baseline required for role AND harm
+[2026-09-11 14:45:41] [INFO]   yi-6b-chat/fixed_slot: role median spread 12 tok, harmful/harmless median ratio 1.098 -> length-only baseline required for role AND harm
+[2026-09-11 14:45:41] [INFO]   yi-6b-chat/natural_slot: role median spread 21 tok, harmful/harmless median ratio 1.154 -> length-only baseline required for role AND harm
+[2026-09-11 14:45:47] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 14:45:47] [INFO] E1.0 complete — 43 checks pass, corpus written to results_verify/e1_0_corpus
+[2026-09-11 14:45:47] [INFO] Status: CANDIDATE. E1.1 Stage 1 labels it on both models; the freeze follows only if the harmful-and-complied cell is adequate on each.

@@ -1,3 +1,0 @@
-model,design,role_median_spread,median_assistant,median_system,median_tool,median_user,median_harmful,median_harmless,harm_length_ratio
-llama3.1-8b,fixed_slot,13,63,52,65,63,65,60,1.083
-llama3.1-8b,natural_slot,21,63,52,73,54,63,58,1.086

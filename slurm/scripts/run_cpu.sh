@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=cs_cpu
-#SBATCH --output=/home/b6aj/jtelintelo.b6aj/SecurityControl/slurm/1_run_phase/out/%j-%x.out
-#SBATCH --error=/home/b6aj/jtelintelo.b6aj/SecurityControl/slurm/1_run_phase/err/%j-%x.err
+#SBATCH --output=/home/b6aj/jtelintelo.b6aj/SecurityControl/slurm/logs/adhoc/out/%j-%x.out
+#SBATCH --error=/home/b6aj/jtelintelo.b6aj/SecurityControl/slurm/logs/adhoc/err/%j-%x.err
 #SBATCH --gpus=1
 #SBATCH --time=02:00:00
 #SBATCH --nodes=1

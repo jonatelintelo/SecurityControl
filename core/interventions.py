@@ -407,54 +407,11 @@ def kl_from_baseline(baseline_logprobs: torch.Tensor, steered_logprobs: torch.Te
     return (p * (baseline_logprobs - steered_logprobs)).sum(-1)
 
 
-@torch.no_grad()
-def selection_scores(
-    model: nn.Module,
-    tokenizer,
-    harmful_texts: Sequence[str],
-    harmless_texts: Sequence[str],
-    direction,
-    steer_layer: int,
-    alpha: float = 1.0,
-    device: str = "cuda",
-    batch_size: int = 16,
-    baseline: Optional[Dict[str, Dict[str, torch.Tensor]]] = None,
-) -> Dict[str, float]:
-    """Arditi et al.'s three direction-selection metrics, at one layer.
-
-    Their procedure sweeps every layer, scores each candidate direction on these
-    three, and keeps the direction that bypasses refusal on harmful prompts,
-    induces it on harmless prompts, and leaves harmless behaviour otherwise
-    intact. Computing them per layer is what replaces our earlier hand-picked
-    steering depth: the layer is *selected on evidence*, by a published criterion.
-
-    * `bypass_score`  — drop in refusal margin on **harmful** prompts at `-alpha`
-      (steering away from the positive class should suppress refusal).
-    * `induce_score`  — rise in refusal margin on **harmless** prompts at `+alpha`.
-    * `kl_score`      — KL(baseline || steered) on **harmless** prompts; small is
-      good. This is a cost, not a benefit: it gates the other two.
-
-    `baseline` may be passed in to avoid recomputing the unsteered pass.
-    """
-    if baseline is None:
-        baseline = {
-            "harmful": next_token_stats(model, tokenizer, harmful_texts, None,
-                                        steer_layer, 0.0, device, batch_size),
-            "harmless": next_token_stats(model, tokenizer, harmless_texts, None,
-                                         steer_layer, 0.0, device, batch_size),
-        }
-
-    neg = next_token_stats(model, tokenizer, harmful_texts, direction,
-                           steer_layer, -alpha, device, batch_size)
-    pos = next_token_stats(model, tokenizer, harmless_texts, direction,
-                           steer_layer, +alpha, device, batch_size)
-
-    bypass = float((baseline["harmful"]["refusal_margin"] - neg["refusal_margin"]).mean())
-    induce = float((pos["refusal_margin"] - baseline["harmless"]["refusal_margin"]).mean())
-    kl = float(kl_from_baseline(baseline["harmless"]["logprobs"], pos["logprobs"]).mean())
-    return {"bypass_score": bypass, "induce_score": induce, "kl_score": kl,
-            "entropy_harmless_steered": float(pos["entropy"].mean()),
-            "entropy_harmless_baseline": float(baseline["harmless"]["entropy"].mean())}
+# `selection_scores` was removed here — Arditi et al.'s bypass / induce / KL
+# direction-selection metrics. It was implemented, then never called: EXPERIMENTS.md
+# O-10 records the decision not to select directions that way. Keeping a 60-line
+# unused implementation to illustrate a path not taken is not worth the maintenance
+# surface; the reasoning lives in the doc, which now says "not implemented".
 
 
 @torch.no_grad()

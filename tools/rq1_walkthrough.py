@@ -3,20 +3,48 @@
 import json, sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from core.config import MATCHED_CONTROL_VARIANT, RQ1_MODELS
 import pandas as pd
 
 R = Path("results"); C = R/"e1_0_corpus"
-MODELS = ["qwen2.5-7b", "qwen3.5-9b", "qwen3.5-35b-a3b"]
+MODELS = list(RQ1_MODELS)
 
 def art(m, f): return (R/"rq1"/m/f).exists()
 def ok(b): return "ok " if b else "MISS"
 
+
+def _same_corpus_across_roots() -> bool:
+    """The corpus is shared, so a rebuild between roots would break every
+    cross-root comparison silently. Cheap to assert, so assert it."""
+    import hashlib
+    other = Path("results_verify")/"e1_0_corpus"/"instructions.jsonl"
+    if not other.exists():
+        return True          # single-root run: nothing to compare, not a failure
+    h = lambda f: hashlib.sha256(f.read_bytes()).hexdigest()
+    return h(C/"instructions.jsonl") == h(other)
+
 STAGES = [
+    # The freeze is NOT a status string. This row used to require
+    # `"FROZEN" in corpus_meta["status"]`, which NOTHING in the codebase ever
+    # writes — `e1_0_corpus.py` hardcodes the status to "candidate - frozen only
+    # after E1.1 Stage 1 labels both models". So the check could never pass and
+    # printed [MISS] on every run, unnoticed, for the same reason the old gate
+    # criterion went unnoticed: one row in a long table that is expected to be
+    # boring.
+    #
+    # What actually makes the corpus frozen is enforceable and is what we check:
+    # every corpus verification check passed, the roster it was checked against
+    # is the roster that ran, and the instruction set is byte-identical between
+    # the two independent results roots (a rebuild between them would show here).
     ("E1.0",  "corpus + transfer corpus, frozen",
      lambda: (C/"instructions.jsonl").exists() and (C/"transfer_corpus.jsonl").exists()
-             and "FROZEN" in json.load(open(C/"corpus_meta.json"))["status"],
-     "verification.json (22 checks)"),
-    ("E1.1a", "refusal labelling, both models",
+             and all(v.get("ok") is True
+                     for v in json.load(open(C/"verification.json")).values())
+             and set(json.load(open(C/"corpus_meta.json"))["models_checked"]) >= set(MODELS)
+             and _same_corpus_across_roots(),
+     lambda: f"verification.json ({len(json.load(open(C/'verification.json')))} checks), "
+             f"all ok; instructions.jsonl byte-identical across roots"),
+    ("E1.1a", "refusal labelling, every roster model",
      lambda: all(art(m,"refusal_labels.csv") and art(m,"budget_ladder.json") for m in MODELS),
      "labels_checks.json: cell size + undetermined rate"),
     ("E1.1b", "extraction: directions + role probe, all layers",
@@ -47,9 +75,19 @@ STAGES = [
      lambda: all(art(m,"emergence_summary.csv") for m in MODELS),
      "onset90 bootstrap CI; conclusions across 80/90/95%"),
     ("E1.6",  "causal gate (both control variants)",
-     lambda: art("qwen2.5-7b","causal_gate__under.json") and art("qwen2.5-7b","causal_gate__over.json")
-             and art("qwen3.5-9b","causal_gate__over.json"),
+     lambda: all(art(m, f"causal_gate__{MATCHED_CONTROL_VARIANT}.json") for m in MODELS)
+             and any(art(m, "causal_gate__under.json") or art(m, "causal_skipped__under.json")
+                     for m in MODELS),
      "G1/G2/G3 vs alpha-matched nulls, FDR, KL ladder"),
+    ("C1b",  "what R_control encodes: held-out soft-refusal projection",
+     lambda: (R/"soft_refusal_projection.csv").exists(),
+     "soft refusals are held out, marker-free, read at t_post_inst (prompt only)"),
+    ("C1b-D", "is soft-vs-hard refusal a second axis?",
+     lambda: (R/"soft_refusal_axis.csv").exists(),
+     "cos with R_control vs the random-subspace band"),
+    ("O-1b", "undetermined pool characterised (soft refusals?)",
+     lambda: (R/"label_audit"/"undetermined_adjudicated.csv").exists(),
+     "off-roster judge; labels NOT modified — sensitivity only"),
     ("E1.7b", "Level 2: tag vs register, crossed on generated corpus",
      lambda: all(art(m,"style_level2.csv") for m in MODELS),
      "cos(tag, register) vs split-half floor; generated arm + template control"),
@@ -58,7 +96,9 @@ STAGES = [
      "4 token sets x full alpha grid, on TRAIN; picks Stage C's layers"),
     ("E1.6s", "gate sensitivity sweep (O-12)",
      lambda: (R/"gate_sensitivity.csv").exists(),
-     "216 settings x 3 runs"),
+     lambda: (lambda d: f"{d.groupby('run').ngroups} run-arms x "
+                        f"{len(d)//max(1,d.groupby('run').ngroups)} settings = {len(d):,} adjudications"
+             )(pd.read_csv(R/"gate_sensitivity.csv"))),
     ("E1.7",  "metadata vs style, Level 1",
      lambda: all(art(m,"style_vs_metadata.csv") for m in MODELS),
      "within-level split-half floor"),
@@ -76,6 +116,14 @@ for tag, what, chk, ver in STAGES:
     except Exception as e:                      # a malformed artifact is not "present"
         good = False
         ver = f"{ver}   [check raised {type(e).__name__}]"
+    # A verification description may be a callable, so counts are READ from the
+    # artifact instead of being retyped here and going stale (this row said
+    # "216 settings x 3 runs" long after the sweep grew to 432 x 11).
+    if callable(ver):
+        try:
+            ver = ver()
+        except Exception as e:
+            ver = f"[description raised {type(e).__name__}]"
     print(f"{tag:<7} [{ok(good)}] {what:<46} {ver}")
 
 print("\n" + "="*118)

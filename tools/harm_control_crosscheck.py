@@ -14,13 +14,20 @@ layer here and compared only within a layer.
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from core.config import RQ1_MODELS
+import json
 import numpy as np, pandas as pd, torch
 from core import extract
 from core.io_utils import load_torch, save_df
 
-for slug in ["qwen2.5-7b", "qwen3.5-9b", "qwen3.5-35b-a3b"]:
+for slug in RQ1_MODELS:
     d = Path("results/rq1")/slug
-    blob = load_torch(d/"activations.pt")
+    _cj = d / "activations_cache.json"
+    _bp = (Path(json.loads(_cj.read_text())["path"]) if _cj.exists()
+           else d / "activations.pt")     # pre-cache-move runs kept it in-root
+    if not _bp.exists():
+        print(f"{slug}: no activation blob at {_bp} — skipping"); continue
+    blob = load_torch(_bp, mmap=True)
     idx = pd.DataFrame(blob["index"])
     dirs = load_torch(d/"directions.pt")
     val = pd.read_csv(d/"direction_validation.csv")
@@ -42,12 +49,17 @@ for slug in ["qwen2.5-7b", "qwen3.5-9b", "qwen3.5-35b-a3b"]:
                 # exempts pooled `R_harm` from stratification, so a plain
                 # difference of means here would carry a role component — and
                 # would not be the same estimator the stage reports.
-                d, _ = extract.stratum_balanced_diff_of_means(
+                # `dvec`, not `d`: `d` is the model's results DIRECTORY, bound
+                # at the top of the loop and used again after this block to save
+                # the CSV. Rebinding it here shadowed the Path with a Direction
+                # and the save failed with
+                # "unsupported operand type(s) for /: 'Direction' and 'str'".
+                dvec, _ = extract.stratum_balanced_diff_of_means(
                     a[p], a[n],
                     idx["role"].to_numpy()[p.numpy()].tolist(),
                     idx["role"].to_numpy()[n.numpy()].tolist(),
                     lab, li, "residual", pos, "harmful", "harmless")
-                vecs[lab] = d.vector
+                vecs[lab] = dvec.vector
             row = {"model": slug, "position": pos, "layer": li}
             if len(vecs) == 2:
                 row["cos_refused_vs_complied"] = float(vecs["in_refused"] @ vecs["in_complied"])

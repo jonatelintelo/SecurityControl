@@ -30,6 +30,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from core.config import MATCHED_CONTROL_VARIANT, RQ1_MODELS
 
 import matplotlib
 matplotlib.use("Agg")
@@ -61,8 +62,10 @@ def _post(m):
 
 R = Path("results")
 OUT = R / "figures"
-MODELS = ["qwen2.5-7b", "qwen3.5-9b", "qwen3.5-35b-a3b"]
-NICE = {"qwen2.5-7b": "Qwen2.5-7B", "qwen3.5-9b": "Qwen3.5-9B"}
+MODELS = list(RQ1_MODELS)
+NICE = {"qwen2.5-7b": "Qwen2.5-7B", "qwen3.5-9b": "Qwen3.5-9B",
+        "llama3.1-8b": "Llama-3.1-8B", "qwen3.5-35b-a3b": "Qwen3.5-35B-A3B",
+        "nemotron-3-nano-30b-a3b": "Nemotron-3-Nano-30B-A3B"}
 
 # Palette — reference instance, slots 1-3 (documented all-pairs safe).
 S1, S2, S3 = "#2a78d6", "#eb6834", "#1baf7a"
@@ -139,7 +142,7 @@ def fig_depth_curves() -> None:
 
 
 def fig_onset() -> None:
-    """Emergence onset with bootstrap CIs — one row per concept, both models."""
+    """Emergence onset with bootstrap CIs — one row per concept, every roster model."""
     rows = []
     for m in MODELS:
         e = pd.read_csv(R / "rq1" / m / "emergence_summary.csv")
@@ -215,7 +218,9 @@ def fig_delta_matrix() -> None:
     names = {"R_harm": "harm", "R_control": "control", "R_role": "role"}
     order = ["R_harm", "R_control", "R_role"]
     panels = []
-    for m, variant in [("qwen2.5-7b", "over"), ("qwen3.5-9b", "over")]:
+    # The matched arm — `over` on every model — so the panels compare like with
+    # like rather than under-refusal on one against over-refusal on another.
+    for m, variant in [(m, MATCHED_CONTROL_VARIANT) for m in MODELS]:
         p = R / "rq1" / m / f"causal_matrix__{variant}.csv"
         if not p.exists():
             continue
@@ -279,8 +284,11 @@ def fig_delta_matrix() -> None:
 def fig_sensitivity() -> None:
     """O-12: does the verdict survive the adjudication's free choices?"""
     d = pd.read_csv(R / "gate_sensitivity.csv")
-    factors = ["null_q", "null_group", "g2_rule", "fdr_q", "beh_null_q"]
-    fig, axes = plt.subplots(1, len(factors), figsize=(8.6, 2.5), sharey=True)
+    # Every swept factor must appear: the title claims the verdict moves for
+    # EXACTLY ONE choice, and a factor left off the plot cannot support that.
+    factors = [f for f in ("null_q", "null_group", "g2_rule", "fdr_q",
+                           "beh_null_q", "gate_layers") if f in d.columns]
+    fig, axes = plt.subplots(1, len(factors), figsize=(10.2, 2.5), sharey=True)
     for ax, f in zip(axes, factors):
         vals = sorted(d[f].unique(), key=str)
         for i, v in enumerate(vals):
@@ -294,7 +302,15 @@ def fig_sensitivity() -> None:
         ax.set_title(f, fontsize=8.5, color=INK2)
         _despine(ax); ax.grid(axis="x", visible=False)
     axes[0].set_ylabel("G2: qualifying asymmetries")
-    fig.text(0.5, -0.13, "G3 = 0 in all 648 combinations; black bar = median",
+    # Read the caption off the data. A hardcoded one ("G3 = 0 in all 648
+    # combinations") survived a verdict reversal here and would have printed a
+    # false claim onto a paper figure.
+    _n = len(d)
+    _g3 = d.g3_holds.mean() if "g3_holds" in d.columns else float("nan")
+    _pass = (d.verdict == "PASS").mean() if "verdict" in d.columns else float("nan")
+    fig.text(0.5, -0.13,
+             f"{_n:,} adjudications; G3 holds in {_g3:.1%}, verdict PASS in {_pass:.1%}; "
+             f"black bar = median",
              ha="center", fontsize=7.5, color=MUTED)
     fig.suptitle("The verdict moves for exactly one choice — α-pooling, which is the known error",
                  y=1.06, fontsize=10, color=INK)

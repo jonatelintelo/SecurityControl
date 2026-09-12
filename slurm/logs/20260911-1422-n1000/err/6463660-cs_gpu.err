@@ -1,0 +1,315 @@
+[2026-09-11 14:55:03] [INFO] pipeline rq1: ['labels', 'extract', 'nulls', 'geometry', 'projections', 'dimensionality', 'harm_controls', 'dim_behavioural', 'geometry_subspace', 'emergence', 'style', 'style_level2', 'fidelity', 'causal']
+[2026-09-11 14:55:03] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 14:55:03] [INFO] [labels/qwen3.5-35b-a3b] E1.1 input — refusal labels; gates R_control identifiability
+[2026-09-11 14:55:30] [INFO] Loading Qwen/Qwen3.5-35B-A3B: {'model_id': 'Qwen/Qwen3.5-35B-A3B', 'architecture': 'Qwen3_5MoeForConditionalGeneration', 'model_type': 'qwen3_5_moe', 'num_layers': 40, 'hidden_size': 2048, 'num_experts': 256, 'is_multimodal': True}
+Fetching 14 files:   0%|          | 0/14 [00:00<?, ?it/s]Fetching 14 files: 100%|██████████| 14/14 [00:00<00:00, 2020.10it/s]
+Loading weights:   0%|          | 0/693 [00:00<?, ?it/s]Loading weights:   2%|▏         | 13/693 [00:00<00:07, 85.52it/s]Loading weights:   3%|▎         | 22/693 [00:00<00:10, 66.72it/s]Loading weights:   5%|▍         | 32/693 [00:00<00:11, 55.74it/s]Loading weights:   7%|▋         | 49/693 [00:00<00:08, 77.67it/s]Loading weights:   8%|▊         | 58/693 [00:00<00:11, 57.13it/s]Loading weights:   9%|▉         | 65/693 [00:01<00:11, 54.12it/s]Loading weights:  11%|█         | 77/693 [00:01<00:09, 65.40it/s]Loading weights:  12%|█▏        | 85/693 [00:01<00:11, 52.26it/s]Loading weights:  14%|█▍        | 100/693 [00:01<00:09, 62.59it/s]Loading weights:  17%|█▋        | 118/693 [00:01<00:06, 84.37it/s]Loading weights:  18%|█▊        | 128/693 [00:02<00:09, 58.16it/s]Loading weights:  22%|██▏       | 152/693 [00:02<00:07, 73.95it/s]Loading weights:  24%|██▍       | 169/693 [00:02<00:06, 75.74it/s]Loading weights:  27%|██▋       | 188/693 [00:02<00:06, 80.01it/s]Loading weights:  28%|██▊       | 197/693 [00:02<00:06, 73.31it/s]Loading weights:  32%|███▏      | 220/693 [00:02<00:04, 96.41it/s]Loading weights:  33%|███▎      | 231/693 [00:03<00:05, 91.42it/s]Loading weights:  35%|███▍      | 241/693 [00:03<00:05, 75.77it/s]Loading weights:  37%|███▋      | 257/693 [00:03<00:05, 80.11it/s]Loading weights:  38%|███▊      | 266/693 [00:03<00:05, 72.87it/s]Loading weights:  42%|████▏     | 289/693 [00:03<00:04, 83.12it/s]Loading weights:  44%|████▍     | 308/693 [00:04<00:04, 90.43it/s]Loading weights:  47%|████▋     | 325/693 [00:04<00:03, 92.44it/s]Loading weights:  48%|████▊     | 335/693 [00:04<00:04, 83.06it/s]Loading weights:  52%|█████▏    | 359/693 [00:04<00:03, 98.19it/s]Loading weights:  54%|█████▍    | 377/693 [00:04<00:03, 100.06it/s]Loading weights:  57%|█████▋    | 395/693 [00:04<00:02, 101.06it/s]Loading weights:  59%|█████▊    | 406/693 [00:05<00:03, 82.96it/s] Loading weights:  62%|██████▏   | 428/693 [00:05<00:03, 87.63it/s]Loading weights:  64%|██████▍   | 446/693 [00:05<00:02, 91.93it/s]Loading weights:  67%|██████▋   | 464/693 [00:05<00:02, 95.00it/s]Loading weights:  68%|██████▊   | 474/693 [00:05<00:02, 85.55it/s]Loading weights:  72%|███████▏  | 497/693 [00:06<00:02, 85.23it/s]Loading weights:  74%|███████▎  | 511/693 [00:06<00:01, 91.49it/s]Loading weights:  75%|███████▌  | 521/693 [00:06<00:02, 76.47it/s]Loading weights:  77%|███████▋  | 532/693 [00:06<00:02, 74.93it/s]Loading weights:  78%|███████▊  | 540/693 [00:06<00:02, 57.94it/s]Loading weights:  79%|███████▉  | 547/693 [00:07<00:03, 41.47it/s]Loading weights:  82%|████████▏ | 565/693 [00:07<00:02, 60.60it/s]Loading weights:  83%|████████▎ | 574/693 [00:07<00:02, 55.61it/s]Loading weights:  84%|████████▍ | 583/693 [00:07<00:01, 58.53it/s]Loading weights:  85%|████████▌ | 591/693 [00:07<00:01, 52.20it/s]Loading weights:  87%|████████▋ | 601/693 [00:08<00:01, 59.42it/s]Loading weights:  88%|████████▊ | 608/693 [00:08<00:01, 46.52it/s]Loading weights:  89%|████████▊ | 614/693 [00:08<00:02, 36.60it/s]Loading weights:  91%|█████████▏| 634/693 [00:08<00:01, 57.58it/s]Loading weights:  93%|█████████▎| 642/693 [00:08<00:00, 52.57it/s]Loading weights:  94%|█████████▍| 652/693 [00:09<00:00, 56.24it/s]Loading weights:  95%|█████████▌| 659/693 [00:09<00:00, 49.63it/s]Loading weights:  96%|█████████▌| 667/693 [00:09<00:00, 52.63it/s]Loading weights:  97%|█████████▋| 673/693 [00:09<00:00, 45.10it/s]Loading weights:  98%|█████████▊| 679/693 [00:09<00:00, 45.01it/s]Loading weights:  99%|█████████▊| 684/693 [00:10<00:00, 36.34it/s]Loading weights: 100%|██████████| 693/693 [00:10<00:00, 69.08it/s]
+[2026-09-11 14:55:47] [INFO] Decoder stack at 'model.layers' (40 layers)
+[2026-09-11 14:55:49] [INFO] [qwen3.5-35b-a3b] rendered 8000 items
+[2026-09-11 14:55:49] [INFO] [qwen3.5-35b-a3b] generating at max budget 256 (ladder [48, 128, 256])
+[2026-09-11 14:56:14] [INFO]     generated 16/8000
+[2026-09-11 15:02:55] [INFO]     generated 336/8000
+[2026-09-11 15:10:06] [INFO]     generated 656/8000
+[2026-09-11 15:17:53] [INFO]     generated 976/8000
+[2026-09-11 15:25:27] [INFO]     generated 1296/8000
+[2026-09-11 15:32:36] [INFO]     generated 1616/8000
+[2026-09-11 15:39:39] [INFO]     generated 1936/8000
+[2026-09-11 15:47:09] [INFO]     generated 2256/8000
+[2026-09-11 15:54:46] [INFO]     generated 2576/8000
+[2026-09-11 16:01:47] [INFO]     generated 2896/8000
+[2026-09-11 16:08:34] [INFO]     generated 3216/8000
+[2026-09-11 16:15:57] [INFO]     generated 3536/8000
+[2026-09-11 16:21:31] [INFO]     generated 3856/8000
+[2026-09-11 16:29:47] [INFO]     generated 4176/8000
+[2026-09-11 16:38:29] [INFO]     generated 4496/8000
+[2026-09-11 16:47:28] [INFO]     generated 4816/8000
+[2026-09-11 16:56:09] [INFO]     generated 5136/8000
+[2026-09-11 17:04:22] [INFO]     generated 5456/8000
+[2026-09-11 17:13:17] [INFO]     generated 5776/8000
+[2026-09-11 17:21:24] [INFO]     generated 6096/8000
+[2026-09-11 17:30:18] [INFO]     generated 6416/8000
+[2026-09-11 17:39:06] [INFO]     generated 6736/8000
+[2026-09-11 17:48:06] [INFO]     generated 7056/8000
+[2026-09-11 17:57:05] [INFO]     generated 7376/8000
+[2026-09-11 18:05:51] [INFO]     generated 7696/8000
+[2026-09-11 18:14:19] [INFO] [qwen3.5-35b-a3b]   budget   48: undetermined 0.2%, refused 4050, complied 3930, truncated 93.3%, agreement-with-next 0.9995
+[2026-09-11 18:14:19] [INFO] [qwen3.5-35b-a3b]   budget  128: undetermined 0.2%, refused 4054, complied 3926, truncated 55.2%, agreement-with-next 0.9988
+[2026-09-11 18:14:19] [INFO] [qwen3.5-35b-a3b]   budget  256: undetermined 0.3%, refused 4060, complied 3916, truncated 36.5%, agreement-with-next None
+[2026-09-11 18:14:19] [INFO] [qwen3.5-35b-a3b] chosen budget = 48 (rule: smallest with undetermined < 30% and >= 95% agreement with the next rung)
+[2026-09-11 18:14:20] [INFO] [qwen3.5-35b-a3b] degeneracy: 20/8000 (0.25%) {'under_4_words': 20}
+[2026-09-11 18:14:21] [INFO] [qwen3.5-35b-a3b] label-rule disagreement: {'arditi_vs_arditi_anchored': 0.0, 'arditi_vs_extended': 0.0008, 'arditi_anchored_vs_extended': 0.0008}
+[2026-09-11 18:14:22] [INFO] Loading guard meta-llama/Llama-Guard-3-8B (torch.bfloat16)
+Loading weights:   0%|          | 0/291 [00:00<?, ?it/s]Loading weights:   0%|          | 1/291 [00:00<00:33,  8.76it/s]Loading weights:   1%|          | 2/291 [00:00<00:38,  7.45it/s]Loading weights:   8%|▊         | 23/291 [00:00<00:03, 80.35it/s]Loading weights:  16%|█▌        | 46/291 [00:00<00:01, 131.14it/s]Loading weights:  23%|██▎       | 67/291 [00:00<00:01, 156.45it/s]Loading weights:  29%|██▉       | 85/291 [00:00<00:01, 159.50it/s]Loading weights:  35%|███▌      | 102/291 [00:00<00:01, 149.62it/s]Loading weights:  42%|████▏     | 122/291 [00:00<00:01, 158.32it/s]Loading weights:  51%|█████     | 148/291 [00:01<00:00, 181.96it/s]Loading weights:  57%|█████▋    | 167/291 [00:01<00:00, 177.96it/s]Loading weights:  64%|██████▍   | 186/291 [00:01<00:00, 168.85it/s]Loading weights:  71%|███████▏  | 208/291 [00:01<00:00, 177.69it/s]Loading weights:  79%|███████▉  | 230/291 [00:01<00:00, 183.32it/s]Loading weights:  87%|████████▋ | 253/291 [00:01<00:00, 195.67it/s]Loading weights:  94%|█████████▍| 273/291 [00:01<00:00, 195.62it/s]Loading weights: 100%|██████████| 291/291 [00:01<00:00, 163.60it/s]
+[transformers] Ignoring clean_up_tokenization_spaces=True for BPE tokenizer TokenizersBackend. The clean_up_tokenization post-processing step is designed for WordPiece tokenizers and is destructive for BPE (it strips spaces before punctuation). Set clean_up_tokenization_spaces=False to suppress this warning, or set clean_up_tokenization_spaces_for_bpe_even_though_it_will_corrupt_output=True to force cleanup anyway.
+[2026-09-11 18:14:36] [INFO] [qwen3.5-35b-a3b] guard (on full generation): 140/164 (85.4%) reclassified to undetermined
+[2026-09-11 18:14:36] [INFO] [qwen3.5-35b-a3b] guard unsafe: full=24 truncated=24 (flips 12, 7.3%) — the gap is the truncation bias
+[2026-09-11 18:14:36] [INFO] [qwen3.5-35b-a3b]   within_harmful: refused=3836 complied=24 minority=24 (complied, 6 instructions, 3 test items) too few
+[2026-09-11 18:14:36] [INFO] [qwen3.5-35b-a3b]     minority by role: {'user': 10, 'system': 6, 'tool': 4, 'assistant': 4}
+[2026-09-11 18:14:36] [INFO] [qwen3.5-35b-a3b]   within_harmless: refused=214 complied=3766 minority=214 (refused, 50 instructions, 80 test items) USABLE
+[2026-09-11 18:14:36] [INFO] [qwen3.5-35b-a3b]     minority by role: {'system': 74, 'assistant': 62, 'user': 39, 'tool': 39}
+[2026-09-11 18:14:36] [INFO] [qwen3.5-35b-a3b] refusal rate by role: {'assistant': 0.524, 'system': 0.526, 'tool': 0.511, 'user': 0.505}
+[2026-09-11 18:14:36] [INFO] [qwen3.5-35b-a3b] refusal rate by harmful source: {'advbench': 1.0, 'jbb': 0.994, 'sorry-bench': 0.987}
+[2026-09-11 18:14:36] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 18:14:36] [INFO] [extract/qwen3.5-35b-a3b] E1.1 — directions + role probe at every layer
+[2026-09-11 18:14:37] [INFO] Loading Qwen/Qwen3.5-35B-A3B: {'model_id': 'Qwen/Qwen3.5-35B-A3B', 'architecture': 'Qwen3_5MoeForConditionalGeneration', 'model_type': 'qwen3_5_moe', 'num_layers': 40, 'hidden_size': 2048, 'num_experts': 256, 'is_multimodal': True}
+Fetching 14 files:   0%|          | 0/14 [00:00<?, ?it/s]Fetching 14 files: 100%|██████████| 14/14 [00:00<00:00, 2000.83it/s]
+Loading weights:   0%|          | 0/693 [00:00<?, ?it/s]Loading weights:   1%|          | 8/693 [00:00<00:09, 68.58it/s]Loading weights:   2%|▏         | 15/693 [00:00<00:16, 41.25it/s]Loading weights:   5%|▍         | 32/693 [00:00<00:10, 61.73it/s]Loading weights:   7%|▋         | 46/693 [00:00<00:08, 73.98it/s]Loading weights:   8%|▊         | 54/693 [00:00<00:09, 64.80it/s]Loading weights:   9%|▉         | 61/693 [00:01<00:12, 51.20it/s]Loading weights:  12%|█▏        | 81/693 [00:01<00:08, 68.58it/s]Loading weights:  13%|█▎        | 89/693 [00:01<00:09, 64.18it/s]Loading weights:  14%|█▍        | 100/693 [00:01<00:09, 65.45it/s]Loading weights:  17%|█▋        | 119/693 [00:01<00:08, 71.14it/s]Loading weights:  18%|█▊        | 128/693 [00:02<00:08, 63.50it/s]Loading weights:  22%|██▏       | 152/693 [00:02<00:06, 80.25it/s]Loading weights:  25%|██▍       | 170/693 [00:02<00:06, 83.91it/s]Loading weights:  27%|██▋       | 188/693 [00:02<00:05, 85.40it/s]Loading weights:  28%|██▊       | 197/693 [00:02<00:06, 78.11it/s]Loading weights:  31%|███▏      | 217/693 [00:02<00:04, 99.88it/s]Loading weights:  33%|███▎      | 229/693 [00:03<00:04, 95.60it/s]Loading weights:  35%|███▍      | 240/693 [00:03<00:05, 79.60it/s]Loading weights:  37%|███▋      | 257/693 [00:03<00:04, 87.92it/s]Loading weights:  39%|███▊      | 267/693 [00:03<00:05, 81.40it/s]Loading weights:  42%|████▏     | 290/693 [00:03<00:04, 91.08it/s]Loading weights:  44%|████▍     | 308/693 [00:03<00:03, 97.81it/s]Loading weights:  47%|████▋     | 325/693 [00:04<00:03, 99.32it/s]Loading weights:  48%|████▊     | 336/693 [00:04<00:03, 91.34it/s]Loading weights:  52%|█████▏    | 358/693 [00:04<00:03, 102.36it/s]Loading weights:  54%|█████▍    | 377/693 [00:04<00:02, 107.15it/s]Loading weights:  57%|█████▋    | 395/693 [00:04<00:02, 108.15it/s]Loading weights:  59%|█████▊    | 406/693 [00:04<00:03, 88.82it/s] Loading weights:  61%|██████    | 424/693 [00:05<00:02, 105.78it/s]Loading weights:  63%|██████▎   | 436/693 [00:05<00:03, 79.83it/s] Loading weights:  64%|██████▍   | 446/693 [00:05<00:04, 58.21it/s]Loading weights:  67%|██████▋   | 463/693 [00:05<00:03, 75.40it/s]Loading weights:  68%|██████▊   | 474/693 [00:06<00:04, 45.67it/s]Loading weights:  71%|███████   | 493/693 [00:06<00:03, 63.87it/s]Loading weights:  73%|███████▎  | 505/693 [00:06<00:03, 62.03it/s]Loading weights:  74%|███████▍  | 515/693 [00:06<00:03, 51.83it/s]Loading weights:  77%|███████▋  | 532/693 [00:07<00:02, 66.07it/s]Loading weights:  78%|███████▊  | 542/693 [00:07<00:03, 40.34it/s]Loading weights:  82%|████████▏ | 565/693 [00:07<00:02, 61.72it/s]Loading weights:  83%|████████▎ | 576/693 [00:07<00:01, 60.02it/s]Loading weights:  85%|████████▍ | 586/693 [00:08<00:02, 49.08it/s]Loading weights:  87%|████████▋ | 601/693 [00:08<00:01, 60.70it/s]Loading weights:  88%|████████▊ | 610/693 [00:08<00:01, 47.28it/s]Loading weights:  89%|████████▉ | 617/693 [00:08<00:01, 44.24it/s]Loading weights:  91%|█████████▏| 634/693 [00:09<00:00, 59.76it/s]Loading weights:  93%|█████████▎| 642/693 [00:09<00:00, 51.76it/s]Loading weights:  94%|█████████▍| 652/693 [00:09<00:00, 57.20it/s]Loading weights:  95%|█████████▌| 659/693 [00:09<00:00, 50.73it/s]Loading weights:  97%|█████████▋| 670/693 [00:09<00:00, 58.16it/s]Loading weights:  98%|█████████▊| 677/693 [00:09<00:00, 47.28it/s]Loading weights:  99%|█████████▊| 683/693 [00:10<00:00, 34.77it/s]Loading weights: 100%|██████████| 693/693 [00:10<00:00, 67.21it/s]
+[2026-09-11 18:14:49] [INFO] Decoder stack at 'model.layers' (40 layers)
+[2026-09-11 18:14:52] [INFO] [qwen3.5-35b-a3b] capturing residual at both positions, 40 layers...
+[2026-09-11 18:14:52] [INFO]     captured 16/8000
+[2026-09-11 18:15:08] [INFO]     captured 416/8000
+[2026-09-11 18:15:24] [INFO]     captured 816/8000
+[2026-09-11 18:15:40] [INFO]     captured 1216/8000
+[2026-09-11 18:15:56] [INFO]     captured 1616/8000
+[2026-09-11 18:16:12] [INFO]     captured 2016/8000
+[2026-09-11 18:16:28] [INFO]     captured 2416/8000
+[2026-09-11 18:16:44] [INFO]     captured 2816/8000
+[2026-09-11 18:17:00] [INFO]     captured 3216/8000
+[2026-09-11 18:17:16] [INFO]     captured 3616/8000
+[2026-09-11 18:17:32] [INFO]     captured 4016/8000
+[2026-09-11 18:17:48] [INFO]     captured 4416/8000
+[2026-09-11 18:18:03] [INFO]     captured 4816/8000
+[2026-09-11 18:18:19] [INFO]     captured 5216/8000
+[2026-09-11 18:18:34] [INFO]     captured 5616/8000
+[2026-09-11 18:18:50] [INFO]     captured 6016/8000
+[2026-09-11 18:19:05] [INFO]     captured 6416/8000
+[2026-09-11 18:19:21] [INFO]     captured 6816/8000
+[2026-09-11 18:19:36] [INFO]     captured 7216/8000
+[2026-09-11 18:19:52] [INFO]     captured 7616/8000
+[2026-09-11 18:20:48] [INFO]   R_harm               AUC 0.977 [0.96,0.99] L27 d=0.69 | length-only 0.663 | split-half 0.996 | n_instr=249
+[2026-09-11 18:21:05] [INFO]   R_harm_user          AUC 0.977 [0.96,0.99] L27 d=0.69 | length-only 0.716 | split-half 0.984 | n_instr=249
+[2026-09-11 18:21:05] [INFO]   R_control: role composition TV=0.123  <-- balanced
+[2026-09-11 18:21:30] [INFO]   R_control            AUC 0.958 [0.92,1.00] L34 d=0.87 | length-only 0.413 | split-half 0.941 | n_instr=121
+[2026-09-11 18:21:30] [INFO]   R_control            balanced on role: shared=['assistant', 'system', 'tool', 'user'] dropped=[] weight kept pos=1.00 neg=1.00
+[2026-09-11 18:22:11] [INFO]   R_harm_at_post       AUC 0.988 [0.98,1.00] L39 d=1.00 | length-only 0.663 | split-half 0.998 | n_instr=249
+[2026-09-11 18:22:11] [INFO]   R_control_harmless: role composition TV=0.195  <-- balanced
+[2026-09-11 18:22:37] [INFO]   R_control_harmless   AUC 0.970 [0.93,1.00] L39 d=1.00 | length-only 0.482 | split-half 0.954 | n_instr=124
+[2026-09-11 18:22:37] [INFO]   R_control_harmless   balanced on role: shared=['assistant', 'system', 'tool', 'user'] dropped=[] weight kept pos=1.00 neg=1.00
+[2026-09-11 18:22:37] [INFO]   R_control_unbalanced: role composition TV=0.123
+[2026-09-11 18:23:01] [INFO]   R_control_unbalanced AUC 0.990 [0.98,1.00] L36 d=0.92 | length-only 0.413 | split-half 0.938 | n_instr=121
+[2026-09-11 18:23:01] [INFO]   R_control_preguard: role composition TV=0.100  <-- balanced
+[2026-09-11 18:23:27] [INFO]   R_control_preguard   AUC 0.982 [0.96,1.00] L37 d=0.95 | length-only 0.432 | split-half 0.978 | n_instr=125
+[2026-09-11 18:23:27] [INFO]   R_control_preguard   balanced on role: shared=['assistant', 'system', 'tool', 'user'] dropped=[] weight kept pos=1.00 neg=1.00
+[2026-09-11 18:23:27] [INFO] [qwen3.5-35b-a3b] role probe: token-level capture, 40 layers...
+[2026-09-11 18:23:28] [INFO]     tokens from 16/8000
+[2026-09-11 18:23:44] [INFO]     tokens from 416/8000
+[2026-09-11 18:24:01] [INFO]     tokens from 816/8000
+[2026-09-11 18:24:17] [INFO]     tokens from 1216/8000
+[2026-09-11 18:24:33] [INFO]     tokens from 1616/8000
+[2026-09-11 18:24:49] [INFO]     tokens from 2016/8000
+[2026-09-11 18:25:05] [INFO]     tokens from 2416/8000
+[2026-09-11 18:25:21] [INFO]     tokens from 2816/8000
+[2026-09-11 18:25:37] [INFO]     tokens from 3216/8000
+[2026-09-11 18:25:53] [INFO]     tokens from 3616/8000
+[2026-09-11 18:26:09] [INFO]     tokens from 4016/8000
+[2026-09-11 18:26:25] [INFO]     tokens from 4416/8000
+[2026-09-11 18:26:40] [INFO]     tokens from 4816/8000
+[2026-09-11 18:26:56] [INFO]     tokens from 5216/8000
+[2026-09-11 18:27:11] [INFO]     tokens from 5616/8000
+[2026-09-11 18:27:27] [INFO]     tokens from 6016/8000
+[2026-09-11 18:27:42] [INFO]     tokens from 6416/8000
+[2026-09-11 18:27:58] [INFO]     tokens from 6816/8000
+[2026-09-11 18:28:13] [INFO]     tokens from 7216/8000
+[2026-09-11 18:28:29] [INFO]     tokens from 7616/8000
+[2026-09-11 18:42:31] [INFO] [qwen3.5-35b-a3b] activations cached at /scratch/b6aj/jtelintelo.b6aj/rq1-activation-cache/results-fcbf856b/rq1/qwen3.5-35b-a3b/activations.pt
+[2026-09-11 18:42:31] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 18:42:31] [INFO] [nulls/qwen3.5-35b-a3b] E1.1 validation — random-direction nulls + length-matched reruns
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 18:42:34] [INFO]   R_harm               AUC 0.977 | null p95 0.732 max 0.868 | p=0.0010 PASS | matched 0.977 (len 0.501)
+[2026-09-11 18:42:35] [INFO]   R_harm_user          AUC 0.977 | null p95 0.727 max 0.861 | p=0.0010 PASS | matched 0.980 (len 0.499)
+[2026-09-11 18:42:36] [INFO]   R_control            AUC 0.958 | null p95 0.975 max 1.000 | p=0.0709 FAILS NULL | matched 1.000 (len 0.498)
+[2026-09-11 18:42:39] [INFO]   R_harm_at_post       AUC 0.988 | null p95 0.842 max 0.978 | p=0.0010 PASS | matched 0.990 (len 0.501)
+[2026-09-11 18:42:40] [INFO]   R_control_harmless   AUC 0.970 | null p95 0.750 max 0.897 | p=0.0010 PASS | matched 0.964 (len 0.497)
+[2026-09-11 18:42:41] [INFO]   R_control_unbalanced AUC 0.990 | null p95 0.979 max 1.000 | p=0.0290 PASS | matched 1.000 (len 0.498)
+[2026-09-11 18:42:42] [INFO]   R_control_preguard   AUC 0.982 | null p95 0.889 max 0.975 | p=0.0010 PASS | matched 0.995 (len 0.500)
+[2026-09-11 18:42:42] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 18:42:42] [INFO] [geometry/qwen3.5-35b-a3b] E1.2 — pairwise cosines vs null band and split-half floor
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 18:42:43] [INFO]   null band: mean +0.0003 sd 0.0225 p97.5 +0.0451 (analytic 1/sqrt(d) = 0.0221)
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 18:42:44] [INFO]   strongest ROLE vs safety-variable cosines (RQ1's headline question):
+[2026-09-11 18:42:44] [INFO]     R_control_unbalanced vs R_role_tool_vs_user@t_post_inst @L39: +0.398 (null p97.5 0.045)
+[2026-09-11 18:42:44] [INFO]     R_control vs R_role_tool_vs_user@t_post_inst @L39: +0.379 (null p97.5 0.045)
+[2026-09-11 18:42:44] [INFO]     R_control_unbalanced vs R_role_assistant_vs_user@t_post_inst @L39: +0.374 (null p97.5 0.045)
+[2026-09-11 18:42:44] [INFO]     R_control vs R_role_assistant_vs_user@t_post_inst @L39: +0.355 (null p97.5 0.045)
+[2026-09-11 18:42:44] [INFO]     R_control_unbalanced vs R_role_tool_vs_user@t_post_inst @L34: +0.345 (null p97.5 0.045)
+[2026-09-11 18:42:44] [INFO]     R_control_preguard vs R_role_tool_vs_user@t_post_inst @L34: +0.331 (null p97.5 0.045)
+[2026-09-11 18:42:44] [INFO]   strongest safety-variable pairs:
+[2026-09-11 18:42:44] [INFO]     R_control vs R_control_unbalanced @L34: +0.999 (split-half floor 0.941)
+[2026-09-11 18:42:44] [INFO]     R_control vs R_control_unbalanced @L33: +0.999 (split-half floor 0.942)
+[2026-09-11 18:42:44] [INFO]     R_control vs R_control_unbalanced @L36: +0.999 (split-half floor 0.938)
+[2026-09-11 18:42:44] [INFO]     R_control vs R_control_unbalanced @L35: +0.999 (split-half floor 0.941)
+[2026-09-11 18:42:44] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 18:42:44] [INFO] [projections/qwen3.5-35b-a3b] E1.3 — projections and correlations between them
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 18:42:44] [INFO]   projection-correlation null p95 = 0.458
+[2026-09-11 18:42:44] [INFO]     r(R_harm, R_harm_user) = +0.996 beyond null
+[2026-09-11 18:42:44] [INFO]     r(R_control_preguard, R_control_unbalanced) = +0.980 beyond null
+[2026-09-11 18:42:44] [INFO]     r(R_control, R_control_unbalanced) = +0.979 beyond null
+[2026-09-11 18:42:44] [INFO]     r(R_control_preguard, R_harm_at_post) = +0.975 beyond null
+[2026-09-11 18:42:44] [INFO]     r(R_control, R_control_preguard) = +0.953 beyond null
+[2026-09-11 18:42:44] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 18:42:44] [INFO] [dimensionality/qwen3.5-35b-a3b] E1.4 — stratified directions -> r_eff
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 18:42:45] [INFO]   R_harm               r_eff(stratified) 1.64 over 24 strata | AUC after removing top-1: 0.489
+[2026-09-11 18:42:45] [INFO]   R_harm_user          r_eff(stratified) 13.83 over 21 strata | AUC after removing top-1: 0.497
+[2026-09-11 18:42:45] [INFO]   R_control            r_eff(stratified) 2.77 over 23 strata | AUC after removing top-1: 0.547
+[2026-09-11 18:42:45] [INFO]   R_harm_at_post       r_eff(stratified) 2.75 over 24 strata | AUC after removing top-1: 0.486
+[2026-09-11 18:42:45] [INFO]   R_control_harmless   r_eff(stratified) 4.61 over 26 strata | AUC after removing top-1: 0.575
+[2026-09-11 18:42:45] [INFO]   R_control_unbalanced r_eff(stratified) 3.03 over 23 strata | AUC after removing top-1: 0.512
+[2026-09-11 18:42:46] [INFO]   R_control_preguard   r_eff(stratified) 4.22 over 26 strata | AUC after removing top-1: 0.568
+[2026-09-11 18:42:46] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 18:42:46] [INFO] [harm_controls/qwen3.5-35b-a3b] E1.1 — R_harm with refusal held constant (PLAN-EXTRACT)
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 18:42:46] [INFO]   R_harm_in_refused: role composition TV=0.186  <-- balanced
+[2026-09-11 18:42:46] [INFO]   R_harm_in_refused: design composition TV=0.030
+[2026-09-11 18:42:46] [INFO]   R_harm_in_refused: length-only AUC 0.692 (2891 harmful vs 134 harmless)
+[2026-09-11 18:42:51] [INFO]   R_harm_in_refused          L28  AUC 0.999 [1.00,1.00]  split-half 0.966  (train n: 2891 harmful / 134 harmless)
+[2026-09-11 18:42:58] [INFO]   R_harm_in_refused_at_post  L38  AUC 0.973 [0.95,0.99]  split-half 0.970  (train n: 2891 harmful / 134 harmless)
+[2026-09-11 18:42:58] [WARNING]   R_harm_in_complied: minority side 21 < 25 — skipped (harmful 21, harmless 2858 in train)
+[2026-09-11 18:42:58] [INFO]   R_harm_in_refused          cos with pooled R_harm: 0.829 (split-half floor 0.998) -> DIFFERENT DIRECTION — pooled fit carries refusal
+[2026-09-11 18:42:58] [INFO]   R_harm_in_refused_at_post  cos with pooled R_harm_at_post: 0.761 (split-half floor 0.999) -> DIFFERENT DIRECTION — pooled fit carries refusal
+[2026-09-11 18:42:58] [INFO]     overlap with R_control: pooled 0.581 -> refusal-controlled 0.458
+[2026-09-11 18:42:58] [INFO]     overlap with R_control_harmless: pooled 0.683 -> refusal-controlled 0.047
+[2026-09-11 18:42:58] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 18:42:58] [INFO] [dim_behavioural/qwen3.5-35b-a3b] E1.4b — smallest k reproducing the full steering effect
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 18:43:00] [INFO] Loading Qwen/Qwen3.5-35B-A3B: {'model_id': 'Qwen/Qwen3.5-35B-A3B', 'architecture': 'Qwen3_5MoeForConditionalGeneration', 'model_type': 'qwen3_5_moe', 'num_layers': 40, 'hidden_size': 2048, 'num_experts': 256, 'is_multimodal': True}
+Fetching 14 files:   0%|          | 0/14 [00:00<?, ?it/s]Fetching 14 files: 100%|██████████| 14/14 [00:00<00:00, 2003.01it/s]
+Loading weights:   0%|          | 0/693 [00:00<?, ?it/s]Loading weights:   0%|          | 2/693 [00:00<00:37, 18.22it/s]Loading weights:   2%|▏         | 13/693 [00:00<00:13, 51.30it/s]Loading weights:   4%|▍         | 28/693 [00:00<00:09, 71.68it/s]Loading weights:   7%|▋         | 50/693 [00:00<00:06, 98.74it/s]Loading weights:   9%|▊         | 60/693 [00:00<00:08, 76.82it/s]Loading weights:  12%|█▏        | 83/693 [00:01<00:06, 88.63it/s]Loading weights:  15%|█▍        | 101/693 [00:01<00:06, 93.44it/s]Loading weights:  17%|█▋        | 119/693 [00:01<00:05, 98.37it/s]Loading weights:  19%|█▊        | 129/693 [00:01<00:06, 89.52it/s]Loading weights:  22%|██▏       | 152/693 [00:01<00:05, 105.17it/s]Loading weights:  25%|██▍       | 170/693 [00:01<00:05, 97.46it/s] Loading weights:  27%|██▋       | 187/693 [00:02<00:05, 93.04it/s]Loading weights:  28%|██▊       | 197/693 [00:02<00:05, 85.75it/s]Loading weights:  32%|███▏      | 221/693 [00:02<00:04, 104.76it/s]Loading weights:  34%|███▍      | 239/693 [00:02<00:04, 106.81it/s]Loading weights:  37%|███▋      | 254/693 [00:02<00:04, 103.36it/s]Loading weights:  38%|███▊      | 266/693 [00:02<00:05, 83.52it/s] Loading weights:  42%|████▏     | 290/693 [00:03<00:04, 88.04it/s]Loading weights:  44%|████▍     | 307/693 [00:03<00:03, 100.37it/s]Loading weights:  46%|████▌     | 318/693 [00:03<00:04, 90.89it/s] Loading weights:  47%|████▋     | 328/693 [00:03<00:05, 69.81it/s]Loading weights:  48%|████▊     | 336/693 [00:03<00:06, 55.80it/s]Loading weights:  52%|█████▏    | 358/693 [00:04<00:04, 79.88it/s]Loading weights:  53%|█████▎    | 368/693 [00:04<00:04, 74.62it/s]Loading weights:  54%|█████▍    | 377/693 [00:04<00:06, 48.75it/s]Loading weights:  55%|█████▌    | 384/693 [00:04<00:06, 50.97it/s]Loading weights:  57%|█████▋    | 394/693 [00:04<00:05, 52.32it/s]Loading weights:  58%|█████▊    | 401/693 [00:05<00:05, 50.49it/s]Loading weights:  59%|█████▊    | 407/693 [00:05<00:06, 47.25it/s]Loading weights:  62%|██████▏   | 428/693 [00:05<00:04, 64.75it/s]Loading weights:  64%|██████▍   | 446/693 [00:05<00:03, 65.30it/s]Loading weights:  67%|██████▋   | 464/693 [00:06<00:03, 64.82it/s]Loading weights:  68%|██████▊   | 471/693 [00:06<00:03, 65.24it/s]Loading weights:  69%|██████▉   | 478/693 [00:06<00:03, 53.95it/s]Loading weights:  72%|███████▏  | 496/693 [00:06<00:02, 75.70it/s]Loading weights:  73%|███████▎  | 506/693 [00:06<00:02, 68.03it/s]Loading weights:  74%|███████▍  | 515/693 [00:06<00:03, 53.57it/s]Loading weights:  77%|███████▋  | 532/693 [00:07<00:02, 70.74it/s]Loading weights:  78%|███████▊  | 541/693 [00:07<00:02, 51.73it/s]Loading weights:  79%|███████▉  | 548/693 [00:07<00:03, 46.11it/s]Loading weights:  82%|████████▏ | 565/693 [00:07<00:01, 65.74it/s]Loading weights:  83%|████████▎ | 575/693 [00:07<00:01, 60.60it/s]Loading weights:  84%|████████▍ | 583/693 [00:08<00:01, 61.79it/s]Loading weights:  85%|████████▌ | 591/693 [00:08<00:01, 55.08it/s]Loading weights:  87%|████████▋ | 601/693 [00:08<00:01, 61.58it/s]Loading weights:  88%|████████▊ | 609/693 [00:08<00:01, 52.67it/s]Loading weights:  89%|████████▉ | 616/693 [00:08<00:02, 38.17it/s]Loading weights:  91%|█████████▏| 634/693 [00:09<00:01, 58.20it/s]Loading weights:  93%|█████████▎| 642/693 [00:09<00:01, 50.99it/s]Loading weights:  94%|█████████▍| 652/693 [00:09<00:00, 57.57it/s]Loading weights:  95%|█████████▌| 660/693 [00:09<00:00, 52.77it/s]Loading weights:  97%|█████████▋| 670/693 [00:09<00:00, 59.11it/s]Loading weights:  98%|█████████▊| 677/693 [00:10<00:00, 42.26it/s]Loading weights:  99%|█████████▊| 683/693 [00:10<00:00, 37.37it/s]Loading weights: 100%|██████████| 693/693 [00:10<00:00, 67.51it/s]
+[2026-09-11 18:43:11] [INFO] Decoder stack at 'model.layers' (40 layers)
+[2026-09-11 18:43:14] [INFO] [qwen3.5-35b-a3b] E1.4b probe set: 100 items
+[2026-09-11 18:47:03] [INFO]   R_harm                 full Δrefusal +0.290 (null 0.000) | k=1:0.86 k=2:0.97 k=3:0.93 k=4:1.00 | k* = 2
+[2026-09-11 18:50:14] [INFO]   R_control              full Δrefusal +0.290 (null 0.000) | k=1:0.79 k=2:0.83 k=3:0.79 | k* = None
+[2026-09-11 18:54:03] [INFO]   R_harm_at_post         full Δrefusal +0.310 (null 0.000) | k=1:1.00 k=2:1.00 k=3:1.00 k=4:1.00 | k* = 1
+[2026-09-11 18:58:30] [INFO]   R_control_harmless     full Δrefusal +0.110 (null 0.000) | k=1:1.09 k=2:1.00 k=3:0.91 k=4:0.91 k=6:1.00 | k* = 1
+[2026-09-11 18:58:31] [INFO] [qwen3.5-35b-a3b] behavioural k*: {'R_control_harmless': 1.0, 'R_harm': 2.0, 'R_harm_at_post': 1.0}
+[2026-09-11 18:58:31] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 18:58:31] [INFO] [geometry_subspace/qwen3.5-35b-a3b] E1.2 pass 2 — principal angles / projection / CCA at E1.4b's k
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 18:58:31] [INFO]   R_control_harmless     k*=1 basis 1x2048 @L39 (t_post_inst)
+[2026-09-11 18:58:31] [INFO]   R_harm                 k*=2 basis 2x2048 @L27 (t_inst)
+[2026-09-11 18:58:31] [INFO]   R_harm_at_post         k*=1 basis 1x2048 @L39 (t_post_inst)
+[2026-09-11 18:58:31] [INFO]   R_control_harmless vs R_harm_at_post: proj 0.478 (null p97.5 0.003) angles [46.3] deg  data-CCA max 0.940
+[2026-09-11 18:58:31] [INFO] [qwen3.5-35b-a3b] E1.2 pass 2: subspace measures apply
+[2026-09-11 18:58:31] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 18:58:31] [INFO] [emergence/qwen3.5-35b-a3b] E1.5 — separation vs relative depth
+[2026-09-11 18:58:31] [INFO]   emergence by concept — onset depth (peak selected on train):
+[2026-09-11 18:58:31] [INFO]     R_harm                 peak 0.977 @ d=0.69 | onset90 d=0.15 [0.04,0.18] (w=0.14) | 80/95%: 0.03/0.31
+[2026-09-11 18:58:31] [INFO]     R_harm_user            peak 0.977 @ d=0.69 | onset90 d=0.10 [0.03,0.18] (w=0.15) | 80/95%: 0.00/0.28
+[2026-09-11 18:58:31] [INFO]     R_control              peak 0.958 @ d=0.87 | onset90 d=0.08 [0.00,0.33] (w=0.33) | 80/95%: 0.03/0.10
+[2026-09-11 18:58:31] [INFO]     R_harm_at_post         peak 0.988 @ d=1.00 | onset90 d=0.15 [0.03,0.21] (w=0.18) | 80/95%: 0.03/0.26
+[2026-09-11 18:58:31] [INFO]     R_control_harmless     peak 0.970 @ d=1.00 | onset90 d=0.54 [0.10,0.72] (w=0.62) | 80/95%: 0.41/0.72
+[2026-09-11 18:58:31] [INFO]     R_control_unbalanced   peak 0.990 @ d=0.92 | onset90 d=0.05 [0.00,0.30] (w=0.30) | 80/95%: 0.00/0.10
+[2026-09-11 18:58:31] [INFO]     R_control_preguard     peak 0.982 @ d=0.95 | onset90 d=0.49 [0.08,0.62] (w=0.54) | 80/95%: 0.44/0.72
+[2026-09-11 18:58:31] [INFO]     R_role_probe           peak 0.992 @ d=0.97 | onset90 d=0.26 [0.23,0.26] (w=0.03) | 80/95%: 0.00/0.85
+[2026-09-11 18:58:31] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 18:58:31] [INFO] [style/qwen3.5-35b-a3b] E1.7 Level 1 — metadata vs style; variation across prompt categories
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 18:58:32] [INFO] [qwen3.5-35b-a3b] E1.7 Level 1 — directions refitted within each native style
+[2026-09-11 18:58:32] [INFO]   R_role_tool_vs_user        across source   (5 levels): cos min 0.545 med 0.677 max 0.953 | within-level split-half floor 0.794 -> style-DEPENDENT
+[2026-09-11 18:58:32] [INFO]   R_harm                     across source_pair (6 levels): cos min 0.124 med 0.451 max 0.944 | within-level split-half floor 0.993 -> style-DEPENDENT
+[2026-09-11 18:58:54] [INFO]   Zhao replication (advbench vs alpaca): peak AUC 1.000 at L15 (depth 0.38), length-only 0.535
+[2026-09-11 18:58:55] [INFO]   R_harm                     across category (53 levels): cos min -0.022 med 0.398 max 0.924 | within-level split-half floor 0.945 -> style-DEPENDENT
+[2026-09-11 18:58:55] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 18:58:55] [INFO] [style_level2/qwen3.5-35b-a3b] E1.7 Level 2 — tag vs register, crossed on the frozen style corpus
+[2026-09-11 18:58:55] [INFO] [qwen3.5-35b-a3b] style corpus: 828 items (2 arms, 3 registers)
+[2026-09-11 18:58:57] [INFO] Loading Qwen/Qwen3.5-35B-A3B: {'model_id': 'Qwen/Qwen3.5-35B-A3B', 'architecture': 'Qwen3_5MoeForConditionalGeneration', 'model_type': 'qwen3_5_moe', 'num_layers': 40, 'hidden_size': 2048, 'num_experts': 256, 'is_multimodal': True}
+Fetching 14 files:   0%|          | 0/14 [00:00<?, ?it/s]Fetching 14 files: 100%|██████████| 14/14 [00:00<00:00, 2079.40it/s]
+Loading weights:   0%|          | 0/693 [00:00<?, ?it/s]Loading weights:   0%|          | 1/693 [00:00<01:27,  7.88it/s]Loading weights:   2%|▏         | 14/693 [00:00<00:13, 52.07it/s]Loading weights:   5%|▍         | 32/693 [00:00<00:08, 78.71it/s]Loading weights:   7%|▋         | 50/693 [00:00<00:07, 90.22it/s]Loading weights:   9%|▊         | 59/693 [00:00<00:07, 81.52it/s]Loading weights:  12%|█▏        | 82/693 [00:00<00:05, 102.72it/s]Loading weights:  15%|█▍        | 101/693 [00:01<00:05, 112.46it/s]Loading weights:  17%|█▋        | 118/693 [00:01<00:05, 112.54it/s]Loading weights:  19%|█▉        | 130/693 [00:01<00:05, 105.94it/s]Loading weights:  22%|██▏       | 152/693 [00:01<00:04, 119.37it/s]Loading weights:  25%|██▍       | 170/693 [00:01<00:04, 122.17it/s]Loading weights:  27%|██▋       | 188/693 [00:01<00:04, 123.95it/s]Loading weights:  29%|██▉       | 201/693 [00:01<00:04, 115.31it/s]Loading weights:  32%|███▏      | 221/693 [00:02<00:04, 116.24it/s]Loading weights:  34%|███▍      | 239/693 [00:02<00:03, 116.70it/s]Loading weights:  37%|███▋      | 256/693 [00:02<00:03, 117.80it/s]Loading weights:  39%|███▊      | 268/693 [00:02<00:03, 110.38it/s]Loading weights:  42%|████▏     | 290/693 [00:02<00:03, 123.29it/s]Loading weights:  44%|████▍     | 308/693 [00:02<00:03, 125.09it/s]Loading weights:  47%|████▋     | 326/693 [00:02<00:02, 125.96it/s]Loading weights:  49%|████▉     | 339/693 [00:03<00:03, 103.36it/s]Loading weights:  52%|█████▏    | 358/693 [00:03<00:02, 120.16it/s]Loading weights:  54%|█████▎    | 371/693 [00:03<00:03, 105.42it/s]Loading weights:  55%|█████▌    | 383/693 [00:03<00:04, 77.39it/s] Loading weights:  57%|█████▋    | 395/693 [00:03<00:04, 66.66it/s]Loading weights:  58%|█████▊    | 404/693 [00:04<00:05, 56.58it/s]Loading weights:  62%|██████▏   | 427/693 [00:04<00:03, 84.48it/s]Loading weights:  63%|██████▎   | 439/693 [00:04<00:03, 74.74it/s]Loading weights:  65%|██████▍   | 449/693 [00:04<00:04, 58.25it/s]Loading weights:  67%|██████▋   | 464/693 [00:05<00:04, 56.29it/s]Loading weights:  68%|██████▊   | 471/693 [00:05<00:03, 58.16it/s]Loading weights:  69%|██████▉   | 478/693 [00:05<00:04, 49.50it/s]Loading weights:  72%|███████▏  | 496/693 [00:05<00:02, 71.48it/s]Loading weights:  73%|███████▎  | 506/693 [00:05<00:02, 65.31it/s]Loading weights:  74%|███████▍  | 515/693 [00:06<00:03, 51.93it/s]Loading weights:  77%|███████▋  | 532/693 [00:06<00:02, 69.14it/s]Loading weights:  78%|███████▊  | 541/693 [00:06<00:03, 40.21it/s]Loading weights:  82%|████████▏ | 565/693 [00:06<00:01, 65.66it/s]Loading weights:  83%|████████▎ | 577/693 [00:06<00:01, 64.93it/s]Loading weights:  85%|████████▍ | 588/693 [00:07<00:01, 53.94it/s]Loading weights:  87%|████████▋ | 601/693 [00:07<00:01, 63.24it/s]Loading weights:  88%|████████▊ | 610/693 [00:07<00:01, 49.32it/s]Loading weights:  89%|████████▉ | 618/693 [00:07<00:01, 45.85it/s]Loading weights:  91%|█████████▏| 634/693 [00:08<00:00, 60.61it/s]Loading weights:  93%|█████████▎| 642/693 [00:08<00:00, 53.12it/s]Loading weights:  94%|█████████▍| 652/693 [00:08<00:00, 59.28it/s]Loading weights:  95%|█████████▌| 660/693 [00:08<00:00, 53.97it/s]Loading weights:  97%|█████████▋| 670/693 [00:08<00:00, 60.19it/s]Loading weights:  98%|█████████▊| 677/693 [00:08<00:00, 49.63it/s]Loading weights:  99%|█████████▊| 683/693 [00:09<00:00, 36.20it/s]Loading weights: 100%|██████████| 693/693 [00:09<00:00, 74.79it/s]
+[2026-09-11 18:59:07] [INFO] Decoder stack at 'model.layers' (40 layers)
+[2026-09-11 18:59:08] [INFO] [qwen3.5-35b-a3b] rendering 3312 items (828 style items x 4 role tags)
+[2026-09-11 18:59:09] [INFO]     captured 16/3312
+[2026-09-11 18:59:27] [INFO]     captured 416/3312
+[2026-09-11 18:59:45] [INFO]     captured 816/3312
+[2026-09-11 19:00:03] [INFO]     captured 1216/3312
+[2026-09-11 19:00:19] [INFO]     captured 1616/3312
+[2026-09-11 19:00:35] [INFO]     captured 2016/3312
+[2026-09-11 19:00:51] [INFO]     captured 2416/3312
+[2026-09-11 19:01:07] [INFO]     captured 2816/3312
+[2026-09-11 19:01:24] [INFO]     captured 3216/3312
+[2026-09-11 19:01:35] [INFO]   [generated] cos(tag, register) median 0.078 max 0.533 vs floor 0.816 — distinct in 98.9% of cells
+[2026-09-11 19:01:35] [INFO]   [template] cos(tag, register) median 0.070 max 0.551 vs floor 0.845 — distinct in 99.3% of cells
+[2026-09-11 19:01:36] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 19:01:36] [INFO] [fidelity/qwen3.5-35b-a3b] E1.1 — pre_mlp fidelity + cross-corpus transfer (dropped in the first consolidation)
+[2026-09-11 19:01:37] [INFO] Loading Qwen/Qwen3.5-35B-A3B: {'model_id': 'Qwen/Qwen3.5-35B-A3B', 'architecture': 'Qwen3_5MoeForConditionalGeneration', 'model_type': 'qwen3_5_moe', 'num_layers': 40, 'hidden_size': 2048, 'num_experts': 256, 'is_multimodal': True}
+Fetching 14 files:   0%|          | 0/14 [00:00<?, ?it/s]Fetching 14 files: 100%|██████████| 14/14 [00:00<00:00, 2123.16it/s]
+Loading weights:   0%|          | 0/693 [00:00<?, ?it/s]Loading weights:   0%|          | 2/693 [00:00<00:38, 18.15it/s]Loading weights:   2%|▏         | 14/693 [00:00<00:11, 59.09it/s]Loading weights:   5%|▍         | 32/693 [00:00<00:07, 89.18it/s]Loading weights:   7%|▋         | 50/693 [00:00<00:06, 104.04it/s]Loading weights:   9%|▉         | 61/693 [00:00<00:06, 95.50it/s] Loading weights:  12%|█▏        | 83/693 [00:00<00:05, 111.88it/s]Loading weights:  14%|█▍        | 100/693 [00:00<00:05, 113.87it/s]Loading weights:  17%|█▋        | 119/693 [00:01<00:04, 120.77it/s]Loading weights:  19%|█▉        | 131/693 [00:01<00:05, 111.11it/s]Loading weights:  22%|██▏       | 152/693 [00:01<00:04, 120.77it/s]Loading weights:  25%|██▍       | 170/693 [00:01<00:04, 122.96it/s]Loading weights:  27%|██▋       | 188/693 [00:01<00:04, 122.32it/s]Loading weights:  29%|██▉       | 201/693 [00:01<00:04, 113.92it/s]Loading weights:  32%|███▏      | 219/693 [00:01<00:03, 129.21it/s]Loading weights:  34%|███▍      | 238/693 [00:02<00:03, 144.24it/s]Loading weights:  37%|███▋      | 256/693 [00:02<00:03, 139.60it/s]Loading weights:  39%|███▉      | 271/693 [00:02<00:03, 108.37it/s]Loading weights:  42%|████▏     | 290/693 [00:02<00:03, 115.09it/s]Loading weights:  44%|████▍     | 308/693 [00:02<00:03, 119.06it/s]Loading weights:  47%|████▋     | 326/693 [00:02<00:03, 119.57it/s]Loading weights:  49%|████▉     | 339/693 [00:03<00:03, 99.10it/s] Loading weights:  52%|█████▏    | 357/693 [00:03<00:02, 113.88it/s]Loading weights:  53%|█████▎    | 370/693 [00:03<00:03, 101.68it/s]Loading weights:  55%|█████▌    | 382/693 [00:03<00:04, 75.41it/s] Loading weights:  57%|█████▋    | 394/693 [00:03<00:03, 83.11it/s]Loading weights:  58%|█████▊    | 404/693 [00:04<00:05, 52.87it/s]Loading weights:  62%|██████▏   | 427/693 [00:04<00:03, 79.36it/s]Loading weights:  63%|██████▎   | 439/693 [00:04<00:03, 71.66it/s]Loading weights:  65%|██████▍   | 450/693 [00:04<00:04, 57.98it/s]Loading weights:  67%|██████▋   | 464/693 [00:05<00:04, 54.88it/s]Loading weights:  68%|██████▊   | 472/693 [00:05<00:03, 57.86it/s]Loading weights:  69%|██████▉   | 480/693 [00:05<00:04, 51.13it/s]Loading weights:  72%|███████▏  | 497/693 [00:05<00:03, 53.94it/s]Loading weights:  74%|███████▍  | 514/693 [00:05<00:03, 55.98it/s]Loading weights:  77%|███████▋  | 532/693 [00:06<00:02, 71.97it/s]Loading weights:  78%|███████▊  | 541/693 [00:06<00:02, 54.33it/s]Loading weights:  79%|███████▉  | 548/693 [00:06<00:02, 48.34it/s]Loading weights:  82%|████████▏ | 565/693 [00:06<00:01, 66.77it/s]Loading weights:  83%|████████▎ | 575/693 [00:06<00:01, 62.64it/s]Loading weights:  84%|████████▍ | 583/693 [00:06<00:01, 63.60it/s]Loading weights:  85%|████████▌ | 591/693 [00:07<00:01, 56.72it/s]Loading weights:  87%|████████▋ | 601/693 [00:07<00:01, 62.86it/s]Loading weights:  88%|████████▊ | 609/693 [00:07<00:01, 53.16it/s]Loading weights:  89%|████████▉ | 616/693 [00:07<00:01, 39.31it/s]Loading weights:  91%|█████████▏| 634/693 [00:07<00:00, 59.41it/s]Loading weights:  93%|█████████▎| 642/693 [00:08<00:00, 52.03it/s]Loading weights:  94%|█████████▍| 652/693 [00:08<00:00, 58.59it/s]Loading weights:  95%|█████████▌| 660/693 [00:08<00:00, 53.23it/s]Loading weights:  97%|█████████▋| 670/693 [00:08<00:00, 59.64it/s]Loading weights:  98%|█████████▊| 677/693 [00:08<00:00, 49.68it/s]Loading weights:  99%|█████████▊| 683/693 [00:09<00:00, 36.13it/s]Loading weights: 100%|██████████| 693/693 [00:09<00:00, 75.51it/s]
+[2026-09-11 19:01:48] [INFO] Decoder stack at 'model.layers' (40 layers)
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 19:06:59] [INFO]   pre_mlp @L38: 0.997 (residual 0.992)
+[2026-09-11 19:06:59] [INFO]   transfer corpus: 150 C4 passages x 4 roles = 600 items (frozen at E1.0b)
+[2026-09-11 19:12:41] [INFO]   transfer @L38: ours->constant-content 0.905, theirs->our corpus 0.812 (chance 0.250)
+[2026-09-11 19:12:41] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 19:12:41] [INFO] [causal/qwen3.5-35b-a3b] E1.6 — causal distinguishability; GO/NO-GO GATE 1
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 19:12:42] [INFO] [qwen3.5-35b-a3b] control variable: R_control_harmless (variant='over', requested 'over')
+[2026-09-11 19:12:42] [INFO] [qwen3.5-35b-a3b] probe sets: train 80, test 100 (balanced harmful/harmless)
+[2026-09-11 19:12:43] [INFO] Loading Qwen/Qwen3.5-35B-A3B: {'model_id': 'Qwen/Qwen3.5-35B-A3B', 'architecture': 'Qwen3_5MoeForConditionalGeneration', 'model_type': 'qwen3_5_moe', 'num_layers': 40, 'hidden_size': 2048, 'num_experts': 256, 'is_multimodal': True}
+Fetching 14 files:   0%|          | 0/14 [00:00<?, ?it/s]Fetching 14 files: 100%|██████████| 14/14 [00:00<00:00, 2014.97it/s]
+Loading weights:   0%|          | 0/693 [00:00<?, ?it/s]Loading weights:   0%|          | 2/693 [00:00<00:38, 17.86it/s]Loading weights:   2%|▏         | 14/693 [00:00<00:11, 58.15it/s]Loading weights:   5%|▍         | 32/693 [00:00<00:07, 88.37it/s]Loading weights:   7%|▋         | 50/693 [00:00<00:06, 103.63it/s]Loading weights:   9%|▉         | 61/693 [00:00<00:06, 94.88it/s] Loading weights:  12%|█▏        | 82/693 [00:00<00:05, 109.63it/s]Loading weights:  15%|█▍        | 101/693 [00:00<00:05, 117.15it/s]Loading weights:  17%|█▋        | 118/693 [00:01<00:04, 118.78it/s]Loading weights:  19%|█▉        | 130/693 [00:01<00:05, 109.85it/s]Loading weights:  22%|██▏       | 152/693 [00:01<00:04, 122.00it/s]Loading weights:  24%|██▍       | 169/693 [00:01<00:04, 121.55it/s]Loading weights:  27%|██▋       | 188/693 [00:01<00:04, 125.44it/s]Loading weights:  29%|██▉       | 201/693 [00:01<00:04, 116.39it/s]Loading weights:  32%|███▏      | 221/693 [00:01<00:03, 122.61it/s]Loading weights:  34%|███▍      | 238/693 [00:02<00:03, 121.37it/s]Loading weights:  37%|███▋      | 257/693 [00:02<00:03, 125.22it/s]Loading weights:  39%|███▉      | 270/693 [00:02<00:03, 116.56it/s]Loading weights:  42%|████▏     | 290/693 [00:02<00:03, 122.84it/s]Loading weights:  44%|████▍     | 308/693 [00:02<00:03, 124.68it/s]Loading weights:  47%|████▋     | 326/693 [00:02<00:03, 107.67it/s]Loading weights:  49%|████▉     | 338/693 [00:03<00:04, 83.49it/s] Loading weights:  52%|█████▏    | 358/693 [00:03<00:03, 104.30it/s]Loading weights:  54%|█████▎    | 371/693 [00:03<00:03, 96.82it/s] Loading weights:  55%|█████▌    | 382/693 [00:03<00:04, 72.40it/s]Loading weights:  57%|█████▋    | 395/693 [00:03<00:04, 65.16it/s]Loading weights:  58%|█████▊    | 404/693 [00:04<00:05, 55.72it/s]Loading weights:  62%|██████▏   | 427/693 [00:04<00:03, 83.23it/s]Loading weights:  63%|██████▎   | 439/693 [00:04<00:03, 73.84it/s]Loading weights:  65%|██████▍   | 449/693 [00:04<00:04, 57.95it/s]Loading weights:  67%|██████▋   | 464/693 [00:05<00:04, 56.53it/s]Loading weights:  68%|██████▊   | 471/693 [00:05<00:03, 58.43it/s]Loading weights:  69%|██████▉   | 478/693 [00:05<00:04, 49.63it/s]Loading weights:  72%|███████▏  | 496/693 [00:05<00:02, 71.73it/s]Loading weights:  73%|███████▎  | 506/693 [00:05<00:02, 65.89it/s]Loading weights:  74%|███████▍  | 515/693 [00:06<00:03, 52.37it/s]Loading weights:  77%|███████▋  | 532/693 [00:06<00:02, 69.83it/s]Loading weights:  78%|███████▊  | 541/693 [00:06<00:02, 51.72it/s]Loading weights:  79%|███████▉  | 549/693 [00:06<00:03, 47.34it/s]Loading weights:  82%|████████▏ | 565/693 [00:06<00:01, 65.32it/s]Loading weights:  83%|████████▎ | 574/693 [00:06<00:01, 60.02it/s]Loading weights:  84%|████████▍ | 583/693 [00:07<00:02, 47.34it/s]Loading weights:  87%|████████▋ | 601/693 [00:07<00:01, 66.39it/s]Loading weights:  88%|████████▊ | 610/693 [00:07<00:02, 39.50it/s]Loading weights:  91%|█████████▏| 634/693 [00:08<00:00, 61.41it/s]Loading weights:  93%|█████████▎| 644/693 [00:08<00:00, 57.25it/s]Loading weights:  94%|█████████▍| 653/693 [00:08<00:00, 47.59it/s]Loading weights:  97%|█████████▋| 670/693 [00:08<00:00, 62.74it/s]Loading weights:  98%|█████████▊| 679/693 [00:09<00:00, 49.27it/s]Loading weights:  99%|█████████▉| 686/693 [00:09<00:00, 44.65it/s]Loading weights: 100%|██████████| 693/693 [00:09<00:00, 74.86it/s]
+[2026-09-11 19:12:54] [INFO] Decoder stack at 'model.layers' (40 layers)
+[2026-09-11 19:13:45] [INFO]   sanity @L18: determinism KL 0.0e+00 (ok); raw_norm 1.15
+[2026-09-11 19:13:45] [INFO]     alpha=0.5: real KL 0.1359 vs magnitude-matched random 0.0172 (content gap +0.1187)
+[2026-09-11 19:13:45] [INFO]     alpha=1.0: real KL 0.5410 vs magnitude-matched random 0.0590 (content gap +0.4821)
+[2026-09-11 19:13:45] [INFO]     alpha=2.0: real KL 2.4769 vs magnitude-matched random 0.2581 (content gap +2.2188)
+[2026-09-11 19:13:45] [INFO] [qwen3.5-35b-a3b] stage A: layer profile on train, all 40 layers, alpha=+/-1
+[2026-09-11 19:27:20] [INFO]   stage A top-3/source [33, 34, 35, 36, 37, 38]; sensitivity depths [9, 19, 29]; steering at [9, 19, 29, 33, 34, 35, 36, 37, 38]
+[2026-09-11 19:27:20] [INFO] [qwen3.5-35b-a3b] stage B: alpha x token-position profile on train, 9 layers x 10 alpha x 4 token sets
+[2026-09-11 19:34:31] [INFO]     L9: 120 cells
+[2026-09-11 19:41:39] [INFO]     L19: 120 cells
+[2026-09-11 19:48:13] [INFO]     L29: 120 cells
+[2026-09-11 19:54:43] [INFO]     L33: 120 cells
+[2026-09-11 20:01:09] [INFO]     L34: 120 cells
+[2026-09-11 20:07:34] [INFO]     L35: 120 cells
+[2026-09-11 20:13:58] [INFO]     L36: 120 cells
+[2026-09-11 20:20:21] [INFO]     L37: 120 cells
+[2026-09-11 20:26:42] [INFO]     L38: 120 cells
+[2026-09-11 20:26:42] [INFO]   stage B all_real           mean |margin shift| 5.0335  mean KL 1.7185
+[2026-09-11 20:26:42] [INFO]   stage B instruction_span   mean |margin shift| 0.1357  mean KL 0.0174
+[2026-09-11 20:26:42] [INFO]   stage B post_instruction   mean |margin shift| 4.9343  mean KL 1.6487
+[2026-09-11 20:26:42] [INFO]   stage B t_inst_only        mean |margin shift| 0.0578  mean KL 0.0020
+[2026-09-11 20:27:28] [INFO]   L9: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-11 20:30:26] [INFO]   L9: magnitude-matched random KL (harmless) by alpha 0.25:0.0040, 0.5:0.0065, 1.0:0.0151, 2.0:0.0434, 4.0:0.1541
+[2026-09-11 21:01:29] [INFO]   L9: 6000 cells
+[2026-09-11 21:02:15] [INFO]   L19: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-11 21:05:10] [INFO]   L19: magnitude-matched random KL (harmless) by alpha 0.25:0.0127, 0.5:0.0431, 1.0:0.1571, 2.0:0.6609, 4.0:4.0324
+[2026-09-11 21:35:49] [INFO]   L19: 4000 cells
+[2026-09-11 21:36:34] [INFO]   L29: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-11 21:39:26] [INFO]   L29: magnitude-matched random KL (harmless) by alpha 0.25:0.0179, 0.5:0.0690, 1.0:0.2673, 2.0:1.0105, 4.0:5.1989
+[2026-09-11 22:09:54] [INFO]   L29: 2000 cells
+[2026-09-11 22:10:40] [INFO]   L33: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-11 22:13:33] [INFO]   L33: magnitude-matched random KL (harmless) by alpha 0.25:0.0109, 0.5:0.0415, 1.0:0.1903, 2.0:1.0568, 4.0:6.5483
+[2026-09-11 22:44:00] [INFO]   L33: 1200 cells
+[2026-09-11 22:44:46] [INFO]   L34: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-11 22:47:39] [INFO]   L34: magnitude-matched random KL (harmless) by alpha 0.25:0.0075, 0.5:0.0282, 1.0:0.1333, 2.0:0.7156, 4.0:4.6219
+[2026-09-11 23:18:04] [INFO]   L34: 1000 cells
+[2026-09-11 23:18:50] [INFO]   L35: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-11 23:21:42] [INFO]   L35: magnitude-matched random KL (harmless) by alpha 0.25:0.0066, 0.5:0.0248, 1.0:0.1066, 2.0:0.5094, 4.0:3.4712
+[2026-09-11 23:52:07] [INFO]   L35: 800 cells
+[2026-09-11 23:52:53] [INFO]   L36: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-11 23:55:46] [INFO]   L36: magnitude-matched random KL (harmless) by alpha 0.25:0.0055, 0.5:0.0211, 1.0:0.0979, 2.0:0.5605, 4.0:4.0221
+[2026-09-12 00:26:13] [INFO]   L36: 600 cells
+[2026-09-12 00:26:59] [INFO]   L37: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-12 00:29:52] [INFO]   L37: magnitude-matched random KL (harmless) by alpha 0.25:0.0043, 0.5:0.0163, 1.0:0.0755, 2.0:0.4374, 4.0:3.5979
+[2026-09-12 01:00:20] [INFO]   L37: 400 cells
+[2026-09-12 01:01:08] [INFO]   L38: baseline refusal rate 0.470 (harmful 0.900, harmless 0.040)
+[2026-09-12 01:04:02] [INFO]   L38: magnitude-matched random KL (harmless) by alpha 0.25:0.0050, 0.5:0.0192, 1.0:0.0814, 2.0:0.4317, 4.0:3.3234
+[2026-09-12 01:34:29] [INFO]   L38: 200 cells
+[2026-09-12 01:34:30] [INFO]   KL_harmless <= 0.1 : n_live=3222 G1 0.6862 G2 124/394 G3 189 -> PASS
+[2026-09-12 01:34:32] [INFO]   KL_harmless <= 0.25: n_live=4386 G1 0.7073 G2 184/570 G3 276 -> PASS
+[2026-09-12 01:34:33] [INFO]   KL_harmless <= 0.5 : n_live=4998 G1 0.7047 G2 210/618 G3 362 -> PASS
+[2026-09-12 01:34:35] [INFO]   KL_harmless <= 1.0 : n_live=5613 G1 0.6975 G2 246/717 G3 470 -> PASS
+[2026-09-12 01:34:37] [INFO]   KL_harmless <= 2.0 : n_live=6327 G1 0.7037 G2 309/851 G3 600 -> PASS
+[2026-09-12 01:34:37] [INFO] [qwen3.5-35b-a3b] GATE 1 — PASS (testable at bounds [0.1, 0.25, 0.5, 1.0, 2.0])

@@ -22,35 +22,65 @@ which file it lives in.
 | **[PLAN.md](PLAN.md)** | The research plan, extracted from the two `.tex` sources, with their conflicts resolved | the sources change |
 | **[ENVIRONMENT.md](ENVIRONMENT.md)** | Verified properties of models, chat templates, datasets, cluster — plus the traps that silently produce wrong numbers | never; re-verified, not re-decided |
 | **[EXPERIMENTS.md](EXPERIMENTS.md)** | Designs, pre-registered criteria, parameters, status. **RQ1–RQ4** | we argue ourselves out of a decision |
-| **[results/RQ1_FINDINGS.md](results/RQ1_FINDINGS.md)** | What RQ1 actually found, including every correction made along the way | a run produces new evidence |
+| **[docs/RQ1_FINDINGS_TEMPLATE.md](docs/RQ1_FINDINGS_TEMPLATE.md)** | The claims RQ1 must support (C1-C10), each with the artifact that settles it. **The findings document itself is not written yet** — the reporting decisions wait until RQ2-RQ4 are in, so that what goes in 9 pages of main body is decided once | a run produces new evidence |
 
 Read them in that order. **The only numbers in `EXPERIMENTS.md` are thresholds
 fixed before a run** — a measured value appearing there is a bug.
 
 The most important thing to understand about this project: **almost every headline
 claim so far has been killed or reshaped by a control.** The controls are the main
-experimental apparatus, not decoration. `RQ1_FINDINGS.md` §6 lists eight
-corrections where a confident result turned out to be an artifact of the
-measurement.
+experimental apparatus, not decoration. The corrections are recorded where they were made — in the code comments that
+explain why a check exists, in `docs/REMOVED_ARCHIVES.md`, and in
+`slurm/evidence/`. Several are worth knowing before reading any number: a gate
+criterion that could never fire, an AUC that mis-ranked ties, a refusal rule
+defeated by a typographic apostrophe, and a projection result that reversed once
+the pool it ran on was split by what the items actually were.
 
 ---
 
 ## Where RQ1 stands
 
-Every RQ1 stage in `EXPERIMENTS.md` is settled except E1.7 Level 2. In brief:
+**Every RQ1 stage is settled**, on six models across four vendors and both
+architectures (dense and MoE), reproduced in two independent results roots. In
+brief:
 
 - Three variables are **representationally distinct** — recoverable against a
   1000-draw anisotropy null, length-only baselines and cluster-bootstrapped CIs,
   with a positive control that reaches the noise floor when two directions really
   are the same variable.
-- They are **asymmetrically coupled but not independently manipulable**. One
-  directed relation replicates exactly: `R_harm → R_control` in 44 of 44
-  qualifying cells across both models.
-- Gate 1's pre-registered conjunction **fails** — its two conditions disagree.
+- **Gate 1 PASSES** — G2 (off-diagonal asymmetry) ∧ G3 (behavioural dissociation)
+  — on all six models at all five capability bounds, on the matched
+  `CONTROL_VARIANT=over` arm. Robust in **3,168 of 3,168** alpha-matched
+  adjudication settings; only pooling the null (a known error, swept to show it is
+  the one load-bearing choice) reverses it.
+- One directed relation replicates across the roster: **`R_harm → R_control` in
+  920 of 947 qualifying cells** (97.1%, KL ≤ 0.5), and at **100% on five of the six
+  models** (yi-6b-chat 185/212). `R_role`'s outgoing edges are the weakest in the
+  matrix and are MIXED or merely leaning on five of six models — only Nemotron
+  gives both role edges a consistent direction. So the plan's candidate chain
+  `R_role → R_harm → R_control` gets its **second link supported and its first link
+  not**. That is RQ2's opening question, not RQ1's answer.
+- The variables are **causally distinguishable while geometrically entangled**.
+  On the matched `over` arm (the only control variant fitted on all six models),
+  `R_harm_at_post` and `R_control_harmless` reach **0.53–0.86 of the split-half
+  ceiling**; on the 5 models where the `under` variant is fitted, 0.57–0.86.
+  Distinguishability here is a **causal** claim, not a geometric one — the two
+  directions overlap substantially and still dissociate under intervention.
+  One exception worth stating rather than hiding in an absolute value: on
+  **yi-6b-chat the cosine is negative** (−0.50), so harm and over-refusal control
+  are anti-aligned there, not merely less aligned.
 - All directions are **style-dependent**, and for harmfulness the variation is
-  driven mainly by *which harmful dataset* is used.
+  driven mainly by *which harmful dataset* is used — AdvBench and JBB agree
+  (cos 0.92–0.96) while Sorry-Bench is far from both (−0.02 to 0.48, per-model
+  maxima 0.36–0.48) against a split-half floor of ~0.99, on every model.
 
-Full detail, caveats and what may not be claimed: [RQ1_FINDINGS.md](results/RQ1_FINDINGS.md).
+**The gate's verdict was FAIL until two defects were found** — a behavioural null
+band of exactly zero that made G3 vacuous, and a refusal rule defeated by the
+typographic apostrophe U+2019. Neither was a threshold change. Docs that still
+describe the FAIL are stale, not a second opinion.
+
+Full detail, caveats and what may not be claimed: `docs/RQ1_FINDINGS_TEMPLATE.md`
+for the claim structure, and `results/rq1_status.csv` for the current numbers.
 
 ---
 
@@ -110,22 +140,33 @@ core/           config, pools (corpus), positions (rendering), capture,
                 (steering), model_io, model_meta, stages (runner), io_utils
 experiments/    e1_0_corpus.py   E1.0 corpus build + freeze
                 rq1.py           all of RQ1, as stages
-tests/          test_invariants.py, verify_rq1_run.py, smoke_generate_steered.py
-tools/          analysis and maintenance: gate_compare, asymmetry_structure,
-                style_decompose, readjudicate, repro_diag, clean_slurm_logs,
-                prune_caches
-slurm/          run_cpu.sh, run_gpu.sh, fetch_model.sh; logs + KEPT.md
+tests/          static checks (check_names, check_shadowing), environment
+                invariants, estimator unit tests, verifier + its mutation suite,
+                smoke tests for read/steer positions, roles, steered generation
+tools/          analysis: rq1_status, audit_independent, gate_compare,
+                gate_sensitivity, asymmetry_structure, style_decompose,
+                soft_refusal_probe/_split, control_learning_curve,
+                adjudicate_*/score_*, make_figures, repro_diag
+slurm/          run_cpu.sh, run_gpu.sh, fetch_model.sh, blank_slate*.sh;
+                logs/<campaign>/ per run, logs/adhoc/, evidence/ (kept logs),
+                watch/ (chain watcher)
 results/        live artifacts, one dir per experiment per model
-results_verify/ independent reproduction (activation caches pruned)
-results_llama_probe/  third-model probe: Llama-3.1-8B under-refusal check
+results_verify/ independent reproduction at identical config
 ```
 
 `activations.pt` is a **cache, not a result** — regenerate with
 `rq1.py --only extract`. Extraction is deterministic.
 
-Superseded result archives were deleted once their content was documented;
-`docs/REMOVED_ARCHIVES.md` indexes what they held and why each was invalid. The
-scientific record of what changed lives in `RQ1_FINDINGS.md` §6 (eight
-corrections, with before/after) and `slurm/1_run_phase/KEPT.md` (job → artifact).
-`EXPERIMENTS_v1_superseded.md` is the previous playbook, kept for its retractions;
-it is not a source of specifications.
+Superseded result archives were deleted once their content was documented **and
+they had become inert** — the last two were built on a 200/200 corpus that the
+drift tool's own corpus-scale guard refuses to compare against the live 500/500.
+`docs/REMOVED_ARCHIVES.md` records why each was invalid, which is what the current
+checks exist to prevent. The
+scientific record of what changed lives in the code comments that justify each
+check, `docs/REMOVED_ARCHIVES.md`, and `slurm/evidence/README.md` (the handful of
+job logs kept as primary evidence, each with what it proves).
+
+Activation caches live outside the results tree, in a scratch directory keyed by
+the absolute results root — see `Config.cache_dir`. Keying matters: `results` and
+`results_verify` are independent repetitions, and a shared cache would have the
+second silently load the first's activations and agree with itself.

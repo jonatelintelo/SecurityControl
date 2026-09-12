@@ -1,0 +1,45 @@
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:68: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu", mmap=True) if mmap else \
+[2026-09-12 12:51:52] [INFO] [qwen2.5-7b] R_control @L20: 42 minority-class train instructions
+[2026-09-12 12:51:53] [INFO]   n=   5  AUC 0.962 +-0.006 (min 0.957)   split-half 0.940 +-0.013   [5 draws]
+[2026-09-12 12:51:54] [INFO]   n=  10  AUC 0.970 +-0.002 (min 0.967)   split-half 0.969 +-0.009   [5 draws]
+[2026-09-12 12:51:55] [INFO]   n=  20  AUC 0.969 +-0.002 (min 0.966)   split-half 0.984 +-0.002   [5 draws]
+[2026-09-12 12:51:56] [INFO]   n=  30  AUC 0.968 +-0.001 (min 0.966)   split-half 0.987 +-0.002   [5 draws]
+[2026-09-12 12:51:57] [INFO]   n=  40  AUC 0.969 +-0.000 (min 0.969)   split-half 0.990 +-0.001   [5 draws]
+[2026-09-12 12:51:57] [INFO]   n=  42  AUC 0.969 +-0.000 (min 0.969)   split-half 0.989 +-0.000   [1 draws]
+[2026-09-12 12:51:57] [INFO] [qwen3.5-9b] R_control not fitted on this model — skipping
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:68: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu", mmap=True) if mmap else \
+[2026-09-12 12:51:58] [INFO] [llama3.1-8b] R_control @L31: 24 minority-class train instructions
+[2026-09-12 12:51:59] [INFO]   n=   5  AUC 0.982 +-0.003 (min 0.977)   split-half 0.848 +-0.033   [5 draws]
+[2026-09-12 12:52:00] [INFO]   n=  10  AUC 0.984 +-0.002 (min 0.981)   split-half 0.918 +-0.010   [5 draws]
+[2026-09-12 12:52:01] [INFO]   n=  20  AUC 0.982 +-0.000 (min 0.982)   split-half 0.957 +-0.006   [5 draws]
+[2026-09-12 12:52:01] [INFO]   n=  24  AUC 0.981 +-0.000 (min 0.981)   split-half 0.967 +-0.000   [1 draws]
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:68: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu", mmap=True) if mmap else \
+[2026-09-12 12:52:02] [INFO] [yi-6b-chat] R_control @L31: 89 minority-class train instructions
+[2026-09-12 12:52:03] [INFO]   n=   5  AUC 0.954 +-0.006 (min 0.948)   split-half 0.887 +-0.027   [5 draws]
+[2026-09-12 12:52:04] [INFO]   n=  10  AUC 0.961 +-0.007 (min 0.953)   split-half 0.915 +-0.021   [5 draws]
+[2026-09-12 12:52:05] [INFO]   n=  20  AUC 0.961 +-0.002 (min 0.958)   split-half 0.940 +-0.011   [5 draws]
+[2026-09-12 12:52:06] [INFO]   n=  30  AUC 0.961 +-0.005 (min 0.956)   split-half 0.961 +-0.005   [5 draws]
+[2026-09-12 12:52:07] [INFO]   n=  40  AUC 0.965 +-0.004 (min 0.960)   split-half 0.966 +-0.006   [5 draws]
+[2026-09-12 12:52:08] [INFO]   n=  60  AUC 0.962 +-0.002 (min 0.960)   split-half 0.980 +-0.002   [5 draws]
+[2026-09-12 12:52:09] [INFO]   n=  80  AUC 0.961 +-0.001 (min 0.961)   split-half 0.984 +-0.001   [5 draws]
+[2026-09-12 12:52:10] [INFO]   n=  89  AUC 0.962 +-0.000 (min 0.962)   split-half 0.984 +-0.000   [1 draws]
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:68: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu", mmap=True) if mmap else \
+[2026-09-12 12:52:10] [INFO] [qwen3.5-35b-a3b] R_control @L34: 4 minority-class train instructions
+[2026-09-12 12:52:10] [INFO] [qwen3.5-35b-a3b] too few to draw a curve
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:68: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(path, map_location="cpu", mmap=True) if mmap else \
+[2026-09-12 12:52:10] [INFO] [nemotron-3-nano-30b-a3b] R_control @L50: 14 minority-class train instructions
+[2026-09-12 12:52:11] [INFO]   n=   5  AUC 0.983 +-0.007 (min 0.974)   split-half 0.932 +-0.024   [5 draws]
+[2026-09-12 12:52:12] [INFO]   n=  10  AUC 0.986 +-0.003 (min 0.981)   split-half 0.969 +-0.007   [5 draws]
+[2026-09-12 12:52:13] [INFO]   n=  14  AUC 0.986 +-0.000 (min 0.986)   split-half 0.969 +-0.000   [1 draws]
+[2026-09-12 12:52:13] [INFO] ------------------------------------------------------------------------------
+[2026-09-12 12:52:13] [INFO] PLATEAU: smallest n whose AUC and split-half are both within 0.02 of the full-sample value
+[2026-09-12 12:52:13] [INFO]   llama3.1-8b                full n=  24 (AUC 0.981, split-half 0.967)  -> plateau at n>=20
+[2026-09-12 12:52:13] [INFO]   nemotron-3-nano-30b-a3b    full n=  14 (AUC 0.986, split-half 0.969)  -> plateau at n>=10
+[2026-09-12 12:52:13] [INFO]   qwen2.5-7b                 full n=  42 (AUC 0.969, split-half 0.989)  -> plateau at n>=10
+[2026-09-12 12:52:13] [INFO]   yi-6b-chat                 full n=  89 (AUC 0.962, split-half 0.984)  -> plateau at n>=40
+[2026-09-12 12:52:13] [INFO] Read the SPLIT-HALF column as the primary signal: a direction can hold its held-out AUC while becoming unstable across splits, and only the stability curve exposes that.

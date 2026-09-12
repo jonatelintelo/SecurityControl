@@ -58,7 +58,8 @@ shows the vision tower is not driving a result, disagreement localises it.
 PLAN-SCOPE lists **multimodal safety** as out of scope. Running a
 vision-capable checkpoint in text-only mode is not multimodal safety research and
 does not violate that; it does mean the vision tower is an uncontrolled difference
-between the two dense models, which is the reason for the pairing.
+between the Qwen3.5 checkpoints and the text-only models on the roster, which is
+why `qwen2.5-7b`, `llama3.1-8b` and `yi-6b-chat` are carried alongside them.
 
 ### Layer indexing convention
 
@@ -101,7 +102,8 @@ It inserts an **empty think block**. The prompt ends
 `<|im_start|>assistant\n<think>\n\n</think>\n\n` rather than
 `<|im_start|>assistant\n`. Qwen2.5 accepts the kwarg and ignores it.
 
-Consequences: `t_post-inst` sits in a different textual context on the two models,
+Consequences: `t_post-inst` sits in a different textual context on Qwen3.5 than on
+Qwen2.5,
 and an assistant-role instruction on Qwen3.5 carries this block ahead of it while
 other role classes do not.
 
@@ -276,9 +278,14 @@ finding:
 including the streamed C4 draw.
 
 **Activation capture and the difference-of-means estimator are exactly
-deterministic.** Every label-independent concept (`R_harm`, `R_harm_user`,
-`R_harm_at_post`) reproduced with max |ΔAUC| = **0.000000** across every layer on
-both models.
+deterministic.** Re-measured on the full six-model roster across both results
+roots: max |ΔAUC| = **0.000000** over **1,448 (concept, layer, site, position)**
+rows — and not only for the label-independent concepts (`R_harm`, `R_harm_user`,
+`R_harm_at_post`) but for *every* concept, including the label-dependent ones.
+Greedy generation was bit-reproducible at the fixed batch size, so the tolerance
+tier the verifier allows for label-dependent concepts was not needed in practice.
+It is retained because that reproducibility is a property of the batch size, not a
+guarantee.
 
 **Greedy generation is NOT bit-reproducible across batch sizes.** Padding changes
 bf16 numerics, which flips a handful of borderline greedy tokens. A run at batch 64
@@ -293,7 +300,7 @@ conditional on the labels — does not cover it.
 **One statistic is fragile.** The E1.5 onset depth is unstable where the
 AUC-vs-depth curve is flat near its peak and the concept comes from a thin
 label-dependent cell: `R_control_harmless` on Qwen3.5-9B moved 0.355 → 0.774 at the
-90% threshold between runs, while every other concept on both models moved 0.000.
+90% threshold between runs, while every other concept on every model moved 0.000.
 The 80% threshold moved only 0.064. Onset therefore needs a bootstrap CI before any
 specific depth is claimed for such a concept.
 

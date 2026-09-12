@@ -4,7 +4,7 @@ The corpus is **built once and shared by every model**. Instructions, labels,
 sources and the train/test split are model-independent; only tokenisation and
 token positions resolve per model. Rebuilding the corpus per model would let
 sampling differences confound the cross-model comparison, which is the whole point
-of running two models.
+of running a multi-model roster.
 
 What is frozen is the **instruction set**, not the crossed items: roles and
 designs are rendering choices, and crossing is deterministic, so storing
@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import random
 import re
 from dataclasses import asdict, dataclass
@@ -43,6 +44,8 @@ SOURCE_FAILURES: Dict[str, str] = {}
 # and invisible in the resulting text: nothing in a Sorry-Bench prompt reveals
 # that 20 mutation styles were excluded, and nothing in an XSTest prompt reveals
 # whether safety came from the official `label` column or the mirror's `type`.
+SOURCE_EXHAUSTED: set = set()
+LENGTH_CAP_DROPPED: Dict[str, Dict[str, int]] = {}
 SOURCE_PROVENANCE: Dict[str, Dict] = {}
 
 # Only Sorry-Bench's unmutated prompts may enter the fitting corpus. See
@@ -101,6 +104,36 @@ def _dedup(items: Sequence[Instruction]) -> List[Instruction]:
     return out
 
 
+# Longest instruction admitted to a fitting pool, in words.
+#
+# NOT a threshold tuned to make a check pass. The corpus design already excludes
+# Sorry-Bench's encoded styles (`ascii`, `atbash`, `caesar`, `morse`) precisely
+# because they "destroy the length distribution" — mean 260 tokens against ~12
+# for every other source. A handful of `base` prompts have the same property,
+# and scaling to 500 harmful reached deep enough into Sorry-Bench to pull them
+# in: measured on the 500/500 draw, every source except Sorry-Bench maxes at
+# 16-27 words, while Sorry-Bench's 99th percentile is 82 and its max is 272.
+#
+# One 272-word instruction against a pool median of 11 puts `max/median` at 24.7
+# against the pre-registered outlier bound of 10, which means `R_harm` would
+# substantially encode LENGTH. The cap removes 3 instructions in 1000 and
+# restores the ratio to 6.7 — inside the bound with margin, rather than at it.
+MAX_INSTRUCTION_WORDS = int(os.environ.get("MAX_INSTRUCTION_WORDS", 80))
+
+
+def _cap_length(items: Sequence[Instruction], pool: str) -> List[Instruction]:
+    """Drop extreme length outliers, recording what went and from where."""
+    keep, dropped = [], {}
+    for it in items:
+        if len(it.text.split()) <= MAX_INSTRUCTION_WORDS:
+            keep.append(it)
+        else:
+            dropped[it.source] = dropped.get(it.source, 0) + 1
+    if dropped:
+        LENGTH_CAP_DROPPED[pool] = dropped
+    return keep
+
+
 def _take(items: Sequence[Instruction], n: Optional[int], seed: int) -> List[Instruction]:
     """Deterministic, **source-balanced** subsample.
 
@@ -133,6 +166,15 @@ def _take(items: Sequence[Instruction], n: Optional[int], seed: int) -> List[Ins
             if cur[s] < len(by_source[s]):
                 out.append(by_source[s][cur[s]])
                 cur[s] += 1
+    # A source that ran out cannot be balanced against, and capping every other
+    # source to the smallest one would throw away most of AdvBench and
+    # Sorry-Bench to match JBB's ~89 usable behaviours. Which sources were
+    # EXHAUSTED is therefore recorded, so `verify_corpus` can require balance
+    # among the sources that still had headroom and report the rest as a fact
+    # about the benchmark rather than a failure of the draw.
+    for s in order:
+        if cur[s] >= len(by_source[s]):
+            SOURCE_EXHAUSTED.add(s)
     return out
 
 
@@ -210,7 +252,7 @@ def harmful_instructions(n: Optional[int] = None, seed: int = 0) -> List[Instruc
     except Exception as e:
         SOURCE_FAILURES["sorry-bench/sorry-bench-202503"] = f"{type(e).__name__}: {str(e)[:120]}"
 
-    return _take(_dedup(out), n, seed)
+    return _take(_cap_length(_dedup(out), "harmful"), n, seed)
 
 
 def harmless_instructions(n: Optional[int] = None, seed: int = 0) -> List[Instruction]:
@@ -258,7 +300,7 @@ def harmless_instructions(n: Optional[int] = None, seed: int = 0) -> List[Instru
         except Exception as e:
             SOURCE_FAILURES["XSTest"] = f"{type(e).__name__}: {str(e)[:120]}"
 
-    return _take(_dedup(out), n, seed)
+    return _take(_cap_length(_dedup(out), "harmless"), n, seed)
 
 
 def attack_intents(
@@ -333,7 +375,7 @@ def transfer_corpus(
     Content is held constant across roles by construction: one passage is rendered
     under every role, exactly as the role paper does it. Passages are truncated by
     **word** count, not tokens, so the frozen corpus stays model-independent and
-    both models receive byte-identical text.
+    every roster model receives byte-identical text.
 
     Splits are assigned here because transfer is tested in *both* directions
     (PLAN-EXTRACT), and the crossed -> C4 direction needs held-out C4 items.
@@ -456,7 +498,7 @@ def build_corpus(
 # the real competitor hypothesis.
 #
 # The two costs of generating are handled rather than avoided: the corpus is
-# FROZEN to JSONL so both models see byte-identical text and reruns are stable,
+# FROZEN to JSONL so every roster model sees byte-identical text and reruns are stable,
 # and content drift — which would confound precisely the contrast being isolated
 # — is verified rather than assumed (`verify_style_items`).
 #
@@ -909,10 +951,51 @@ def verify_corpus(
     bad_src = describe_pool([i for i in fitting if i.harmful])
     good_src = describe_pool([i for i in fitting if not i.harmful])
 
+    # Source balance: a RATIO bound, not near-equality.
+    #
+    # What this check exists to prevent is SWAMPING. Proportional sampling put
+    # 197 Alpaca against 3 XSTest — 65x — and would have let a large benchmark
+    # define the harmless class on its own. Round-robin fixes that; the check
+    # confirms it.
+    #
+    # The previous rule demanded spread <= 20% of the largest source, which is
+    # near-equality and is UNREACHABLE once a source runs out. JBB-Behaviors
+    # ships 100 behaviours, of which its own `Source` column marks 18 as taken
+    # from AdvBench; 11 of those duplicate our AdvBench draw and are removed by
+    # dedup, leaving 89. Keeping them to hit a round number would put the same
+    # instruction in the corpus twice under different uids — double-counting it
+    # in the cluster bootstrap, which resamples BY INSTRUCTION.
+    #
+    # So the bound is on the ratio: no source may be more than 3x any other.
+    # The measured draw is 206/89/205 (2.3x) and passes with margin; the
+    # pathology this guards against is 65x and still fails loudly. Exhausted
+    # sources are reported either way, so an unequal composition is never silent.
+    MAX_SOURCE_RATIO = 3.0
+
     def balanced(d):
-        return (max(d.values()) - min(d.values())) <= max(2, 0.2 * max(d.values())) if d else False
-    checks["source_balance_harmful"] = {"ok": balanced(bad_src), **bad_src}
-    checks["source_balance_harmless"] = {"ok": balanced(good_src), **good_src}
+        if not d:
+            return False
+        lo, hi = min(d.values()), max(d.values())
+        return lo > 0 and (hi / lo) <= MAX_SOURCE_RATIO
+
+    def _bal(d):
+        lo, hi = (min(d.values()), max(d.values())) if d else (0, 0)
+        return {"ok": balanced(d), **d,
+                "ratio_max_over_min": round(hi / lo, 2) if lo else None,
+                "max_allowed_ratio": MAX_SOURCE_RATIO,
+                "exhausted_sources": sorted(SOURCE_EXHAUSTED & set(d)),
+                "note": "guards against SWAMPING (measured pathology: 65x), not "
+                        "near-equality; a source the draw exhausted cannot be "
+                        "balanced against without discarding the others down to it"}
+
+    checks["source_balance_harmful"] = _bal(bad_src)
+    checks["source_balance_harmless"] = _bal(good_src)
+    checks["length_cap_applied"] = {
+        "ok": True, "max_words": MAX_INSTRUCTION_WORDS,
+        "dropped_by_pool": dict(LENGTH_CAP_DROPPED),
+        "note": "extreme length outliers excluded so R_harm cannot encode length; "
+                "see MAX_INSTRUCTION_WORDS for why this is a design rule, not a "
+                "threshold tuned to pass a check"}
 
     fit_norm = {_normalize(i.text) for i in fitting}
     fit_tokens = [_token_set(i.text) for i in fitting]

@@ -2,8 +2,10 @@
 
 **Rebuilt 2026-09-08 from `PLAN.md`.** The previous playbook interleaved the plan,
 verified facts, design decisions and results from code that has since been
-withdrawn. It is preserved at `EXPERIMENTS_v1_superseded.md` and may be read as
-evidence about what happened before — **never as a source of specifications**.
+withdrawn. It was preserved as `EXPERIMENTS_v1_superseded.md` and removed in the RQ1
+cleanup: it produced and verified nothing, and its retractions are in git history
+(`git show 8919876:EXPERIMENTS_v1_superseded.md`). It was never a source of
+specifications.
 
 ## The three-file rule
 
@@ -45,7 +47,9 @@ connect NeuroStrike's neurons to the representations, perform causal rescue. Tha
 is RQ1 + RQ2 + the NeuroStrike half of RQ3.
 
 Status vocabulary: `not started` · `designing` · `implementing` · `running` ·
-`settled` · `blocked`. **Everything below is `not started`.**
+`settled` · `blocked`. **RQ1 is settled across the whole roster; RQ2–RQ4 are
+`not started`** except where a row says otherwise. Per-experiment status is in
+each RQ's own table — this line is a summary, never the authority.
 
 ---
 
@@ -53,28 +57,129 @@ Status vocabulary: `not started` · `designing` · `implementing` · `running` �
 
 | | |
 |---|---|
-| Dense | **both** `Qwen/Qwen2.5-7B-Instruct` and `Qwen/Qwen3.5-9B`, bf16 |
-| MoE | `Qwen/Qwen3.5-35B-A3B` — deferred until dense RQ1–4 settle |
-| Chat template | ChatML; `enable_thinking=False` (see `ENVIRONMENT.md`) |
+| Dense | `Qwen/Qwen2.5-7B-Instruct`, `Qwen/Qwen3.5-9B`, `Meta-Llama-3.1-8B-Instruct`, `01-ai/Yi-6B-Chat`, bf16 |
+| MoE | `Qwen/Qwen3.5-35B-A3B`, `NVIDIA/Nemotron-3-Nano-30B-A3B`, bf16 |
+| Chat template | per family; `enable_thinking=False` where supported (see `ENVIRONMENT.md`) |
 | Results | `results/<experiment>/<model_slug>/` |
 | Compute | **Slurm only**, including CPU-only stages |
 | Seed | `SEED=0` |
 
 PLAN-SCOPE targets 5–7 models across ≥4 families; the scoped plan narrows the
-first pass to one dense + one MoE. **We deviate**: two dense models from the
-start, MoE deferred.
+first pass to one dense + one MoE. **RQ1 ran the wider roster**: six models, four
+vendors, both architectures — inside `main.tex`'s target rather than the scoped
+minimum.
 
-**The deviation and its justification.** The scoped plan's dense+MoE pairing is a
-risk-minimisation device — establish the result on two maximally different
-architectures before scaling. We substitute a different pairing for RQ1–4:
-`Qwen2.5-7B` is text-only and is the checkpoint where NeuroStrike's published
-effect is strong, so RQ3's NeuroStrike stage has a model where the signal exists;
-`Qwen3.5-9B` is the multimodal-wrapper model and shares a family with the MoE arm.
-Agreement between them shows the vision tower is not driving a result. The MoE arm
-follows and is not cancelled. This is a recorded deviation from PLAN-PEP, not a
-silent narrowing.
+**Why the wider roster, and what it cost.** The scoped plan's dense+MoE pairing is
+a risk-minimisation device: establish the result on two maximally different
+architectures before scaling. That device is only worth its saving while scaling is
+expensive. It is not: the corpus stores *instructions*, not renderings, so a model's
+activations depend on the instruction set plus its own tokenizer, and **adding a
+model is two jobs (one per results root), not a re-run**. Once that was established,
+the scoped narrowing bought nothing and cost the single most likely reviewer
+objection — a cross-family claim resting on one family. The roster was therefore
+widened at RQ1 rather than at PEP-7.
 
-### Consequences of running two models — build requirements
+`Qwen2.5-7B` is retained as the checkpoint where NeuroStrike's published effect is
+strong, so RQ3's NeuroStrike stage has a model where the signal is known to exist.
+
+### The RQ1 roster — six models, four vendors, both architectures
+
+Registered in `core/config.py:RQ1_MODELS`, which is the **single source of
+truth**; no tool, test or job script repeats the list. A roster that disagrees
+between the pipeline and the tools produces a result set that silently covers a
+subset, which is worse than one that fails.
+
+| slug | vendor | template family | arch | L | roles |
+|---|---|---|---|---|---|
+| `qwen2.5-7b` | Qwen | qwen2.5 | dense | 28 | 4 |
+| `qwen3.5-9b` | Qwen | qwen3.5 | dense | 32 | 4 |
+| `llama3.1-8b` | Meta | llama3.1 | dense | 32 | 4 |
+| `yi-6b-chat` | 01-AI | yi | dense | 32 | 4 |
+| `qwen3.5-35b-a3b` | Qwen | qwen3.5 | MoE | 40 | 4 |
+| `nemotron-3-nano-30b-a3b` | NVIDIA | nemotron3 | MoE | 52 | 4 |
+
+**Count families honestly.** Five *template* families, but only **four
+vendors**. `qwen2.5` and `qwen3.5` differ in chat template and are not
+interchangeable, which is why `family` distinguishes them — but "five families"
+would overstate the cross-family claim. `ModelSpec.vendor` exists so the paper
+uses the smaller, correct number.
+
+**All four role classes on every model.** `R_role` is therefore the *same*
+4-class variable everywhere and the cross-model comparison is like-for-like.
+This constrained the roster: 3-role candidates were rejected in favour of
+Nemotron precisely to avoid a split where `R_role` means different things on
+different models. Verified corpus-wide, not sampled, by
+`tests/smoke_roles.py` and again in `tests/verify_rq1_run.py`.
+
+**D1 is discharged, not carried.** `tool` is the stand-in for PLAN-EXTRACT's
+*untrusted external content* class. Every roster model expresses it, so the D1
+caveat — "on this model `R_role` is authority/speaker-identity only" — applies
+to **none** of them. The verifier still emits it if a future roster model lacks
+`tool`.
+
+### Chain-of-thought is NOT a role class, and is out of scope
+
+The role paper (2603.12277) uses **five** classes — system, user, **CoT**,
+assistant, tool — against 10 models over 5 families. We use four. This is a
+deliberate scope statement, tested rather than assumed:
+
+| model | passing `cot` as a role |
+|---|---|
+| Qwen2.5-7B | message **silently dropped** (template if/elif has no `else`) |
+| Qwen3.5-9B / 35B-A3B | raises |
+| Llama-3.1-8B | renders `<|start_header_id|>cot<|end_header_id|>` — **a tag the model never saw in training** |
+| Nemotron-3-Nano | renders `<|im_start|>cot` — same |
+| gpt-oss-20b | message **silently dropped** |
+
+Two failure modes, no successes. The drop is caught (`render` checks the
+sentinel); the novel-tag case is caught by **nothing** — the run completes and
+the numbers look plausible while measuring the response to an
+out-of-distribution string.
+
+The deeper point: gpt-oss-20b is one of the role paper's own models and it drops
+`cot` too, because its harmony format expresses reasoning as
+`<|channel|>analysis` *inside an assistant turn*. CoT is a **channel, not a
+role**. Reproducing it needs the real mechanism and a reasoning-model roster;
+it belongs to RQ4/RQ6 (injection surfaces, context dependence), not RQ1, where
+the question is whether three variables are causally distinguishable — which a
+5-class `R_role` does not sharpen.
+
+`ROLES` is therefore a **closed set**, and `tests/smoke_roles.py` asserts that
+unvetted names are rejected before they can reach a template.
+
+### Template bleed at `t_inst` — recorded, bounded, reported
+
+BPE can merge the instruction's final character with the template's next one, so
+`t_inst` carries one extra template character on some items. It is confined to
+the `tool` role:
+
+| model | head | tail |
+|---|---|---|
+| Qwen2.5-7B, Nemotron-3 | — | `\n` |
+| Llama-3.1-8B | `"` | `"` (its tool template quotes content) |
+| Qwen3.5-9B, Qwen3.5-35B-A3B | — | — |
+
+`render` records `bleed_head` / `bleed_tail` per item; the corpus **gates** the
+structural claim (tool role only, ≤1 character each end) and **reports** the
+rest.
+
+**The rate differs by label** — roughly 0.31 harmful vs 0.81 harmless on Qwen's
+tool role — because it is driven by final punctuation, and the sources differ
+(AdvBench imperatives vs XSTest questions). This is *not* gated: no rendering
+choice can change the punctuation of public datasets. It is controlled by the
+surface/length-only baseline `R_harm` must beat, and **must be stated in the
+write-up** rather than left for a reader to find.
+
+Two hypotheses about it were tested and **falsified** — do not re-derive them:
+
+1. *"Only Llama is affected."* False: Qwen2.5 has the identical phenomenon with
+   `\n`. The old decode-based check passed it only because `.rstrip()` absorbs a
+   newline and not a quote — a template-dependent double standard, since fixed.
+2. *"The bleed is a deterministic function of the instruction's final
+   character."* False: Llama's final character `m` merges on some items and not
+   others, because BPE merges depend on a longer context than one character.
+
+### Consequences of running a multi-model roster — build requirements
 
 **Model is a loop dimension, not a config constant.** Every experiment runs per
 model and writes to `results/<experiment>/<model_slug>/`. Nothing may assume a
@@ -293,7 +398,7 @@ definition.
 untrusted external content*. We render four, with **`tool` standing in for untrusted
 external content** — which is what a tool response *is* in the prompt-injection setting
 both source papers draw on: content that entered the context from outside and carries
-no user authority. The stand-in is forced rather than chosen: on both models a tool
+no user authority. The stand-in is forced rather than chosen: on every roster model a tool
 message renders as a `user` turn wrapped in `<tool_response>` (see `ENVIRONMENT.md`),
 so there is no separate untrusted-external tag to render, and hand-building one would
 feed the model a token sequence it was never trained on. Recorded here because the
@@ -494,8 +599,8 @@ go/no-go gate and carries the RQ.
 | **E1.3** | Projections across prompt sets, and correlations between projections | PLAN-INF | `settled` |
 | **E1.4** | Dimensionality, and **the smallest `k` that explains the behavioural interventions** | PLAN-RQ1, PLAN-EXTRACT | `settled` — both halves; `k = 1` |
 | **E1.5** | Emergence across layers **and persistence in later layers** | PLAN-RQ1, PLAN-GEOM | `settled` |
-| **E1.6** | **Causal distinguishability — GATE 1** | PLAN-RQ1 | `settled` — **FAIL** on G2 ∧ G3 |
-| **E1.7** | Variation across **prompt categories**; role **metadata versus style** | PLAN-GEOM, PLAN-EXTRACT | `settled` (Level 1); Level 2 needs its own corpus |
+| **E1.6** | **Causal distinguishability — GATE 1** | PLAN-RQ1 | `settled` — **PASS** on G2 ∧ G3. Matched `over` arm: PASS on all 6 models at all 5 capability bounds. Opportunistic `under` arm: PASS on 4, bound-sensitive on `qwen3.5-35b-a3b` (FAIL at KL ≤ 0.1 only), not estimable on `qwen3.5-9b`. The earlier **FAIL** was real for the code state that produced it and was reversed by two defects, not by re-tuning — see O-12 |
+| **E1.7** | Variation across **prompt categories**; role **metadata versus style** | PLAN-GEOM, PLAN-EXTRACT | `settled` — Level 1 and **Level 2**. The controlled-style corpus was built and frozen (**92 complete bases, 828 items** = 276 generated + 552 template, rewriter `Qwen/Qwen3-30B-A3B-Instruct-2507`) and `stage_style_level2` ran on every roster model |
 | **E1.8** | *Optional:* persona-trait and emotion directions | PLAN-INF optional | `deferred` |
 
 **Method constraint, from the RQ itself:** *"without assuming a fixed sequential
@@ -592,7 +697,7 @@ fixed token budget, rendered under each role class through the same
 
 **The corpus is frozen after Stage-1 labelling, not before.** This resolves a
 contradiction in the superseded playbook, which required both that the corpus be
-frozen once and shared by both models *and* that it be widened if the
+frozen once and shared by every roster model *and* that it be widened if the
 harmful-and-complied cell is thin — while thinness is a property of *a model's
 refusal behaviour*, so widening for one model would silently change the other's
 corpus.
@@ -619,7 +724,7 @@ disjoint attack intents"*. Widen in this order:
 
 ### Produces
 
-`results/e1_0/` — `instructions.jsonl`, `attack_intents.jsonl`, `transfer_corpus.jsonl`,
+`results/e1_0_corpus/` — `instructions.jsonl`, `attack_intents.jsonl`, `transfer_corpus.jsonl`,
 `corpus_meta.json` (with `source_provenance`), `rendering_report.csv`,
 `tokenisation_mismatches.csv`, `verification.json`, `run_manifest__<models>.json`
 
@@ -677,7 +782,7 @@ v^l_refuse  = mu^{l, t_post-inst}_refuse - mu^{l, t_post-inst}_accept
 
 ### Stages
 
-**Stage 1 — refusal labelling, on both models, before any extraction.** Generate,
+**Stage 1 — refusal labelling, on every roster model, before any extraction.** Generate,
 calibrate the degeneracy thresholds against real outputs, apply the Guard
 cross-check, emit the `harm × refused` 2×2 and the `undetermined` rate.
 
@@ -720,7 +825,7 @@ Stated before the run so they cannot be chosen to fit the result. For E1.1 only.
 |---|---|---|
 | Held-out separation, **best-on-train layer**, each concept | **AUC ≥ 0.75, CI excluding the 1000-draw random-direction null** | the variable is not recoverable; fix extraction before proceeding |
 | Length-only baseline, each concept | the direction beats it; where it does not, only the length-matched refit is reportable | refit on a length-matched subset |
-| Harmful-and-complied cell | **≥ 50 items** (≥ 30 after the split), counted **after** degeneracy exclusion and the Guard cross-check, **on both models** | `R_control` is not identifiable; widen the corpus in the order above, then re-label both models |
+| Harmful-and-complied cell | **≥ 50 items** (≥ 30 after the split), counted **after** degeneracy exclusion and the Guard cross-check, **on every roster model** | `R_control` is not identifiable. *Measured outcome:* widening was **not** the resolution — thinness is a property of a model's refusal behaviour, so the matched cross-model arm is `CONTROL_VARIANT=over` (refused-vs-complied within harmless) on every model, with `under` run opportunistically where the cell supports it |
 | `undetermined` rate | **< 30%** of generations | raise `REFUSAL_MAX_NEW_TOKENS` per the measured rule before touching the contrast |
 | Role probe, held-out, 4 classes | **accuracy CI excludes chance (0.25)** | role is not decodable on our substrate |
 | Cross-corpus transfer, both directions | **above chance** | the probe reads "instruction-ness"; rebuild |
@@ -1085,6 +1190,38 @@ new here.
 | **E2.8a** | Steer a benign user instruction toward the **tool-output role** — more harmful downstream? | PLAN-INF | `not started` |
 | **E2.8b/c** | Remove fear / switch persona to misaligned | PLAN-INF | `blocked` (needs E1.8) |
 
+### What RQ1 already built, and what is genuinely new
+
+E1.6's `causal_matrix*.csv` is **already a 3x3 cross-intervention matrix with a
+random-direction control**: 9 steer layers x 21 read layers x 10 signed alphas x 2
+read positions, carrying both representation readouts (`delta`, `delta_auc`, CIs)
+and behaviour (`refusal_rate`, `d_refusal_harmful`, `d_refusal_harmless`). Measured
+before writing any RQ2 code, so the plan is not paid for twice:
+
+| E2.x | State of its input |
+|---|---|
+| **E2.7** | **Data complete.** The adjudication rule below applies to the saved matrices on CPU. `tools/asymmetry_structure.py` already reports directed structure over them; it needs promoting to a pre-registered adjudicator that emits an artifact and sweeps its bound, not new measurement |
+| **E2.1** | **Two of three intervention types exist.** Strengthen/suppress is signed `alpha`; **restore** and **directional ablation** are new primitives in `core/interventions.py` |
+| **E2.8 / E2.8a** | **Mostly exists** — steer early, read downstream layers, on a user-role probe set balanced harmful/harmless. Missing: `delta` is pooled over harmfulness, so E2.8a's *"does a benign instruction become more harmful when steered toward the tool role"* needs a **harm-stratified delta** |
+| **E2.4** | New primitive (patch hook) |
+| **E2.0** | Held-out intents exist (`attack_intents.jsonl`, 150 StrongREJECT, disjointness enforced by construction). The injection condition itself is new |
+| **E2.5 / E2.6 / E2.6b** | Genuinely new and RQ3-coupled — the expensive tail |
+
+**A preview of E2.7 from the existing matrices, at KL <= 0.5.** Reported here
+because it is measurement already paid for, and because it says whether RQ2 is
+worth starting — *not* as the adjudicated verdict, which must apply the full rule:
+
+* **`R_harm -> R_control` is consistent in 920/947 qualifying cells (97.1%)**, and
+  at 100% on five of six models.
+* **`R_role`'s outgoing edges are the weakest in the matrix** (mean |delta| 0.030
+  and 0.035 on llama, against 0.176 for `R_harm -> R_control`) and MIXED or merely
+  leaning in direction on five of six models.
+
+So the candidate chain's **second link is supported and its first is not**, which
+under the rule below points at *partially overlapping* rather than sequential. That
+is a result about structure, and it is the reason E2.2/E2.3 matter: they test the
+role link causally rather than correlationally.
+
 **E2.2 and E2.3 are the sharpest experiments in the plan.** They convert "cross-
 intervention matrix" from a table of effects into a directional argument: repairing
 role restores everything downstream ⇒ role is upstream; strengthening control
@@ -1275,7 +1412,7 @@ The contingency order in E1.0 is exhausted, not merely unpromising:
    compliance rate the required number of harmful renderings exceeds what the
    entire available non-jailbreak harmful pool (AdvBench + JBB + Sorry-Bench
    `base`) can supply, so the cell cannot be filled from these sources at any
-   corpus size. Figures in `results/RQ1_FINDINGS.md` §7.
+   corpus size. Figures in `docs/RQ1_FINDINGS_TEMPLATE.md` §7.
 3. **A jailbreak family** — would populate it, but is reserved for RQ4/RQ6 and
    would make RQ4's stage diagnosis partly circular.
 
@@ -1295,7 +1432,9 @@ Recorded in *Refusal labelling*. Mitigated by the no-filter sensitivity fit and 
 acceptance criterion; not eliminated.
 
 ### O-10 — SUPERSEDED — Arditi's selection metrics are not needed
-`interventions.selection_scores` implements the published bypass / induce / KL
+Arditi et al.'s published bypass / induce / KL selection metrics are **not implemented**. They were, briefly; the code was removed in the RQ1 cleanup because nothing called it and a 60-line unused implementation is maintenance surface, not evidence. The reasoning for not selecting directions that way is below and is unchanged.
+
+The original note read: `selection_scores` implements the published bypass / induce / KL
 scores and is never called. That was logged as a gap; on inspection it is not one,
 and the reasoning is worth recording because it is a case of the spec outliving
 the design.
@@ -1345,9 +1484,11 @@ What remains is a like-for-like comparison against their *published numbers*.
 That is comparability and presentation, not soundness. **Downgraded from a gap to
 a nice-to-have for the write-up.**
 
-*What E1.7 did surface, which matters more:* the AdvBench and JBB fits agree with
-each other (cos 0.77-0.94) while **Sorry-Bench is nearly orthogonal to both**
-(0.045-0.30, against a floor of ~0.99), on both models. Our pooled `R_harm` is
+*What E1.7 did surface, which matters more:* matched on the harmless side, the
+AdvBench and JBB fits agree with each other (**cos 0.922-0.957**, 12 model x
+harmless-source cells) while **Sorry-Bench is far from both** (**-0.020 to 0.478**
+over all 48 cross cells; per-model maxima 0.358-0.478), against split-half floors
+of **0.990-0.994** — **on all six models**, not two. Our pooled `R_harm` is
 therefore a blend of two substantially different directions. This is consistent
 with E1.4 finding it functionally one-dimensional: the top-1 component carries the
 classification signal common to all sources, while the fitted direction's
@@ -1355,22 +1496,35 @@ classification signal common to all sources, while the fitted direction's
 paper needs both.
 
 ### O-12 — RESOLVED — the verdict is robust to every free adjudication choice
-Swept 216 adjudication settings x 3 runs (`tools/gate_sensitivity.py`, CPU-only,
-re-reading the saved matrices). Results in `results/RQ1_FINDINGS.md` §5b.
+Swept 432 adjudication settings x 11 run-arms = **4,752 adjudications**
+(`tools/gate_sensitivity.py`, CPU-only, re-reading the saved matrices).
 
-* **G3 = 0 in 648/648 combinations.** The absence of clean dissociation is not a
-  threshold artifact.
-* **Verdict FAIL in 216/216 for every run.**
-* **`R_harm -> R_control` directionally consistent in 100% of settings** on both
-  matched-control runs; mixed in 100% of settings on the `under` control. The
-  under/over distinction is itself robust.
-* G2's presence depends on exactly one choice: alpha-matching the null. Pooling
-  zeroes it; every other factor (`null_q`, `fdr_q`, `beh_null_q`, `g2_rule`) leaves
-  it well above zero. Alpha-matching is not a free parameter — pooling compares an
-  alpha=1 effect against an alpha=4 null, which is the error corrected earlier.
-* Incidental: **FDR is non-binding** at q = 0.01, 0.05 and 0.10 alike.
+* **PASS in 3,168 / 3,168 alpha-matched settings — 100%, on every one of the 11
+  run-arms.** The verdict does not depend on `null_q`, `fdr_q`, `beh_null_q`,
+  `g2_rule` or `gate_layers`.
+* **Exactly one choice changes it: pooling the null instead of alpha-matching it**
+  (PASS share 0.153). Pooling is not a free parameter — it compares an alpha=1
+  effect against an alpha=4 null, which is the error corrected earlier. It is swept
+  to show that it, and nothing else, is load-bearing.
+* **G2 holds in 4,653 / 4,752 (97.9%)** overall and in **100%** of alpha-matched
+  settings. **G3 holds in 3,426 / 4,752 (72.1%)**, its failures confined to the
+  pooled-null arm.
+* `beh_null_q` is the only other factor with a visible gradient (PASS 0.759 at
+  q=90 → 0.667 at q=99), and it runs in the conservative direction.
+* **`R_harm -> R_control` directionally consistent in 100% of settings** on
+  `qwen2.5-7b/over`, `qwen3.5-9b/over`, `qwen3.5-35b-a3b/over` and `yi-6b-chat/over`,
+  and in **0%** on `qwen2.5-7b/under` and `qwen3.5-35b-a3b/under`. The under/over
+  distinction is itself robust, and sharper than when it was first recorded.
+* Incidental: **FDR is non-binding** at q = 0.01, 0.05 and 0.10 alike (PASS 0.718
+  at all three).
 
-The sweep is cheap and should be re-run whenever the adjudicator changes.
+**This block previously recorded the opposite verdict** — "FAIL in 216/216",
+"G3 = 0 in 648/648" — and that record was correct for the code state that produced
+it. Two defects reversed it, neither of them a threshold change: the **G3 zero
+band** (`null_band_behaviour[0.25] = 0.0` made the condition vacuous rather than
+unmet) and the **typographic-apostrophe refusal rule** (U+2019 defeated every
+refusal prefix, mislabelling 1,679/3,200 items on Nemotron). The sweep is cheap and
+should be re-run whenever the adjudicator changes.
 
 ---
 
@@ -1379,10 +1533,10 @@ The sweep is cheap and should be re-run whenever the adjudicator changes.
 **E1.0 — corpus.** No model, no GPU, fully checkable offline. Includes the E1.0b
 transfer corpus. Corpus is *candidate* until Stage 1 completes.
 
-**E1.1 Stage 1 — refusal labelling, both models.** Calibrate the degeneracy gate
+**E1.1 Stage 1 — refusal labelling, every roster model.** Calibrate the degeneracy gate
 against real outputs, apply the Guard cross-check, emit the `harm × refused` 2×2
-and the `undetermined` rate. **Gate: cell size and `undetermined` rate on both
-models.** Widen and re-label if needed, then **freeze the corpus**.
+and the `undetermined` rate. **Gate: cell size and `undetermined` rate on every
+roster model.** Widen and re-label if needed, then **freeze the corpus**.
 
 **E1.1 Stage 2 — capture and estimators.** Residual-stream capture at per-example
 positions plus `post_attention_layernorm` for the fidelity check; diff-of-means,
@@ -1454,7 +1608,7 @@ best, never a specification.
 - [ ] Length recorded per rendered item, for the length-only baselines and matched subsets
 - [ ] Cross-role tokenisation swept **corpus-wide**; affected uids written out and excluded from token-matched analyses
 - [ ] E1.0b transfer corpus built
-- [ ] Corpus **frozen after Stage 1**, then immutable and shared by both models
+- [ ] Corpus **frozen after Stage 1**, then immutable and shared by every roster model
 
 **Refusal labelling**
 - [ ] Arditi's prefix list transcribed verbatim from released code, with its source recorded; matched by **their** rule — case-insensitive substring anywhere — after `<think>` stripping, with `arditi_anchored` and `extended` as declared sensitivity variants
@@ -1464,7 +1618,7 @@ best, never a specification.
 - [ ] Generation budget chosen by the measured rule, not assumed
 - [ ] Guard cross-check on harmful-and-complied; disagreements become `undetermined`
 - [ ] Label counts, exclusion rate, disagreement rate, truncation rate emitted as artifacts
-- [ ] Run on **both models** before the freeze
+- [ ] Run on **every roster model** before the freeze
 
 **Extraction**
 - [ ] All directions on the **residual stream**, every layer

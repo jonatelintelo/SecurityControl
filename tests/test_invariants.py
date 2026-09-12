@@ -275,11 +275,58 @@ def main() -> int:
                 record(fn.__name__, "REFUTED", traceback.format_exc(limit=2).strip()[-200:])
     check_layer_count()
 
+    # Source-level, not environment-level: the post-run verifier provably cannot
+    # test this (the reported layer is never recorded in the artifacts), so it is
+    # enforced here. Found as a verifier blind spot by tests/test_verifier_teeth.py.
+    try:
+        record("layer selection uses train_auc, never test auc", "CONFIRMED",
+               check_layer_selection_is_on_train())
+    except AssertionError as e:
+        record("layer selection uses train_auc, never test auc", "REFUTED", str(e)[:300])
+
     refuted = [r for r in RESULTS if r[1] == "REFUTED"]
     print(f"\n{len(RESULTS)} claims checked, {len(refuted)} refuted.")
     for claim, _, detail in refuted:
         print(f"  REFUTED: {claim}\n           {detail}")
     return 1 if refuted else 0
+
+
+
+def check_layer_selection_is_on_train(src_path=None):
+    """Every reported layer must be chosen by TRAIN separation, never by test.
+
+    Selecting the layer by test AUC inflates every reported separation and every
+    CI around it, and it leaves NO trace in the artifacts: the reported layer is
+    not recorded, it is re-derived by applying the selection rule to the table.
+    So the post-run verifier cannot test this at all — the property lives in the
+    source, and this is where it is enforced.
+
+    The scan is textual and deliberately conservative: it flags any `idxmax()`
+    over a column whose name is `auc` (the test-split column) rather than
+    `train_auc`. A false positive is cheap to read and dismiss; a false negative
+    is a silently inflated result.
+    """
+    import re
+    # Parameterised so a mutation test can point it at a CORRUPTED COPY rather
+    # than editing the real source in place. A test that rewrites `rq1.py` and
+    # restores it in a `finally` leaves the file broken if the process is killed
+    # between the two — not a risk worth taking to save an argument.
+    src_path = Path(src_path) if src_path else (
+        Path(__file__).resolve().parent.parent / "experiments" / "rq1.py")
+    src = src_path.read_text()
+    offenders = []
+    for i, line in enumerate(src.split("\n"), 1):
+        if "idxmax" not in line:
+            continue
+        # `train_auc.idxmax()` and `["train_auc"].idxmax()` are correct.
+        if re.search(r'train_auc["\']?\s*\]?\s*\.idxmax', line):
+            continue
+        if re.search(r'(?<!train_)\bauc["\']?\s*\]?\s*\.idxmax', line):
+            offenders.append(f"{src_path.name}:{i}: {line.strip()[:90]}")
+    n_train = len(re.findall(r'train_auc["\']?\s*\]?\s*\.idxmax', src))
+    if offenders:
+        raise AssertionError("layer selected on TEST auc at: " + "; ".join(offenders))
+    return f"{n_train} layer selections, all on train_auc; no selection on test auc"
 
 
 if __name__ == "__main__":

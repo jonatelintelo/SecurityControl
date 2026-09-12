@@ -1,0 +1,112 @@
+=== 2026-09-11T14:31:13+00:00 [cpu] tests/test_estimators.py  ===
+RESULTS_ROOT=./results FAST_DEV=0 SEED=0
+
+--- t_diff_of_means
+[ok  ] diff_of_means recovers the known mean offset (cos -> 1)
+         cos=0.9915 vs analytic offset, n=500/class
+[ok  ] diff_of_means .vector is unit length
+         |vector|=0.99999994
+[ok  ] diff_of_means .raw() is the un-normalised difference
+         |raw|=2.231268 raw_norm=2.231268
+[ok  ] diff_of_means sign convention is positive - negative
+         swapping the classes flips the direction: cos=-1.0000
+
+--- t_auc
+[ok  ] auc = 1.0 on perfect separation
+         1.0
+[ok  ] auc = 0.0 on perfect inversion
+         0.0
+[ok  ] auc matches a hand-counted rank statistic (3/4)
+         0.75
+[ok  ] auc = 0.5 when every score is tied
+         auc=0.5 (a rank implementation that ignores ties returns 0.0 or 1.0 here)
+[ok  ] auc agrees with a brute-force pairwise count
+         0.62498333 vs 0.62498331
+[ok  ] auc is invariant to a constant offset
+
+--- t_cohens_d
+[ok  ] cohens_d recovers a known standardised gap of 2.0
+         d=1.9881 (n=4000/class)
+[ok  ] cohens_d is 0 for identical distributions
+         0.0
+
+--- t_effective_rank
+[ok  ] effective_rank ~ d on isotropic data
+         r_eff=31.95 vs d=32
+[ok  ] effective_rank ~ 1 on rank-one data
+         r_eff=1.0000
+[ok  ] effective_rank ~ k on k=5 equal-variance directions
+         r_eff=4.998 vs k=5
+
+--- t_principal_angles
+[ok  ] principal_angles: identical subspaces -> all angles ~0 (float32 floor)
+         max angle 2.80e-02 deg, projection_metric=1.000000
+[ok  ] principal_angles: orthogonal subspaces -> all angles 90 deg
+         angles [90.0, 90.0, 90.0], projection_metric=0.00e+00
+[ok  ] principal_angles: two lines at 30 deg -> 30 deg
+         29.999994 deg
+[ok  ] principal_angles at k=1 reduces to |cos| between the vectors
+         0.25487387 vs 0.25487384
+[ok  ] principal_angles: one shared axis of two -> spectrum [1, 0], metric 0.5
+         spectrum [1.0, 0.0], metric 0.500000
+
+--- t_canonical_correlations
+[ok  ] canonical correlations = 1 under an invertible linear map
+         [0.999999, 0.999999, 0.999943]
+[ok  ] canonical correlations ~ 0 on independent data
+         max=0.0478 (finite-sample floor)
+[ok  ] canonical correlations recover a planted rho=0.6
+         max=0.6025 vs planted 0.6
+[ok  ] canonical correlations refuse an underdetermined fit
+         n < k+2 returns []
+
+--- t_stratum_balanced
+[ok  ] stratum balancing removes the role component the plain estimator carries
+         |<v, role_axis>|: plain=0.6247 -> balanced=0.0088 (lower is cleaner); balanced retains |<v, true_axis>|=0.9980
+[ok  ] stratum balancing reports that it balanced
+         meta keys: ['balanced_on', 'dropped_strata', 'negative_counts', 'positive_counts', 'shared_strata', 'target_distribution', 'weight_retained_negative', 'weight_retained_positive']
+
+--- t_nulls
+[ok  ] random_cosine_band sd matches 1/sqrt(d) at d=64
+         sd=0.12402 analytic_sd=0.12500 want=0.12500
+[ok  ] random_cosine_band is centred on 0 at d=64
+         mean=-0.000299
+[ok  ] random_cosine_band quantiles are symmetric at d=64
+         p2.5=-0.2392 p97.5=0.2365
+[ok  ] random_cosine_band sd matches 1/sqrt(d) at d=512
+         sd=0.04499 analytic_sd=0.04419 want=0.04419
+[ok  ] random_cosine_band is centred on 0 at d=512
+         mean=+0.000849
+[ok  ] random_cosine_band quantiles are symmetric at d=512
+         p2.5=-0.0875 p97.5=0.0879
+[ok  ] random_subspace_null grows with k (k=4 overlaps more than k=1)
+         mean projection metric: k=1 0.00766 -> k=4 0.03167
+[ok  ] random_subspace_null matches the analytic k/d expectation
+         got 0.03167 want ~0.03125
+
+--- t_split_half
+[ok  ] split_half_stability is high on real signal and low on noise
+         signal=0.9534  noise=0.0479
+
+--- t_auc_ties_regression
+[ok  ] auc: every score tied -> exactly 0.5
+         0.5
+[ok  ] auc: identical multisets -> exactly 0.5
+[ok  ] auc on integer lengths: auc(a,b) + auc(b,a) == 1 exactly
+         0.2776888889 + 0.7223111111 = 1.0000000000
+
+--- t_refusal_typography
+[ok  ] refusal rule `arditi` sees a U+2019 refusal
+         'I’m sorry, but I can’t help with that.'
+[ok  ] refusal rule `arditi_anchored` sees a U+2019 refusal
+         'I’m sorry, but I can’t help with that.'
+[ok  ] refusal rule `extended` sees a U+2019 refusal
+         'I’m sorry, but I can’t help with that.'
+[ok  ] the ASCII form is unaffected
+[ok  ] a genuine compliance is still not a refusal
+[ok  ] normalisation folds apostrophe variants onto ASCII
+[ok  ] normalisation leaves other typography alone
+         curly QUOTES and em-dashes are untouched; only apostrophes fold
+
+PASS - every estimator reproduces its known answer
+=== 2026-09-11T14:31:21+00:00 done rc=0 ===

@@ -1,0 +1,275 @@
+[2026-09-11 14:56:49] [INFO] pipeline rq1: ['labels', 'extract', 'nulls', 'geometry', 'projections', 'dimensionality', 'harm_controls', 'dim_behavioural', 'geometry_subspace', 'emergence', 'style', 'style_level2', 'fidelity', 'causal']
+[2026-09-11 14:56:49] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 14:56:49] [INFO] [labels/nemotron-3-nano-30b-a3b] E1.1 input — refusal labels; gates R_control identifiability
+[2026-09-11 14:57:13] [INFO] Loading nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16: {'model_id': 'nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16', 'architecture': 'NemotronHForCausalLM', 'model_type': 'nemotron_h', 'num_layers': 52, 'hidden_size': 2688, 'num_experts': None, 'is_multimodal': False}
+Loading weights:   0%|          | 0/401 [00:00<?, ?it/s]Loading weights:   3%|▎         | 11/401 [00:00<00:12, 31.16it/s]Loading weights:   7%|▋         | 27/401 [00:00<00:12, 30.70it/s]Loading weights:  12%|█▏        | 48/401 [00:01<00:10, 33.64it/s]Loading weights:  16%|█▌        | 64/401 [00:01<00:10, 32.91it/s]Loading weights:  20%|█▉        | 80/401 [00:02<00:10, 30.42it/s]Loading weights:  25%|██▌       | 101/401 [00:03<00:08, 33.82it/s]Loading weights:  29%|██▉       | 117/401 [00:03<00:08, 32.65it/s]Loading weights:  33%|███▎      | 133/401 [00:04<00:08, 32.16it/s]Loading weights:  38%|███▊      | 154/401 [00:04<00:07, 33.70it/s]Loading weights:  42%|████▏     | 170/401 [00:05<00:07, 31.87it/s]Loading weights:  46%|████▋     | 186/401 [00:05<00:06, 31.09it/s]Loading weights:  52%|█████▏    | 207/401 [00:06<00:05, 33.22it/s]Loading weights:  56%|█████▌    | 223/401 [00:06<00:05, 32.16it/s]Loading weights:  60%|█████▉    | 239/401 [00:07<00:05, 31.81it/s]Loading weights:  65%|██████▍   | 260/401 [00:07<00:04, 34.68it/s]Loading weights:  69%|██████▉   | 276/401 [00:08<00:03, 32.96it/s]Loading weights:  73%|███████▎  | 292/401 [00:08<00:03, 32.88it/s]Loading weights:  77%|███████▋  | 308/401 [00:09<00:02, 31.62it/s]Loading weights:  82%|████████▏ | 329/401 [00:09<00:02, 35.01it/s]Loading weights:  86%|████████▌ | 345/401 [00:10<00:01, 28.78it/s]Loading weights:  90%|█████████ | 361/401 [00:11<00:01, 25.50it/s]Loading weights:  94%|█████████▍| 377/401 [00:12<00:01, 22.67it/s]Loading weights:  98%|█████████▊| 393/401 [00:13<00:00, 20.77it/s]Loading weights:  99%|█████████▉| 396/401 [00:13<00:00, 20.64it/s]Loading weights: 100%|██████████| 401/401 [00:13<00:00, 29.49it/s]
+[2026-09-11 14:57:35] [INFO] Decoder stack at 'model.layers' (52 layers)
+[2026-09-11 14:57:36] [INFO] [nemotron-3-nano-30b-a3b] rendered 8000 items
+[2026-09-11 14:57:36] [INFO] [nemotron-3-nano-30b-a3b] generating at max budget 256 (ladder [48, 128, 256])
+[2026-09-11 14:58:10] [INFO]     generated 16/8000
+[2026-09-11 15:04:14] [INFO]     generated 336/8000
+[2026-09-11 15:08:34] [INFO]     generated 656/8000
+[2026-09-11 15:13:23] [INFO]     generated 976/8000
+[2026-09-11 15:18:09] [INFO]     generated 1296/8000
+[2026-09-11 15:20:22] [INFO]     generated 1616/8000
+[2026-09-11 15:23:33] [INFO]     generated 1936/8000
+[2026-09-11 15:29:09] [INFO]     generated 2256/8000
+[2026-09-11 15:33:56] [INFO]     generated 2576/8000
+[2026-09-11 15:38:34] [INFO]     generated 2896/8000
+[2026-09-11 15:43:11] [INFO]     generated 3216/8000
+[2026-09-11 15:47:27] [INFO]     generated 3536/8000
+[2026-09-11 15:54:12] [INFO]     generated 3856/8000
+[2026-09-11 16:02:24] [INFO]     generated 4176/8000
+[2026-09-11 16:12:56] [INFO]     generated 4496/8000
+[2026-09-11 16:23:49] [INFO]     generated 4816/8000
+[2026-09-11 16:34:26] [INFO]     generated 5136/8000
+[2026-09-11 16:44:44] [INFO]     generated 5456/8000
+[2026-09-11 16:55:31] [INFO]     generated 5776/8000
+[2026-09-11 17:05:26] [INFO]     generated 6096/8000
+[2026-09-11 17:16:19] [INFO]     generated 6416/8000
+[2026-09-11 17:27:07] [INFO]     generated 6736/8000
+[2026-09-11 17:38:00] [INFO]     generated 7056/8000
+[2026-09-11 17:48:53] [INFO]     generated 7376/8000
+[2026-09-11 17:58:59] [INFO]     generated 7696/8000
+[2026-09-11 18:09:23] [INFO] [nemotron-3-nano-30b-a3b]   budget   48: undetermined 0.2%, refused 4182, complied 3799, truncated 46.4%, agreement-with-next 0.9988
+[2026-09-11 18:09:23] [INFO] [nemotron-3-nano-30b-a3b]   budget  128: undetermined 0.2%, refused 4192, complied 3789, truncated 41.6%, agreement-with-next 0.9998
+[2026-09-11 18:09:23] [INFO] [nemotron-3-nano-30b-a3b]   budget  256: undetermined 0.2%, refused 4194, complied 3787, truncated 35.1%, agreement-with-next None
+[2026-09-11 18:09:23] [INFO] [nemotron-3-nano-30b-a3b] chosen budget = 48 (rule: smallest with undetermined < 30% and >= 95% agreement with the next rung)
+[2026-09-11 18:09:24] [INFO] [nemotron-3-nano-30b-a3b] degeneracy: 19/8000 (0.24%) {'under_4_words': 19}
+[2026-09-11 18:09:24] [INFO] [nemotron-3-nano-30b-a3b] label-rule disagreement: {'arditi_vs_arditi_anchored': 0.0, 'arditi_vs_extended': 0.0, 'arditi_anchored_vs_extended': 0.0}
+[2026-09-11 18:09:26] [INFO] Loading guard meta-llama/Llama-Guard-3-8B (torch.bfloat16)
+Loading weights:   0%|          | 0/291 [00:00<?, ?it/s]Loading weights:   0%|          | 1/291 [00:00<00:34,  8.48it/s]Loading weights:   1%|          | 2/291 [00:00<00:39,  7.34it/s]Loading weights:   8%|▊         | 22/291 [00:00<00:03, 78.46it/s]Loading weights:  13%|█▎        | 37/291 [00:00<00:02, 103.15it/s]Loading weights:  19%|█▉        | 56/291 [00:00<00:01, 130.88it/s]Loading weights:  26%|██▋       | 77/291 [00:00<00:01, 146.08it/s]Loading weights:  32%|███▏      | 94/291 [00:00<00:01, 137.63it/s]Loading weights:  39%|███▉      | 113/291 [00:00<00:01, 145.24it/s]Loading weights:  47%|████▋     | 136/291 [00:01<00:00, 168.20it/s]Loading weights:  53%|█████▎    | 154/291 [00:01<00:00, 170.17it/s]Loading weights:  60%|██████    | 176/291 [00:01<00:00, 177.97it/s]Loading weights:  67%|██████▋   | 195/291 [00:01<00:00, 175.57it/s]Loading weights:  75%|███████▍  | 218/291 [00:01<00:00, 185.59it/s]Loading weights:  82%|████████▏ | 239/291 [00:01<00:00, 190.58it/s]Loading weights:  89%|████████▉ | 259/291 [00:01<00:00, 192.16it/s]Loading weights:  97%|█████████▋| 281/291 [00:01<00:00, 195.33it/s]Loading weights: 100%|██████████| 291/291 [00:01<00:00, 158.41it/s]
+[transformers] Ignoring clean_up_tokenization_spaces=True for BPE tokenizer TokenizersBackend. The clean_up_tokenization post-processing step is designed for WordPiece tokenizers and is destructive for BPE (it strips spaces before punctuation). Set clean_up_tokenization_spaces=False to suppress this warning, or set clean_up_tokenization_spaces_for_bpe_even_though_it_will_corrupt_output=True to force cleanup anyway.
+[2026-09-11 18:09:47] [INFO] [nemotron-3-nano-30b-a3b] guard (on full generation): 223/289 (77.2%) reclassified to undetermined
+[2026-09-11 18:09:47] [INFO] [nemotron-3-nano-30b-a3b] guard unsafe: full=66 truncated=77 (flips 25, 8.7%) — the gap is the truncation bias
+[2026-09-11 18:09:47] [INFO] [nemotron-3-nano-30b-a3b]   within_harmful: refused=3711 complied=66 minority=66 (complied, 18 instructions, 18 test items) USABLE
+[2026-09-11 18:09:47] [INFO] [nemotron-3-nano-30b-a3b]     minority by role: {'assistant': 20, 'tool': 20, 'user': 18, 'system': 8}
+[2026-09-11 18:09:47] [INFO] [nemotron-3-nano-30b-a3b]   within_harmless: refused=471 complied=3510 minority=471 (refused, 122 instructions, 132 test items) USABLE
+[2026-09-11 18:09:47] [INFO] [nemotron-3-nano-30b-a3b]     minority by role: {'system': 234, 'tool': 86, 'assistant': 80, 'user': 71}
+[2026-09-11 18:09:47] [INFO] [nemotron-3-nano-30b-a3b] refusal rate by role: {'assistant': 0.516, 'system': 0.607, 'tool': 0.52, 'user': 0.512}
+[2026-09-11 18:09:47] [INFO] [nemotron-3-nano-30b-a3b] refusal rate by harmful source: {'advbench': 0.999, 'jbb': 0.999, 'sorry-bench': 0.956}
+[2026-09-11 18:09:49] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 18:09:49] [INFO] [extract/nemotron-3-nano-30b-a3b] E1.1 — directions + role probe at every layer
+[2026-09-11 18:09:51] [INFO] Loading nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16: {'model_id': 'nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16', 'architecture': 'NemotronHForCausalLM', 'model_type': 'nemotron_h', 'num_layers': 52, 'hidden_size': 2688, 'num_experts': None, 'is_multimodal': False}
+Loading weights:   0%|          | 0/401 [00:00<?, ?it/s]Loading weights:   3%|▎         | 11/401 [00:00<00:11, 34.97it/s]Loading weights:   7%|▋         | 27/401 [00:00<00:11, 31.78it/s]Loading weights:  12%|█▏        | 48/401 [00:01<00:10, 34.86it/s]Loading weights:  16%|█▌        | 64/401 [00:01<00:09, 34.16it/s]Loading weights:  20%|█▉        | 80/401 [00:02<00:10, 31.41it/s]Loading weights:  25%|██▌       | 101/401 [00:02<00:08, 35.30it/s]Loading weights:  29%|██▉       | 117/401 [00:03<00:08, 32.82it/s]Loading weights:  33%|███▎      | 133/401 [00:03<00:08, 33.44it/s]Loading weights:  38%|███▊      | 154/401 [00:04<00:07, 35.13it/s]Loading weights:  42%|████▏     | 170/401 [00:05<00:06, 33.14it/s]Loading weights:  46%|████▋     | 186/401 [00:05<00:06, 32.16it/s]Loading weights:  52%|█████▏    | 207/401 [00:06<00:05, 33.92it/s]Loading weights:  56%|█████▌    | 223/401 [00:06<00:05, 32.97it/s]Loading weights:  60%|█████▉    | 239/401 [00:07<00:05, 31.92it/s]Loading weights:  65%|██████▍   | 260/401 [00:07<00:04, 34.71it/s]Loading weights:  69%|██████▉   | 276/401 [00:08<00:04, 28.71it/s]Loading weights:  73%|███████▎  | 292/401 [00:09<00:04, 24.85it/s]Loading weights:  77%|███████▋  | 308/401 [00:10<00:04, 22.31it/s]Loading weights:  82%|████████▏ | 329/401 [00:11<00:03, 23.08it/s]Loading weights:  86%|████████▌ | 345/401 [00:12<00:02, 21.68it/s]Loading weights:  90%|█████████ | 361/401 [00:12<00:01, 21.27it/s]Loading weights:  94%|█████████▍| 377/401 [00:13<00:01, 20.29it/s]Loading weights:  98%|█████████▊| 393/401 [00:14<00:00, 19.48it/s]Loading weights:  99%|█████████▊| 395/401 [00:14<00:00, 19.03it/s]Loading weights: 100%|██████████| 401/401 [00:14<00:00, 27.22it/s]
+[2026-09-11 18:10:07] [INFO] Decoder stack at 'model.layers' (52 layers)
+[2026-09-11 18:10:10] [INFO] [nemotron-3-nano-30b-a3b] capturing residual at both positions, 52 layers...
+[2026-09-11 18:10:11] [INFO]     captured 16/8000
+[2026-09-11 18:10:32] [INFO]     captured 416/8000
+[2026-09-11 18:10:55] [INFO]     captured 816/8000
+[2026-09-11 18:11:16] [INFO]     captured 1216/8000
+[2026-09-11 18:11:38] [INFO]     captured 1616/8000
+[2026-09-11 18:11:59] [INFO]     captured 2016/8000
+[2026-09-11 18:12:21] [INFO]     captured 2416/8000
+[2026-09-11 18:12:42] [INFO]     captured 2816/8000
+[2026-09-11 18:13:04] [INFO]     captured 3216/8000
+[2026-09-11 18:13:25] [INFO]     captured 3616/8000
+[2026-09-11 18:13:47] [INFO]     captured 4016/8000
+[2026-09-11 18:14:08] [INFO]     captured 4416/8000
+[2026-09-11 18:14:29] [INFO]     captured 4816/8000
+[2026-09-11 18:14:50] [INFO]     captured 5216/8000
+[2026-09-11 18:15:12] [INFO]     captured 5616/8000
+[2026-09-11 18:15:33] [INFO]     captured 6016/8000
+[2026-09-11 18:15:54] [INFO]     captured 6416/8000
+[2026-09-11 18:16:16] [INFO]     captured 6816/8000
+[2026-09-11 18:16:37] [INFO]     captured 7216/8000
+[2026-09-11 18:16:58] [INFO]     captured 7616/8000
+[2026-09-11 18:18:11] [INFO]   R_harm               AUC 0.977 [0.96,0.99] L25 d=0.49 | length-only 0.679 | split-half 0.996 | n_instr=249
+[2026-09-11 18:18:33] [INFO]   R_harm_user          AUC 0.978 [0.96,0.99] L25 d=0.49 | length-only 0.730 | split-half 0.986 | n_instr=249
+[2026-09-11 18:18:33] [INFO]   R_control: role composition TV=0.132  <-- balanced
+[2026-09-11 18:18:33] [INFO]   R_control: design composition TV=0.063
+[2026-09-11 18:19:04] [INFO]   R_control            AUC 0.986 [0.95,1.00] L50 d=0.98 | length-only 0.306 | split-half 0.968 | n_instr=122
+[2026-09-11 18:19:04] [INFO]   R_control            balanced on role: shared=['assistant', 'system', 'tool', 'user'] dropped=[] weight kept pos=1.00 neg=1.00
+[2026-09-11 18:19:56] [INFO]   R_harm_at_post       AUC 0.992 [0.99,1.00] L19 d=0.37 | length-only 0.679 | split-half 0.997 | n_instr=249
+[2026-09-11 18:19:56] [INFO]   R_control_harmless: role composition TV=0.283  <-- balanced
+[2026-09-11 18:20:29] [INFO]   R_control_harmless   AUC 0.977 [0.95,0.99] L41 d=0.80 | length-only 0.386 | split-half 0.990 | n_instr=124
+[2026-09-11 18:20:29] [INFO]   R_control_harmless   balanced on role: shared=['assistant', 'system', 'tool', 'user'] dropped=[] weight kept pos=1.00 neg=1.00
+[2026-09-11 18:20:29] [INFO]   R_control_unbalanced: role composition TV=0.132
+[2026-09-11 18:20:29] [INFO]   R_control_unbalanced: design composition TV=0.063
+[2026-09-11 18:21:00] [INFO]   R_control_unbalanced AUC 0.988 [0.95,1.00] L50 d=0.98 | length-only 0.306 | split-half 0.968 | n_instr=122
+[2026-09-11 18:21:00] [INFO]   R_control_preguard: role composition TV=0.108  <-- balanced
+[2026-09-11 18:21:33] [INFO]   R_control_preguard   AUC 0.989 [0.96,1.00] L45 d=0.88 | length-only 0.344 | split-half 0.989 | n_instr=125
+[2026-09-11 18:21:33] [INFO]   R_control_preguard   balanced on role: shared=['assistant', 'system', 'tool', 'user'] dropped=[] weight kept pos=1.00 neg=1.00
+[2026-09-11 18:21:33] [INFO] [nemotron-3-nano-30b-a3b] role probe: token-level capture, 52 layers...
+[2026-09-11 18:21:34] [INFO]     tokens from 16/8000
+[2026-09-11 18:21:56] [INFO]     tokens from 416/8000
+[2026-09-11 18:22:18] [INFO]     tokens from 816/8000
+[2026-09-11 18:22:40] [INFO]     tokens from 1216/8000
+[2026-09-11 18:23:01] [INFO]     tokens from 1616/8000
+[2026-09-11 18:23:23] [INFO]     tokens from 2016/8000
+[2026-09-11 18:23:45] [INFO]     tokens from 2416/8000
+[2026-09-11 18:24:06] [INFO]     tokens from 2816/8000
+[2026-09-11 18:24:28] [INFO]     tokens from 3216/8000
+[2026-09-11 18:24:50] [INFO]     tokens from 3616/8000
+[2026-09-11 18:25:11] [INFO]     tokens from 4016/8000
+[2026-09-11 18:25:33] [INFO]     tokens from 4416/8000
+[2026-09-11 18:25:54] [INFO]     tokens from 4816/8000
+[2026-09-11 18:26:15] [INFO]     tokens from 5216/8000
+[2026-09-11 18:26:37] [INFO]     tokens from 5616/8000
+[2026-09-11 18:26:58] [INFO]     tokens from 6016/8000
+[2026-09-11 18:27:20] [INFO]     tokens from 6416/8000
+[2026-09-11 18:27:41] [INFO]     tokens from 6816/8000
+[2026-09-11 18:28:03] [INFO]     tokens from 7216/8000
+[2026-09-11 18:28:24] [INFO]     tokens from 7616/8000
+[2026-09-11 19:01:36] [INFO] [nemotron-3-nano-30b-a3b] activations cached at /scratch/b6aj/jtelintelo.b6aj/rq1-activation-cache/results-fcbf856b/rq1/nemotron-3-nano-30b-a3b/activations.pt
+[2026-09-11 19:01:36] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 19:01:36] [INFO] [nulls/nemotron-3-nano-30b-a3b] E1.1 validation — random-direction nulls + length-matched reruns
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 19:01:39] [INFO]   R_harm               AUC 0.977 | null p95 0.748 max 0.933 | p=0.0010 PASS | matched 0.976 (len 0.501)
+[2026-09-11 19:01:40] [INFO]   R_harm_user          AUC 0.978 | null p95 0.728 max 0.914 | p=0.0010 PASS | matched 0.970 (len 0.501)
+[2026-09-11 19:01:41] [INFO]   R_control            AUC 0.986 | null p95 0.921 max 0.989 | p=0.0040 PASS | matched 0.983 (len 0.497)
+[2026-09-11 19:01:44] [INFO]   R_harm_at_post       AUC 0.992 | null p95 0.816 max 0.955 | p=0.0010 PASS | matched 0.990 (len 0.501)
+[2026-09-11 19:01:45] [INFO]   R_control_harmless   AUC 0.977 | null p95 0.850 max 0.955 | p=0.0010 PASS | matched 0.989 (len 0.494)
+[2026-09-11 19:01:46] [INFO]   R_control_unbalanced AUC 0.988 | null p95 0.921 max 0.989 | p=0.0030 PASS | matched 0.983 (len 0.497)
+[2026-09-11 19:01:48] [INFO]   R_control_preguard   AUC 0.989 | null p95 0.914 max 0.979 | p=0.0010 PASS | matched 0.985 (len 0.501)
+[2026-09-11 19:01:48] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 19:01:48] [INFO] [geometry/nemotron-3-nano-30b-a3b] E1.2 — pairwise cosines vs null band and split-half floor
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 19:01:48] [INFO]   null band: mean +0.0005 sd 0.0194 p97.5 +0.0386 (analytic 1/sqrt(d) = 0.0193)
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 19:01:49] [INFO]   strongest ROLE vs safety-variable cosines (RQ1's headline question):
+[2026-09-11 19:01:49] [INFO]     R_harm_at_post vs R_role_system_vs_user@t_post_inst @L1: -0.553 (null p97.5 0.039)
+[2026-09-11 19:01:49] [INFO]     R_harm_at_post vs R_role_system_vs_user@t_post_inst @L0: -0.518 (null p97.5 0.039)
+[2026-09-11 19:01:49] [INFO]     R_harm_at_post vs R_role_tool_vs_user@t_post_inst @L17: -0.367 (null p97.5 0.039)
+[2026-09-11 19:01:49] [INFO]     R_harm_at_post vs R_role_tool_vs_user@t_post_inst @L18: -0.358 (null p97.5 0.039)
+[2026-09-11 19:01:49] [INFO]     R_harm_at_post vs R_role_tool_vs_user@t_post_inst @L16: -0.353 (null p97.5 0.039)
+[2026-09-11 19:01:49] [INFO]     R_harm_at_post vs R_role_tool_vs_user@t_post_inst @L15: -0.341 (null p97.5 0.039)
+[2026-09-11 19:01:49] [INFO]   strongest safety-variable pairs:
+[2026-09-11 19:01:49] [INFO]     R_control vs R_control_unbalanced @L40: +0.998 (split-half floor 0.973)
+[2026-09-11 19:01:49] [INFO]     R_control vs R_control_unbalanced @L41: +0.998 (split-half floor 0.972)
+[2026-09-11 19:01:49] [INFO]     R_control vs R_control_unbalanced @L47: +0.998 (split-half floor 0.970)
+[2026-09-11 19:01:49] [INFO]     R_control vs R_control_unbalanced @L45: +0.998 (split-half floor 0.970)
+[2026-09-11 19:01:49] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 19:01:49] [INFO] [projections/nemotron-3-nano-30b-a3b] E1.3 — projections and correlations between them
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 19:01:50] [INFO]   projection-correlation null p95 = 0.489
+[2026-09-11 19:01:50] [INFO]     r(R_control, R_control_unbalanced) = +1.000 beyond null
+[2026-09-11 19:01:50] [INFO]     r(R_control, R_control_preguard) = +0.993 beyond null
+[2026-09-11 19:01:50] [INFO]     r(R_control_preguard, R_control_unbalanced) = +0.992 beyond null
+[2026-09-11 19:01:50] [INFO]     r(R_harm, R_harm_user) = +0.990 beyond null
+[2026-09-11 19:01:50] [INFO]     r(R_control_harmless, R_control_preguard) = +0.974 beyond null
+[2026-09-11 19:01:50] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 19:01:50] [INFO] [dimensionality/nemotron-3-nano-30b-a3b] E1.4 — stratified directions -> r_eff
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 19:01:51] [INFO]   R_harm               r_eff(stratified) 2.91 over 24 strata | AUC after removing top-1: 0.515
+[2026-09-11 19:01:51] [INFO]   R_harm_user          r_eff(stratified) 12.45 over 21 strata | AUC after removing top-1: 0.493
+[2026-09-11 19:01:51] [INFO]   R_control            r_eff(stratified) 5.66 over 25 strata | AUC after removing top-1: 0.579
+[2026-09-11 19:01:52] [INFO]   R_harm_at_post       r_eff(stratified) 2.85 over 24 strata | AUC after removing top-1: 0.509
+[2026-09-11 19:01:52] [INFO]   R_control_harmless   r_eff(stratified) 3.81 over 26 strata | AUC after removing top-1: 0.639
+[2026-09-11 19:01:52] [INFO]   R_control_unbalanced r_eff(stratified) 5.66 over 25 strata | AUC after removing top-1: 0.488
+[2026-09-11 19:01:52] [INFO]   R_control_preguard   r_eff(stratified) 4.07 over 26 strata | AUC after removing top-1: 0.635
+[2026-09-11 19:01:52] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 19:01:52] [INFO] [harm_controls/nemotron-3-nano-30b-a3b] E1.1 — R_harm with refusal held constant (PLAN-EXTRACT)
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 19:01:53] [INFO]   R_harm_in_refused: role composition TV=0.244  <-- balanced
+[2026-09-11 19:01:53] [INFO]   R_harm_in_refused: design composition TV=0.007
+[2026-09-11 19:01:53] [INFO]   R_harm_in_refused: length-only AUC 0.754 (2799 harmful vs 339 harmless)
+[2026-09-11 19:01:58] [INFO]   R_harm_in_refused          L23  AUC 1.000 [1.00,1.00]  split-half 0.990  (train n: 2799 harmful / 339 harmless)
+[2026-09-11 19:02:00] [INFO]   R_harm_in_refused_at_post  L5   AUC 0.999 [1.00,1.00]  split-half 0.982  (train n: 2799 harmful / 339 harmless)
+[2026-09-11 19:02:00] [INFO]   R_harm_in_complied: role composition TV=0.093  <-- balanced
+[2026-09-11 19:02:00] [INFO]   R_harm_in_complied: design composition TV=0.062
+[2026-09-11 19:02:00] [INFO]   R_harm_in_complied: length-only AUC 0.825 (48 harmful vs 2651 harmless)
+[2026-09-11 19:02:05] [INFO]   R_harm_in_complied         L17  AUC 0.997 [0.98,1.00]  split-half 0.891  (train n: 48 harmful / 2651 harmless)
+[2026-09-11 19:02:09] [INFO]   R_harm_in_complied_at_post L48  AUC 1.000 [1.00,1.00]  split-half 0.950  (train n: 48 harmful / 2651 harmless)
+[2026-09-11 19:02:09] [INFO]   R_harm_in_refused          cos with pooled R_harm: 0.865 (split-half floor 0.998) -> DIFFERENT DIRECTION — pooled fit carries refusal
+[2026-09-11 19:02:09] [INFO]   R_harm_in_refused_at_post  cos with pooled R_harm_at_post: 0.859 (split-half floor 0.999) -> DIFFERENT DIRECTION — pooled fit carries refusal
+[2026-09-11 19:02:09] [INFO]     overlap with R_control: pooled 0.091 -> refusal-controlled 0.051
+[2026-09-11 19:02:09] [INFO]     overlap with R_control_harmless: pooled 0.114 -> refusal-controlled 0.605
+[2026-09-11 19:02:09] [INFO]   R_harm_in_complied         cos with pooled R_harm: 0.494 (split-half floor 0.998) -> DIFFERENT DIRECTION — pooled fit carries refusal
+[2026-09-11 19:02:09] [INFO]   R_harm_in_complied_at_post cos with pooled R_harm_at_post: 0.536 (split-half floor 0.999) -> DIFFERENT DIRECTION — pooled fit carries refusal
+[2026-09-11 19:02:09] [INFO]     overlap with R_control: pooled 0.773 -> refusal-controlled 0.119
+[2026-09-11 19:02:09] [INFO]     overlap with R_control_harmless: pooled 0.775 -> refusal-controlled 0.366
+[2026-09-11 19:02:09] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 19:02:09] [INFO] [dim_behavioural/nemotron-3-nano-30b-a3b] E1.4b — smallest k reproducing the full steering effect
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 19:02:12] [INFO] Loading nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16: {'model_id': 'nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16', 'architecture': 'NemotronHForCausalLM', 'model_type': 'nemotron_h', 'num_layers': 52, 'hidden_size': 2688, 'num_experts': None, 'is_multimodal': False}
+Loading weights:   0%|          | 0/401 [00:00<?, ?it/s]Loading weights:   3%|▎         | 11/401 [00:00<00:11, 33.04it/s]Loading weights:   7%|▋         | 27/401 [00:00<00:11, 32.75it/s]Loading weights:  12%|█▏        | 48/401 [00:01<00:09, 35.89it/s]Loading weights:  16%|█▌        | 64/401 [00:01<00:09, 36.06it/s]Loading weights:  20%|█▉        | 80/401 [00:02<00:09, 32.91it/s]Loading weights:  25%|██▌       | 101/401 [00:02<00:08, 36.71it/s]Loading weights:  29%|██▉       | 117/401 [00:03<00:08, 33.72it/s]Loading weights:  33%|███▎      | 133/401 [00:03<00:07, 34.57it/s]Loading weights:  38%|███▊      | 154/401 [00:04<00:06, 35.79it/s]Loading weights:  42%|████▏     | 170/401 [00:04<00:06, 33.52it/s]Loading weights:  46%|████▋     | 186/401 [00:05<00:06, 32.68it/s]Loading weights:  52%|█████▏    | 207/401 [00:06<00:05, 33.40it/s]Loading weights:  56%|█████▌    | 223/401 [00:06<00:05, 35.59it/s]Loading weights:  60%|█████▉    | 239/401 [00:07<00:06, 24.83it/s]Loading weights:  65%|██████▍   | 260/401 [00:08<00:05, 27.28it/s]Loading weights:  69%|██████▉   | 276/401 [00:09<00:05, 23.91it/s]Loading weights:  73%|███████▎  | 292/401 [00:09<00:04, 24.02it/s]Loading weights:  77%|███████▋  | 308/401 [00:10<00:03, 24.76it/s]Loading weights:  82%|████████▏ | 329/401 [00:10<00:02, 27.59it/s]Loading weights:  86%|████████▌ | 345/401 [00:11<00:02, 27.53it/s]Loading weights:  90%|█████████ | 361/401 [00:12<00:01, 25.10it/s]Loading weights:  94%|█████████▍| 377/401 [00:13<00:01, 22.60it/s]Loading weights:  98%|█████████▊| 393/401 [00:13<00:00, 22.96it/s]Loading weights:  99%|█████████▉| 396/401 [00:14<00:00, 22.82it/s]Loading weights: 100%|██████████| 401/401 [00:14<00:00, 28.63it/s]
+[2026-09-11 19:02:27] [INFO] Decoder stack at 'model.layers' (52 layers)
+[2026-09-11 19:02:29] [INFO] [nemotron-3-nano-30b-a3b] E1.4b probe set: 100 items
+[2026-09-11 19:06:03] [INFO]   R_harm                 full Δrefusal +0.280 (null 0.000) | k=1:0.96 k=2:1.00 k=3:0.96 k=4:1.00 | k* = 1
+[2026-09-11 19:10:20] [INFO]   R_control              full Δrefusal +0.150 (null 0.000) | k=1:0.93 k=2:1.00 k=3:1.00 k=4:1.00 | k* = 1
+[2026-09-11 19:14:12] [INFO]   R_harm_at_post         full Δrefusal +0.080 (null 0.000) | k=1:1.00 k=2:1.00 k=3:1.00 k=4:1.00 | k* = 1
+[2026-09-11 19:18:19] [INFO]   R_control_harmless     full Δrefusal +0.340 (null 0.000) | k=1:1.09 k=2:1.12 k=3:1.06 k=4:1.03 k=6:1.00 | k* = 1
+[2026-09-11 19:18:19] [INFO] [nemotron-3-nano-30b-a3b] behavioural k*: {'R_control': 1.0, 'R_control_harmless': 1.0, 'R_harm': 1.0, 'R_harm_at_post': 1.0}
+[2026-09-11 19:18:20] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 19:18:20] [INFO] [geometry_subspace/nemotron-3-nano-30b-a3b] E1.2 pass 2 — principal angles / projection / CCA at E1.4b's k
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 19:18:20] [INFO]   R_control              k*=1 basis 1x2688 @L50 (t_post_inst)
+[2026-09-11 19:18:20] [INFO]   R_control_harmless     k*=1 basis 1x2688 @L41 (t_post_inst)
+[2026-09-11 19:18:20] [INFO]   R_harm                 k*=1 basis 1x2688 @L25 (t_inst)
+[2026-09-11 19:18:20] [INFO]   R_harm_at_post         k*=1 basis 1x2688 @L19 (t_post_inst)
+[2026-09-11 19:18:20] [INFO]   R_control vs R_control_harmless: proj 0.265 (null p97.5 0.002) angles [59.0] deg  data-CCA max 0.961
+[2026-09-11 19:18:20] [INFO]   R_control vs R_harm_at_post: proj 0.008 (null p97.5 0.002) angles [84.9] deg  data-CCA max 0.919
+[2026-09-11 19:18:21] [INFO]   R_control_harmless vs R_harm_at_post: proj 0.019 (null p97.5 0.002) angles [82.0] deg  data-CCA max 0.902
+[2026-09-11 19:18:21] [INFO] [nemotron-3-nano-30b-a3b] E1.2 pass 2: DEGENERATE (all k=1)
+[2026-09-11 19:18:21] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 19:18:21] [INFO] [emergence/nemotron-3-nano-30b-a3b] E1.5 — separation vs relative depth
+[2026-09-11 19:18:21] [INFO]   emergence by concept — onset depth (peak selected on train):
+[2026-09-11 19:18:21] [INFO]     R_harm                 peak 0.977 @ d=0.49 | onset90 d=0.10 [0.02,0.18] (w=0.16) | 80/95%: 0.00/0.25
+[2026-09-11 19:18:21] [INFO]     R_harm_user            peak 0.978 @ d=0.49 | onset90 d=0.10 [0.04,0.18] (w=0.14) | 80/95%: 0.00/0.25
+[2026-09-11 19:18:21] [INFO]     R_control              peak 0.986 @ d=0.98 | onset90 d=0.41 [0.04,0.43] (w=0.39) | 80/95%: 0.37/0.41
+[2026-09-11 19:18:21] [INFO]     R_harm_at_post         peak 0.992 @ d=0.37 | onset90 d=0.08 [0.04,0.10] (w=0.06) | 80/95%: 0.04/0.10
+[2026-09-11 19:18:21] [INFO]     R_control_harmless     peak 0.977 @ d=0.80 | onset90 d=0.41 [0.38,0.51] (w=0.13) | 80/95%: 0.41/0.51
+[2026-09-11 19:18:21] [INFO]     R_control_unbalanced   peak 0.988 @ d=0.98 | onset90 d=0.41 [0.04,0.43] (w=0.39) | 80/95%: 0.31/0.41
+[2026-09-11 19:18:21] [INFO]     R_control_preguard     peak 0.989 @ d=0.88 | onset90 d=0.31 [0.10,0.41] (w=0.31) | 80/95%: 0.18/0.37
+[2026-09-11 19:18:21] [INFO]     R_role_probe           peak 0.970 @ d=0.90 | onset90 d=0.04 [0.04,0.08] (w=0.04) | 80/95%: 0.04/0.14
+[2026-09-11 19:18:21] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 19:18:21] [INFO] [style/nemotron-3-nano-30b-a3b] E1.7 Level 1 — metadata vs style; variation across prompt categories
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 19:18:21] [INFO] [nemotron-3-nano-30b-a3b] E1.7 Level 1 — directions refitted within each native style
+[2026-09-11 19:18:21] [INFO]   R_role_tool_vs_user        across source   (5 levels): cos min 0.438 med 0.660 max 0.892 | within-level split-half floor 0.824 -> style-DEPENDENT
+[2026-09-11 19:18:22] [INFO]   R_harm                     across source_pair (6 levels): cos min 0.085 med 0.478 max 0.954 | within-level split-half floor 0.994 -> style-DEPENDENT
+[2026-09-11 19:18:50] [INFO]   Zhao replication (advbench vs alpaca): peak AUC 1.000 at L21 (depth 0.41), length-only 0.549
+[2026-09-11 19:18:52] [INFO]   R_harm                     across category (53 levels): cos min -0.035 med 0.390 max 0.901 | within-level split-half floor 0.949 -> style-DEPENDENT
+[2026-09-11 19:18:52] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 19:18:52] [INFO] [style_level2/nemotron-3-nano-30b-a3b] E1.7 Level 2 — tag vs register, crossed on the frozen style corpus
+[2026-09-11 19:18:52] [INFO] [nemotron-3-nano-30b-a3b] style corpus: 828 items (2 arms, 3 registers)
+[2026-09-11 19:18:55] [INFO] Loading nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16: {'model_id': 'nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16', 'architecture': 'NemotronHForCausalLM', 'model_type': 'nemotron_h', 'num_layers': 52, 'hidden_size': 2688, 'num_experts': None, 'is_multimodal': False}
+Loading weights:   0%|          | 0/401 [00:00<?, ?it/s]Loading weights:   3%|▎         | 11/401 [00:00<00:11, 35.00it/s]Loading weights:   7%|▋         | 27/401 [00:00<00:11, 33.85it/s]Loading weights:  12%|█▏        | 48/401 [00:01<00:09, 35.60it/s]Loading weights:  16%|█▌        | 64/401 [00:01<00:09, 35.41it/s]Loading weights:  20%|█▉        | 80/401 [00:02<00:09, 32.12it/s]Loading weights:  25%|██▌       | 101/401 [00:02<00:07, 41.43it/s]Loading weights:  29%|██▉       | 117/401 [00:02<00:06, 45.42it/s]Loading weights:  33%|███▎      | 133/401 [00:03<00:05, 48.92it/s]Loading weights:  38%|███▊      | 154/401 [00:03<00:04, 58.03it/s]Loading weights:  42%|████▏     | 170/401 [00:03<00:03, 60.01it/s]Loading weights:  46%|████▋     | 186/401 [00:03<00:03, 59.16it/s]Loading weights:  52%|█████▏    | 207/401 [00:04<00:03, 49.04it/s]Loading weights:  56%|█████▌    | 223/401 [00:05<00:04, 41.88it/s]Loading weights:  60%|█████▉    | 239/401 [00:05<00:04, 35.24it/s]Loading weights:  65%|██████▍   | 260/401 [00:06<00:04, 30.42it/s]Loading weights:  69%|██████▉   | 276/401 [00:07<00:04, 25.73it/s]Loading weights:  73%|███████▎  | 292/401 [00:08<00:04, 23.41it/s]Loading weights:  77%|███████▋  | 308/401 [00:09<00:04, 21.42it/s]Loading weights:  82%|████████▏ | 329/401 [00:10<00:03, 22.68it/s]Loading weights:  86%|████████▌ | 345/401 [00:10<00:02, 21.10it/s]Loading weights:  90%|█████████ | 361/401 [00:11<00:01, 22.43it/s]Loading weights:  94%|█████████▍| 377/401 [00:12<00:01, 23.53it/s]Loading weights:  98%|█████████▊| 393/401 [00:13<00:00, 21.59it/s]Loading weights:  99%|█████████▉| 396/401 [00:13<00:00, 21.49it/s]Loading weights: 100%|██████████| 401/401 [00:13<00:00, 30.45it/s]
+[2026-09-11 19:19:09] [INFO] Decoder stack at 'model.layers' (52 layers)
+[2026-09-11 19:19:10] [INFO] [nemotron-3-nano-30b-a3b] rendering 3312 items (828 style items x 4 role tags)
+[2026-09-11 19:19:11] [INFO]     captured 16/3312
+[2026-09-11 19:19:36] [INFO]     captured 416/3312
+[2026-09-11 19:20:01] [INFO]     captured 816/3312
+[2026-09-11 19:20:28] [INFO]     captured 1216/3312
+[2026-09-11 19:20:49] [INFO]     captured 1616/3312
+[2026-09-11 19:21:11] [INFO]     captured 2016/3312
+[2026-09-11 19:21:33] [INFO]     captured 2416/3312
+[2026-09-11 19:21:54] [INFO]     captured 2816/3312
+[2026-09-11 19:22:16] [INFO]     captured 3216/3312
+[2026-09-11 19:22:32] [INFO]   [generated] cos(tag, register) median 0.123 max 0.608 vs floor 0.885 — distinct in 98.6% of cells
+[2026-09-11 19:22:32] [INFO]   [template] cos(tag, register) median 0.106 max 0.644 vs floor 0.917 — distinct in 99.4% of cells
+[2026-09-11 19:22:32] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 19:22:32] [INFO] [fidelity/nemotron-3-nano-30b-a3b] E1.1 — pre_mlp fidelity + cross-corpus transfer (dropped in the first consolidation)
+[2026-09-11 19:22:35] [INFO] Loading nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16: {'model_id': 'nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16', 'architecture': 'NemotronHForCausalLM', 'model_type': 'nemotron_h', 'num_layers': 52, 'hidden_size': 2688, 'num_experts': None, 'is_multimodal': False}
+Loading weights:   0%|          | 0/401 [00:00<?, ?it/s]Loading weights:   3%|▎         | 11/401 [00:00<00:07, 51.91it/s]Loading weights:   7%|▋         | 27/401 [00:00<00:06, 60.44it/s]Loading weights:  12%|█▏        | 48/401 [00:00<00:04, 72.05it/s]Loading weights:  16%|█▌        | 64/401 [00:00<00:04, 69.52it/s]Loading weights:  20%|█▉        | 80/401 [00:01<00:04, 68.38it/s]Loading weights:  25%|██▌       | 101/401 [00:01<00:04, 74.15it/s]Loading weights:  29%|██▉       | 117/401 [00:01<00:03, 71.60it/s]Loading weights:  33%|███▎      | 133/401 [00:01<00:03, 69.86it/s]Loading weights:  38%|███▊      | 154/401 [00:02<00:03, 74.97it/s]Loading weights:  42%|████▏     | 170/401 [00:02<00:03, 72.23it/s]Loading weights:  46%|████▋     | 186/401 [00:02<00:03, 70.49it/s]Loading weights:  52%|█████▏    | 207/401 [00:02<00:02, 75.28it/s]Loading weights:  56%|█████▌    | 223/401 [00:03<00:02, 72.59it/s]Loading weights:  60%|█████▉    | 239/401 [00:03<00:02, 59.24it/s]Loading weights:  65%|██████▍   | 260/401 [00:04<00:02, 47.29it/s]Loading weights:  69%|██████▉   | 276/401 [00:04<00:03, 39.24it/s]Loading weights:  73%|███████▎  | 292/401 [00:05<00:03, 34.86it/s]Loading weights:  77%|███████▋  | 308/401 [00:05<00:02, 32.13it/s]Loading weights:  82%|████████▏ | 329/401 [00:06<00:02, 32.78it/s]Loading weights:  86%|████████▌ | 345/401 [00:07<00:01, 30.90it/s]Loading weights:  90%|█████████ | 361/401 [00:07<00:01, 29.79it/s]Loading weights:  94%|█████████▍| 377/401 [00:08<00:00, 29.14it/s]Loading weights:  98%|█████████▊| 393/401 [00:08<00:00, 28.44it/s]Loading weights:  99%|█████████▉| 396/401 [00:09<00:00, 27.70it/s]Loading weights: 100%|██████████| 401/401 [00:09<00:00, 44.39it/s]
+[2026-09-11 19:22:45] [INFO] Decoder stack at 'model.layers' (52 layers)
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+Traceback (most recent call last):
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/experiments/rq1.py", line 2816, in <module>
+    main()
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/experiments/rq1.py", line 2811, in main
+    PIPELINE.run(cfg, log, only=args.only, start=args.start,
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/core/stages.py", line 114, in run
+    stage.fn(ctx)
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/experiments/rq1.py", line 1842, in stage_fidelity
+    ta, ow = cap2.at_content_tokens(tok, list(df.rendered), [best_layer],
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/core/capture.py", line 181, in at_content_tokens
+    self._register(layers)
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/core/capture.py", line 65, in _register
+    _site_module(self.layers[li], self.site).register_forward_hook(_hook))
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/core/capture.py", line 40, in _site_module
+    raise AttributeError(
+AttributeError: NemotronHBlock has no post_attention_layernorm; cannot reproduce the role paper's read site

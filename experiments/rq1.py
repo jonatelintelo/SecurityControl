@@ -7,7 +7,9 @@ One script per research question, composed of stages. The playbook holds ~30
 experiments across RQ1-RQ7; a script each would be ~30 entry points differing
 mainly in which cached artifact they read, and activation capture — by far the
 expensive step — would be repeated between them. Here it happens once, in
-`extract`, and every later stage reads `activations.pt` on CPU.
+`extract`, and every later stage reads `activations.pt` on CPU. That blob lives
+in a scratch cache keyed by the results root, not in the results root itself —
+see `Config.cache_dir`; `activations_cache.json` records where it went.
 
     labels         E1.1 input   refusal labels; the gate on R_control (GPU)
     extract        E1.1         directions + role probe, all layers (GPU)
@@ -138,13 +140,14 @@ SPECS = {
 # ---------------------------------------------------------------------------
 # shared helpers
 # ---------------------------------------------------------------------------
-def _render_items(cfg: Config, tok) -> pd.DataFrame:
+def _render_items(cfg: Config, tok, slug: str) -> pd.DataFrame:
     fitting, _, _ = pools.load_corpus(cfg.results_root / CORPUS)
     from core.positions import render
     rows = []
+    roles = cfg.roles_for(slug)
     for ins in fitting:
         for design in cfg.designs:
-            for role in cfg.roles:
+            for role in roles:
                 R = render(tok, ins.text, role, design)
                 rows.append({"uid": ins.uid, "harmful": ins.harmful, "source": ins.source,
                              "category": ins.category, "split": ins.split, "role": role,
@@ -214,7 +217,9 @@ def _stratified_subspace(a: torch.Tensor, idx: pd.DataFrame, base_m: np.ndarray,
 def _load_cache(ctx: Context):
     """activations + index + fitted artifacts, from the extract stage."""
     d = ctx.cfg.dir(NAME, ctx.model)
-    blob = load_torch(d / "activations.pt")
+    # The blob lives off the home quota (see Config.cache_dir); everything else
+    # this function loads is evidence and stays in the results root.
+    blob = load_torch(ctx.cfg.cache_dir(NAME, ctx.model) / "activations.pt")
     idx = pd.DataFrame(blob["index"])
     return blob, idx, load_torch(d / "directions.pt"), pd.read_csv(d / "direction_validation.csv")
 
@@ -281,7 +286,7 @@ def stage_labels(ctx: Context) -> None:
     device = resolve_device()
     model, tok = load_model(ctx.spec().model_id, device, logger=log)
 
-    df = _render_items(cfg, tok)
+    df = _render_items(cfg, tok, ctx.model)
     log.info(f"[{slug}] rendered {len(df)} items")
 
     # Generate ONCE at the largest rung; every shorter budget is a prefix of it.
@@ -520,7 +525,7 @@ def stage_extract(ctx: Context) -> None:
     n_layers = model_meta.num_layers(model.config)
     layers = list(range(n_layers))
 
-    df = _render_items(cfg, tok)
+    df = _render_items(cfg, tok, ctx.model)
     labels = pd.read_csv(cfg.dir(NAME, slug) / "refusal_labels.csv")[
         ["uid", "role", "design", "label", "label_preguard", "truncated"]]
     df = df.merge(labels, on=["uid", "role", "design"], how="left")
@@ -616,9 +621,19 @@ def stage_extract(ctx: Context) -> None:
     save_df(ctx.out / "role_probe.csv", pd.DataFrame(prows))
     save_torch(ctx.out / "directions.pt", directions)
     save_torch(ctx.out / "role_probes.pt", probes)
-    save_torch(ctx.out / "activations.pt",
+    _cache = ctx.cfg.cache_dir(NAME, slug)
+    save_torch(_cache / "activations.pt",
                {"t_inst": acts["t_inst"], "t_post_inst": acts["t_post_inst"],
                 "index": df.drop(columns=["rendered"]).to_dict("list")})
+    # A pointer in the results root, so a later reader (or a human) can find the
+    # cache without re-deriving the hash, and so the manifest records where the
+    # activations for THIS root went.
+    save_json(ctx.out / "activations_cache.json", {
+        "model": slug, "results_root": str(cfg.results_root.resolve()),
+        "path": str(_cache / "activations.pt"),
+        "note": "regenerable cache, deliberately outside the results root; "
+                "keyed by results root so `results` and `results_verify` never share it"})
+    log.info(f"[{slug}] activations cached at {_cache / 'activations.pt'}")
     save_json(ctx.out / "extract_summary.json", {
         "model": slug, "n_layers": n_layers, "d_model": model_meta.hidden_size(model.config),
         "concepts": sorted(directions), "n_items": len(df)})
@@ -1131,7 +1146,7 @@ def stage_dimensionality_behavioural(ctx: Context) -> None:
     train = idx.split.eq("train").to_numpy()
     device = resolve_device()
     model, tok = load_model(ctx.spec().model_id, device, logger=log)
-    rendered = _render_items(cfg, tok)
+    rendered = _render_items(cfg, tok, ctx.model)
     if not (list(rendered.uid) == list(idx.uid) and list(rendered.role) == list(idx.role)):
         raise ValueError("re-rendered corpus does not align with the cached activation index")
 
@@ -1256,6 +1271,15 @@ def stage_emergence(ctx: Context) -> None:
                           "acc_ci_low": "auc_ci_low", "acc_ci_high": "auc_ci_high"})
     out = pd.concat([curves, r], ignore_index=True)
 
+    # The probe's chance level is 1/n_roles and it RECORDS it. Reading it here
+    # rather than assuming 0.25 matters as soon as a model's chat template cannot
+    # express all four role classes: `tool` exists only in the Qwen and Llama
+    # templates, so a three-role model has chance 1/3, and an onset measured
+    # against 0.25 would be computed from a baseline that is too low — inflating
+    # every role onset on exactly the cross-family models added to answer the
+    # generalisation question.
+    role_chance = float(probe.chance.iloc[0]) if "chance" in probe.columns else 0.25
+
     # Pre-registered emergence rule (EXPERIMENTS.md > E1.5): the depth at which
     # separation FIRST reaches a fraction of its within-model peak — not the
     # argmax. The peak says where a concept is most decodable; onset says where it
@@ -1268,7 +1292,7 @@ def stage_emergence(ctx: Context) -> None:
     for c in out.concept.unique():
         s = out[out.concept == c].sort_values("layer")
         b = s.loc[s.train_auc.idxmax()]
-        base = 0.25 if c == "R_role_probe" else 0.5      # chance for that readout
+        base = role_chance if c == "R_role_probe" else 0.5   # chance for that readout
 
         def onset(frac):
             hit = s[s.auc >= base + frac * (b.auc - base)]
@@ -1685,14 +1709,14 @@ def stage_style_level2(ctx: Context) -> None:
 
     recs, rendered = [], []
     for it in items:
-        for role in cfg.roles:
+        for role in cfg.roles_for(slug):
             R = render(tok, it.text, role, "fixed_slot")
             rendered.append(R)
             recs.append({"uid": it.uid, "base_uid": it.base_uid, "arm": it.arm,
                          "register": it.register, "role": role, "split": it.split})
     idx = pd.DataFrame(recs)
     log.info(f"[{slug}] rendering {len(rendered)} items "
-             f"({len(items)} style items x {len(cfg.roles)} role tags)")
+             f"({len(items)} style items x {len(cfg.roles_for(slug))} role tags)")
 
     cap = ActivationCapture(model, site="residual")
     acts = cap.at_positions(tok, rendered, ("t_inst", "t_post_inst"),
@@ -1807,27 +1831,56 @@ def stage_fidelity(ctx: Context) -> None:
     model, tok = load_model(ctx.spec().model_id, device, logger=log)
     n_layers = model_meta.num_layers(model.config)
 
-    df = _render_items(cfg, tok)
+    df = _render_items(cfg, tok, ctx.model)
     probes = load_torch(cfg.dir(NAME, slug) / "role_probes.pt")
     probe_csv = pd.read_csv(cfg.dir(NAME, slug) / "role_probe.csv")
     best_layer = int(probe_csv.loc[probe_csv.train_accuracy.idxmax(), "layer"])
     out_rows = {}
 
     # -- pre_mlp fidelity, at the residual probe's best layer
-    cap2 = ActivationCapture(model, site="pre_mlp")
-    ta, ow = cap2.at_content_tokens(tok, list(df.rendered), [best_layer],
-                                    cfg.max_content_tokens, cfg.batch_size, device, seed=cfg.seed)
-    o = ow.tolist()
-    r2 = [df.role.iloc[i] for i in o]
-    m2 = torch.tensor([df.split.iloc[i] == "train" for i in o])
-    p2 = extract.train_role_probe(ta[best_layer][m2], [r for r, k in zip(r2, m2.tolist()) if k],
-                                  ta[best_layer][~m2], [r for r, k in zip(r2, (~m2).tolist()) if k],
-                                  layer=best_layer, site="pre_mlp", seed=cfg.seed)
-    out_rows["pre_mlp_fidelity"] = {
-        "layer": best_layer, "pre_mlp_accuracy": p2.accuracy,
-        "residual_accuracy": float(probe_csv.accuracy.max())}
-    log.info(f"  pre_mlp @L{best_layer}: {p2.accuracy:.3f} "
-             f"(residual {float(probe_csv.accuracy.max()):.3f})")
+    #
+    # Only where the architecture HAS that site. Nemotron-H is a Mamba/attention
+    # hybrid (`MEMEM*EMEM...`); its blocks expose `norm` and `mixer` only, so
+    # `post_attention_layernorm` does not exist and the role paper's read site
+    # cannot be reproduced on it. That is a property of the model, not a failure
+    # of the run — but it used to raise, killing the job at stage 13 of 14 and
+    # taking `causal` (and therefore GATE 1) with it.
+    #
+    # Recorded as `applicable: false` with the reason, never silently skipped:
+    # the write-up must be able to say which models the reproduction covers.
+    from core.capture import has_site
+    if not has_site(model_meta.find_layers(model)[0], "pre_mlp"):
+        out_rows["pre_mlp_fidelity"] = {
+            "applicable": False,
+            "reason": f"{type(model_meta.find_layers(model)[0]).__name__} has no "
+                      f"post_attention_layernorm — this architecture has no "
+                      f"post-attention site to read",
+            "architecture": type(model).__name__,
+            "note": "the role paper's read-site reproduction is not defined for this "
+                    "architecture; the residual-stream result is unaffected"}
+        log.warning(f"[{slug}] pre_mlp fidelity NOT APPLICABLE: "
+                    f"{out_rows['pre_mlp_fidelity']['reason']}")
+        log.info(f"[{slug}] continuing to the cross-corpus transfer check, which "
+                 f"reads the residual stream and is unaffected")
+        _skip_pre_mlp = True
+    else:
+        _skip_pre_mlp = False
+
+    if not _skip_pre_mlp:
+        cap2 = ActivationCapture(model, site="pre_mlp")
+        ta, ow = cap2.at_content_tokens(tok, list(df.rendered), [best_layer],
+                                        cfg.max_content_tokens, cfg.batch_size, device, seed=cfg.seed)
+        o = ow.tolist()
+        r2 = [df.role.iloc[i] for i in o]
+        m2 = torch.tensor([df.split.iloc[i] == "train" for i in o])
+        p2 = extract.train_role_probe(ta[best_layer][m2], [r for r, k in zip(r2, m2.tolist()) if k],
+                                      ta[best_layer][~m2], [r for r, k in zip(r2, (~m2).tolist()) if k],
+                                      layer=best_layer, site="pre_mlp", seed=cfg.seed)
+        out_rows["pre_mlp_fidelity"] = {
+            "layer": best_layer, "pre_mlp_accuracy": p2.accuracy,
+            "residual_accuracy": float(probe_csv.accuracy.max())}
+        log.info(f"  pre_mlp @L{best_layer}: {p2.accuracy:.3f} "
+                 f"(residual {float(probe_csv.accuracy.max()):.3f})")
 
     # -- cross-corpus transfer, both directions
     try:
@@ -1837,9 +1890,9 @@ def stage_fidelity(ctx: Context) -> None:
         transfer = pools.load_transfer_corpus(cfg.results_root / CORPUS)
         ref = [{"role": role, "uid": t.uid, "split": t.split,
                 "rendered": render(tok, t.text, role, "fixed_slot")}
-               for t in transfer for role in cfg.roles]
+               for t in transfer for role in cfg.roles_for(slug)]
         rdf = pd.DataFrame(ref)
-        log.info(f"  transfer corpus: {len(transfer)} C4 passages x {len(cfg.roles)} roles "
+        log.info(f"  transfer corpus: {len(transfer)} C4 passages x {len(cfg.roles_for(slug))} roles "
                  f"= {len(rdf)} items (frozen at E1.0b)")
         cap = ActivationCapture(model, site="residual")
         ra, ro = cap.at_content_tokens(tok, list(rdf.rendered), [best_layer],
@@ -2029,10 +2082,29 @@ def stage_causal(ctx: Context) -> None:
             raise ValueError(f"CONTROL_VARIANT must be one of {sorted(_CTRL)} or 'auto'")
         ctrl_key = _CTRL[variant]
         if ctrl_key not in dirs:
-            raise SystemExit(
-                f"[{slug}] CONTROL_VARIANT={variant} requires {ctrl_key}, which was not "
-                f"extracted for this model (available: {sorted(dirs)}). On a model whose "
-                f"harmful-and-complied cell is empty, only 'over' is estimable.")
+            # Whether `under` is estimable is a PROPERTY OF THE MODEL's refusal
+            # behaviour, discovered at E1.1 Stage 1, not something a submission
+            # script can know in advance. The matched cross-model arm is always
+            # `over`; the `under` arm is run opportunistically per model, and
+            # `CONTROL_VARIANT_OPTIONAL=1` lets that arm report "not estimable
+            # on this model" and exit CLEANLY rather than failing the job and
+            # breaking the `afterok` chain for everything downstream.
+            msg = (f"[{slug}] CONTROL_VARIANT={variant} requires {ctrl_key}, which was not "
+                   f"extracted for this model (available: {sorted(dirs)}). On a model whose "
+                   f"harmful-and-complied cell is empty, only 'over' is estimable.")
+            if os.environ.get("CONTROL_VARIANT_OPTIONAL", "").strip().lower() in {"1", "true", "yes"}:
+                log.warning(msg)
+                log.warning(f"[{slug}] CONTROL_VARIANT_OPTIONAL set -> skipping the "
+                            f"'{variant}' arm for this model, exiting 0. The matched "
+                            f"cross-model arm is unaffected.")
+                (cfg.dir(NAME, slug) / f"causal_skipped__{variant}.json").write_text(
+                    json.dumps({"model": slug, "variant": variant,
+                                "required_direction": ctrl_key,
+                                "available_directions": sorted(dirs),
+                                "reason": "harmful-and-complied cell too small to fit "
+                                          "the refused-vs-complied contrast"}, indent=2))
+                return
+            raise SystemExit(msg)
     ctrl_variant = "under" if ctrl_key == "R_control" else "over"
     log.info(f"[{slug}] control variable: {ctrl_key} (variant='{ctrl_variant}', "
              f"requested '{variant}')")
@@ -2083,7 +2155,7 @@ def stage_causal(ctx: Context) -> None:
 
     device = resolve_device()
     model, tok = load_model(ctx.spec().model_id, device, logger=log)
-    rendered = _render_items(cfg, tok)
+    rendered = _render_items(cfg, tok, ctx.model)
     if not (list(rendered.uid) == list(idx.uid) and list(rendered.role) == list(idx.role)):
         raise ValueError("re-rendered corpus does not align with the cached activation index")
     texts_tr = [rendered.text.iloc[i] for i in sel_tr]
@@ -2661,6 +2733,24 @@ def _adjudicate_at(mat: pd.DataFrame, kl_bound: float,
     # non-zero shift would qualify. The threshold is the random direction's own
     # behavioural effect at matched magnitude — the same null logic used for the
     # representational readout.
+    # A band of EXACTLY ZERO carries no information, and admitting it makes G3
+    # vacuous at that magnitude: `shift > 0` is true for any non-zero shift, so a
+    # one-item change in refusal rate qualifies. That is the mirror image of the
+    # original G3 bug, where a missing key defaulted the band to `inf` and the
+    # criterion could never fire; here it always fires.
+    #
+    # It is not hypothetical. On qwen3.5-35b-a3b the behavioural band at
+    # |alpha|=0.25 came out 0.0 — random steering at that magnitude never moved
+    # the refusal rate — and 206 of 362 qualifying cells came from that alpha
+    # alone, every one of them a 0.01 shift against a 0.0 threshold. (The verdict
+    # survived on 156 cells at |alpha| 0.5 and 1.0 where the band was informative,
+    # so the PASS stood; the COUNT was inflated.)
+    #
+    # Degenerate alphas are therefore excluded from G3 and the exclusion is
+    # recorded, rather than being silently counted or silently dropped.
+    _degenerate_alphas = sorted({a for a in (float(x) for x in beh_by)
+                                 if not (beh_nb(a) > 0)}) if beh_grp else []
+    _n_excluded = 0
     diss = []
     for (L, rl, al), g in live.groupby(["steer_layer", "read_layer", "alpha"]):
         for src in g.source.unique():
@@ -2668,6 +2758,9 @@ def _adjudicate_at(mat: pd.DataFrame, kl_bound: float,
             if not len(sub):
                 continue
             aa = float(sub.abs_alpha.iloc[0])
+            if not (beh_nb(aa) > 0):
+                _n_excluded += 1
+                continue
             shift = abs(float(sub[beh_col].iloc[0]))
             moved_behaviour = shift > beh_nb(aa)
             unmoved = [t for t, d in zip(sub.target, sub.delta.abs())
@@ -2682,7 +2775,17 @@ def _adjudicate_at(mat: pd.DataFrame, kl_bound: float,
                      "least one other variable stays inside its own null band",
         "behavioural_readout": beh_col,
         "behavioural_null_p95_by_alpha": {str(k): round(v, 4) for k, v in beh_by.items()},
-        "n": len(diss), "holds": bool(diss), "examples": diss[:6]}
+        "degenerate_alphas_excluded": _degenerate_alphas,
+        "n_cells_excluded_degenerate_band": _n_excluded,
+        "n": len(diss), "holds": bool(diss),
+        # a spread of alphas, not the first six, so the reader can see whether the
+        # verdict leans on one magnitude
+        "examples": ([diss[i] for i in
+                      sorted({0, len(diss)//4, len(diss)//2, 3*len(diss)//4, len(diss)-1}
+                             & set(range(len(diss))))] if diss else []),
+        "qualifying_cells_by_abs_alpha": {
+            str(a): sum(1 for x in diss if abs(float(x["alpha"])) == a)
+            for a in sorted({abs(float(x["alpha"])) for x in diss})}}
 
     # A verdict requires the asymmetry test to have had pairs to test. Reporting
     # FAIL when n_pairs_tested == 0 would present a test that never ran as a
@@ -2700,7 +2803,12 @@ PIPELINE = Pipeline(NAME, [
     Stage("labels", stage_labels, produces=["refusal_labels.csv", "labels_checks.json"],
           needs_gpu=True, doc="E1.1 input — refusal labels; gates R_control identifiability"),
     Stage("extract", stage_extract,
-          produces=["directions.pt", "role_probes.pt", "activations.pt",
+          # `activations_cache.json`, not `activations.pt`: the blob itself now
+          # lives outside the results root (Config.cache_dir), and `produces`
+          # drives the skip-if-complete check, which looks in the results root.
+          # Naming the blob here would make `extract` appear incomplete forever
+          # and re-run on every invocation.
+          produces=["directions.pt", "role_probes.pt", "activations_cache.json",
                     "direction_validation.csv", "role_probe.csv"],
           requires=["labels"], needs_gpu=True,
           doc="E1.1 — directions + role probe at every layer"),

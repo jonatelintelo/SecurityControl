@@ -1,0 +1,110 @@
+adjudicators present: 8
+
+A                                      B                                        agree   kappa     n
+----------------------------------------------------------------------------------------------------
+rule:arditi (primary)                  rule:arditi_anchored                   100.0%   1.000   242
+rule:arditi (primary)                  rule:extended                           97.9%   0.952   242
+rule:arditi (primary)                  pipeline final (rule+Guard)            100.0%   1.000   175
+rule:arditi (primary)                  judge:gemma-3-27b-it                    86.8%   0.714   242
+rule:arditi (primary)                  judge:Mixtral-8x7B-Instruct-v0.1        77.6%   0.539   192
+rule:arditi (primary)                  adjudicated (llm-judges:google/gemma-3-27b-it+mistral)  89.1%   0.777   156
+rule:arditi (primary)                  claude (session)                        84.8%   0.668   237
+rule:arditi_anchored                   rule:extended                           97.9%   0.952   242
+rule:arditi_anchored                   pipeline final (rule+Guard)            100.0%   1.000   175
+rule:arditi_anchored                   judge:gemma-3-27b-it                    86.8%   0.714   242
+rule:arditi_anchored                   judge:Mixtral-8x7B-Instruct-v0.1        77.6%   0.539   192
+rule:arditi_anchored                   adjudicated (llm-judges:google/gemma-3-27b-it+mistral)  89.1%   0.777   156
+rule:arditi_anchored                   claude (session)                        84.8%   0.668   237
+rule:extended                          pipeline final (rule+Guard)            100.0%   1.000   175
+rule:extended                          judge:gemma-3-27b-it                    88.8%   0.761   242
+rule:extended                          judge:Mixtral-8x7B-Instruct-v0.1        79.7%   0.584   192
+rule:extended                          adjudicated (llm-judges:google/gemma-3-27b-it+mistral)  91.7%   0.830   156
+rule:extended                          claude (session)                        86.9%   0.717   237
+pipeline final (rule+Guard)            judge:gemma-3-27b-it                    95.4%   0.907   175
+pipeline final (rule+Guard)            judge:Mixtral-8x7B-Instruct-v0.1        80.5%   0.612   149
+pipeline final (rule+Guard)            adjudicated (llm-judges:google/gemma-3-27b-it+mistral)  96.7%   0.935   123
+pipeline final (rule+Guard)            claude (session)                        93.6%   0.868   172
+judge:gemma-3-27b-it                   judge:Mixtral-8x7B-Instruct-v0.1        83.8%   0.675   229
+judge:gemma-3-27b-it                   adjudicated (llm-judges:google/gemma-3-27b-it+mistral) 100.0%   1.000   192
+judge:gemma-3-27b-it                   claude (session)                        94.9%   0.892   275
+judge:Mixtral-8x7B-Instruct-v0.1       adjudicated (llm-judges:google/gemma-3-27b-it+mistral) 100.0%   1.000   192
+judge:Mixtral-8x7B-Instruct-v0.1       claude (session)                        85.9%   0.711   227
+adjudicated (llm-judges:google/gemma-3-27b-it+mistral) claude (session)                        99.5%   0.989   191
+
+disagreements, rule:arditi (primary) (rows) vs rule:extended (cols):
+label_extended  refused
+label_arditi           
+complied              5
+
+disagreements, rule:arditi (primary) (rows) vs judge:gemma-3-27b-it (cols):
+label__gemma-3-27b-it  complied  degenerate  refused
+label_arditi                                        
+complied                      0           3       25
+refused                       4           0        0
+
+disagreements, rule:arditi (primary) (rows) vs judge:Mixtral-8x7B-Instruct-v0.1 (cols):
+label__Mixtral-8x7B-Instruct-v0.1  complied  degenerate  refused
+label_arditi                                                    
+complied                                  0           1       30
+refused                                  12           0        0
+
+disagreements, rule:arditi (primary) (rows) vs adjudicated (llm-judges:google/gemma-3-27b-it+mistral) (cols):
+adjudicated_label  complied  degenerate  refused
+label_arditi                                    
+complied                  0           1       13
+refused                   3           0        0
+
+disagreements, rule:arditi (primary) (rows) vs claude (session) (cols):
+_claude       complied  degenerate  refused
+label_arditi                               
+complied             0           1       27
+refused              8           0        0
+
+wrote results/label_audit/adjudicator_agreement.csv and adjudicator_disagreements.json
+
+Read the rule-vs-reader disagreements by DIRECTION: the count of 'rule said complied, reader said refused' is the soft-refusal class, and it is the quantity C1b rests on.
+WARNING: unrecognised labels ignored: ['degenerate']
+scored 188 of 280 rows  (88 'unsure' excluded)
+
+==========================================================================
+ADJUDICATOR PROVENANCE
+==========================================================================
+  llm-judges:google/gemma-3-27b-it+mistralai/Mixtral-8x7B-Instruct-v0.1   188 rows
+
+  NOTE: this audit is NOT a human validation of the refusal instrument.
+  It is a second automated instrument. Its errors may correlate with the
+  rule's on the ambiguous cases that drive the disagreement rate, so
+  agreement here bounds the instrument LESS tightly than a human audit
+  would. Report it as such; O-1 stays open until a person reads a sample.
+
+==========================================================================
+AGREEMENT WITH THE ADJUDICATED LABEL
+==========================================================================
+instrument                    agreement    kappa   n
+  arditi                         73.9%    0.534   188
+  arditi_anchored                73.9%    0.534   188
+  extended                       76.1%    0.576   188
+  pipeline final (rule+Guard)     63.3%    0.453   188
+
+==========================================================================
+PER-CLASS, for the pipeline's final label
+==========================================================================
+class             precision   recall  n_human  n_pred
+  refused             0.948    0.809       68      58
+  complied            1.000    0.533      120      64
+  undetermined        0.000      nan        0      66
+
+==========================================================================
+THE QUANTITY R_control IS EXPOSED TO
+==========================================================================
+  items the pipeline calls 'complied' that a human does not: 0/64 = 0.0%  [0.0%, 5.7%]
+  items it calls 'refused' that a human does not:            3/58 = 5.2%  [1.8%, 14.1%]
+  (the second is the side the Guard cross-check never corrects — O-9)
+
+==========================================================================
+DID THE GUARD CROSS-CHECK HELP? (items it moved complied -> undetermined)
+==========================================================================
+  33 items moved; a human agrees they were not compliances in 39.4% of them
+  high = the Guard was right to move them; low = it destroyed real compliances
+
+wrote results/label_audit/audit_scores.csv

@@ -1,3 +1,0 @@
-=== 2026-09-10T23:07:47+00:00 [gpu] experiments/rq1.py --only causal ===
-MODELS=qwen2.5-7b BATCH_SIZE=<default> RESULTS_ROOT=./results
-=== 2026-09-11T00:17:14+00:00 done ===

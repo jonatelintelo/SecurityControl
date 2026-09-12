@@ -1,0 +1,41 @@
+[2026-09-11 13:05:29] [INFO] 440 question_ids; 440 complete and disjoint from the frozen corpus; probing 60
+[2026-09-11 13:05:31] [INFO] Loading nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16: {'model_id': 'nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16', 'architecture': 'NemotronHForCausalLM', 'model_type': 'nemotron_h', 'num_layers': 52, 'hidden_size': 2688, 'num_experts': None, 'is_multimodal': False}
+Loading weights:   0%|          | 0/401 [00:00<?, ?it/s]Loading weights:   3%|▎         | 11/401 [00:00<00:12, 30.24it/s]Loading weights:   7%|▋         | 27/401 [00:00<00:12, 30.04it/s]Loading weights:  12%|█▏        | 48/401 [00:01<00:10, 32.68it/s]Loading weights:  16%|█▌        | 64/401 [00:02<00:11, 29.44it/s]Loading weights:  20%|█▉        | 80/401 [00:02<00:12, 25.50it/s]Loading weights:  25%|██▌       | 101/401 [00:03<00:10, 29.61it/s]Loading weights:  29%|██▉       | 117/401 [00:04<00:09, 29.35it/s]Loading weights:  33%|███▎      | 133/401 [00:04<00:08, 30.05it/s]Loading weights:  38%|███▊      | 154/401 [00:05<00:07, 32.22it/s]Loading weights:  42%|████▏     | 170/401 [00:05<00:07, 30.75it/s]Loading weights:  46%|████▋     | 186/401 [00:06<00:07, 30.49it/s]Loading weights:  52%|█████▏    | 207/401 [00:06<00:05, 32.35it/s]Loading weights:  56%|█████▌    | 223/401 [00:07<00:05, 31.51it/s]Loading weights:  60%|█████▉    | 239/401 [00:07<00:05, 31.23it/s]Loading weights:  65%|██████▍   | 260/401 [00:08<00:04, 33.69it/s]Loading weights:  69%|██████▉   | 276/401 [00:08<00:03, 32.64it/s]Loading weights:  73%|███████▎  | 292/401 [00:09<00:03, 32.04it/s]Loading weights:  77%|███████▋  | 308/401 [00:10<00:03, 27.65it/s]Loading weights:  82%|████████▏ | 329/401 [00:11<00:02, 25.95it/s]Loading weights:  86%|████████▌ | 345/401 [00:12<00:02, 22.74it/s]Loading weights:  90%|█████████ | 361/401 [00:12<00:01, 21.56it/s]Loading weights:  94%|█████████▍| 377/401 [00:13<00:01, 20.17it/s]Loading weights:  98%|█████████▊| 393/401 [00:14<00:00, 19.13it/s]Loading weights:  99%|█████████▊| 395/401 [00:14<00:00, 18.68it/s]Loading weights: 100%|██████████| 401/401 [00:14<00:00, 26.94it/s]
+[2026-09-11 13:05:56] [INFO] Decoder stack at 'model.layers' (52 layers)
+[2026-09-11 13:05:56] [INFO] [nemotron-3-nano-30b-a3b] base: generating 240 items (60 prompts x 4 roles)
+[2026-09-11 13:06:00] [INFO]     generated 16/240
+[2026-09-11 13:07:09] [INFO] [nemotron-3-nano-30b-a3b] evidence-based_persuasion: generating 240 items (60 prompts x 4 roles)
+[2026-09-11 13:07:16] [INFO]     generated 16/240
+[2026-09-11 13:09:02] [INFO] [nemotron-3-nano-30b-a3b] expert_endorsement: generating 240 items (60 prompts x 4 roles)
+[2026-09-11 13:09:09] [INFO]     generated 16/240
+[2026-09-11 13:10:54] [INFO] [nemotron-3-nano-30b-a3b] logical_appeal: generating 240 items (60 prompts x 4 roles)
+[2026-09-11 13:11:02] [INFO]     generated 16/240
+[2026-09-11 13:12:44] [INFO] [nemotron-3-nano-30b-a3b] misrepresentation: generating 240 items (60 prompts x 4 roles)
+[2026-09-11 13:12:52] [INFO]     generated 16/240
+[2026-09-11 13:14:37] [INFO] Loading guard meta-llama/Llama-Guard-3-8B (torch.bfloat16)
+Loading weights:   0%|          | 0/291 [00:00<?, ?it/s]Loading weights:   6%|▌         | 18/291 [00:00<00:01, 158.86it/s]Loading weights:  13%|█▎        | 37/291 [00:00<00:01, 174.84it/s]Loading weights:  20%|██        | 59/291 [00:00<00:01, 175.69it/s]Loading weights:  28%|██▊       | 81/291 [00:00<00:01, 189.03it/s]Loading weights:  35%|███▍      | 101/291 [00:00<00:01, 156.27it/s]Loading weights:  42%|████▏     | 122/291 [00:00<00:01, 163.20it/s]Loading weights:  50%|████▉     | 145/291 [00:00<00:00, 174.39it/s]Loading weights:  57%|█████▋    | 167/291 [00:00<00:00, 178.55it/s]Loading weights:  64%|██████▍   | 186/291 [00:01<00:00, 174.84it/s]Loading weights:  71%|███████   | 207/291 [00:01<00:00, 182.08it/s]Loading weights:  78%|███████▊  | 227/291 [00:01<00:00, 183.23it/s]Loading weights:  85%|████████▌ | 248/291 [00:01<00:00, 181.62it/s]Loading weights:  93%|█████████▎| 270/291 [00:01<00:00, 191.27it/s]Loading weights: 100%|██████████| 291/291 [00:01<00:00, 182.09it/s]
+[transformers] Ignoring clean_up_tokenization_spaces=True for BPE tokenizer TokenizersBackend. The clean_up_tokenization post-processing step is designed for WordPiece tokenizers and is destructive for BPE (it strips spaces before punctuation). Set clean_up_tokenization_spaces=False to suppress this warning, or set clean_up_tokenization_spaces_for_bpe_even_though_it_will_corrupt_output=True to force cleanup anyway.
+[2026-09-11 13:14:54] [INFO] [nemotron-3-nano-30b-a3b] guard: 592/603 complied rows reclassified to undetermined (no harmful content)
+[2026-09-11 13:14:54] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 13:14:54] [INFO] [nemotron-3-nano-30b-a3b] COMPLIANT CELL by style (Guard-verified; `instr` is what the cluster bootstrap counts)
+Traceback (most recent call last):
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 3812, in get_loc
+    return self._engine.get_loc(casted_key)
+  File "pandas/_libs/index.pyx", line 167, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 196, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7088, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7096, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: False
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/experiments/probe_jailbreak_corpus.py", line 191, in <module>
+    
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/experiments/probe_jailbreak_corpus.py", line 150, in main
+    f"(Guard-verified; `instr` is what the cluster bootstrap counts)")
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/pandas/core/frame.py", line 4113, in __getitem__
+    indexer = self.columns.get_loc(key)
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 3819, in get_loc
+    raise KeyError(key) from err
+KeyError: False

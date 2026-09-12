@@ -16,6 +16,15 @@ the instruction is rendered as a sentinel, the sentinel's character span is
 located, and the fast tokenizer's offset mapping maps that span to token indices.
 This is template-agnostic and survives BPE merges that token matching gets wrong.
 
+What it cannot do is prevent a merge ACROSS the boundary: if the character after
+the instruction merges with the instruction's last character, the token at
+`t_inst` covers both. Qwen's tool template does this (`.` + `\n`) and so does
+Llama's (`.` + `"`, since that template quotes tool content). This is a property
+of the template, identical on every item of that (role, design), so it adds a
+constant to the read position rather than an instruction-dependent confound —
+and it is not a reason to drop a role. `bleed_head` / `bleed_tail` record the
+characters so the constancy is verified in the corpus checks.
+
 Two designs, per EXPERIMENTS.md > E1.1:
 
 * ``fixed_slot`` — constant frame, instruction always in the same message slot,
@@ -56,6 +65,16 @@ class Rendered:
     content_end: int         # one past the last (half-open)
     n_tokens: int
     slot_is_fixed: bool      # False when the template forced a natural slot
+    # Template characters fused by BPE into the boundary tokens of the
+    # instruction. Not an error and not avoidable: `t_inst` is defined as the
+    # last token OVERLAPPING the instruction, and a template whose next
+    # character merges with the instruction's last one (Qwen's `.` + `\n`,
+    # Llama's `.` + `"`) makes that token span the boundary. What matters is
+    # that the bleed is CONSTANT for a given (role, design) — the same template
+    # characters on every item — so it cannot carry instruction-dependent
+    # signal. Recorded here so that invariance is checked rather than assumed.
+    bleed_head: str = ""     # template chars inside the FIRST instruction token
+    bleed_tail: str = ""     # template chars inside the LAST instruction token
 
     @property
     def content_span(self) -> Tuple[int, int]:
@@ -121,7 +140,7 @@ def render(tokenizer, instruction: str, role: str, design: str = "fixed_slot") -
 
     # `system` can never occupy the common slot: Qwen3.5 rejects a mid-conversation
     # system message outright ("System message must be at the beginning"), and
-    # placing one there on Qwen2.5 alone would make the two models incomparable.
+    # placing one there on Qwen2.5 alone would make the roster incomparable.
     fixed_ok = design == "fixed_slot" and role != "system"
     text_s: Optional[str] = None
     if fixed_ok:
@@ -155,6 +174,8 @@ def render(tokenizer, instruction: str, role: str, design: str = "fixed_slot") -
         t_inst=idx[-1], t_post_inst=len(offsets) - 1,
         content_start=idx[0], content_end=idx[-1] + 1,
         n_tokens=len(offsets), slot_is_fixed=(design == "fixed_slot" and fixed_ok),
+        bleed_head=text[offsets[idx[0]][0]:c0],
+        bleed_tail=text[c1:offsets[idx[-1]][1]],
     )
 
 

@@ -1,0 +1,63 @@
+[2026-09-11 18:07:53] [INFO] pipeline rq1: ['causal']
+[2026-09-11 18:07:53] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 18:07:53] [INFO] [causal/qwen2.5-7b] E1.6 — causal distinguishability; GO/NO-GO GATE 1
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 18:21:20] [INFO] [qwen2.5-7b] control variable: R_control (variant='under', requested 'under')
+[2026-09-11 18:21:20] [INFO] [qwen2.5-7b] probe sets: train 80, test 100 (balanced harmful/harmless)
+[2026-09-11 18:21:25] [INFO] Loading Qwen/Qwen2.5-7B-Instruct: {'model_id': 'Qwen/Qwen2.5-7B-Instruct', 'architecture': 'Qwen2ForCausalLM', 'model_type': 'qwen2', 'num_layers': 28, 'hidden_size': 3584, 'num_experts': None, 'is_multimodal': False}
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:  16%|█▌        | 54/339 [00:00<00:00, 513.61it/s]Loading weights:  31%|███▏      | 106/339 [00:00<00:00, 251.95it/s]Loading weights:  41%|████      | 138/339 [00:00<00:00, 218.02it/s]Loading weights:  48%|████▊     | 164/339 [00:00<00:00, 226.81it/s]Loading weights:  56%|█████▌    | 190/339 [00:00<00:00, 213.88it/s]Loading weights:  64%|██████▎   | 216/339 [00:00<00:00, 223.95it/s]Loading weights:  71%|███████▏  | 242/339 [00:01<00:00, 226.01it/s]Loading weights:  79%|███████▉  | 269/339 [00:01<00:00, 233.02it/s]Loading weights:  87%|████████▋ | 294/339 [00:01<00:00, 230.21it/s]Loading weights:  96%|█████████▌| 324/339 [00:01<00:00, 247.71it/s]Loading weights: 100%|██████████| 339/339 [00:01<00:00, 242.85it/s]
+[2026-09-11 18:27:44] [INFO] Decoder stack at 'model.layers' (28 layers)
+[2026-09-11 18:27:50] [INFO]   sanity @L12: determinism KL 0.0e+00 (ok); raw_norm 7.90
+[2026-09-11 18:27:50] [INFO]     alpha=0.5: real KL 0.0454 vs magnitude-matched random 0.0069 (content gap +0.0385)
+[2026-09-11 18:27:50] [INFO]     alpha=1.0: real KL 0.2404 vs magnitude-matched random 0.0287 (content gap +0.2117)
+[2026-09-11 18:27:50] [INFO]     alpha=2.0: real KL 0.8740 vs magnitude-matched random 0.1471 (content gap +0.7269)
+[2026-09-11 18:27:50] [INFO] [qwen2.5-7b] stage A: layer profile on train, all 28 layers, alpha=+/-1
+[2026-09-11 18:28:27] [INFO]   stage A top-3/source [17, 18, 23, 24, 25, 26]; sensitivity depths [6, 13, 20]; steering at [6, 13, 17, 18, 20, 23, 24, 25, 26]
+[2026-09-11 18:28:27] [INFO] [qwen2.5-7b] stage B: alpha x token-position profile on train, 9 layers x 10 alpha x 4 token sets
+[2026-09-11 18:28:57] [INFO]     L6: 120 cells
+[2026-09-11 18:29:26] [INFO]     L13: 120 cells
+[2026-09-11 18:29:56] [INFO]     L17: 120 cells
+[2026-09-11 18:30:26] [INFO]     L18: 120 cells
+[2026-09-11 18:30:55] [INFO]     L20: 120 cells
+[2026-09-11 18:31:25] [INFO]     L23: 120 cells
+[2026-09-11 18:31:55] [INFO]     L24: 120 cells
+[2026-09-11 18:32:24] [INFO]     L25: 120 cells
+[2026-09-11 18:32:54] [INFO]     L26: 120 cells
+[2026-09-11 18:32:55] [INFO]   stage B all_real           mean |margin shift| 5.4978  mean KL 2.4237
+[2026-09-11 18:32:55] [INFO]   stage B instruction_span   mean |margin shift| 0.4915  mean KL 0.1582
+[2026-09-11 18:32:55] [INFO]   stage B post_instruction   mean |margin shift| 5.5494  mean KL 2.2415
+[2026-09-11 18:32:55] [INFO]   stage B t_inst_only        mean |margin shift| 0.1863  mean KL 0.0253
+[2026-09-11 18:33:08] [INFO]   L6: baseline refusal rate 0.420 (harmful 0.800, harmless 0.040)
+[2026-09-11 18:33:23] [INFO]   L6: magnitude-matched random KL (harmless) by alpha 0.25:0.0016, 0.5:0.0033, 1.0:0.0120, 2.0:0.0434, 4.0:0.1573
+[2026-09-11 18:42:38] [INFO]   L6: 4200 cells
+[2026-09-11 18:42:52] [INFO]   L13: baseline refusal rate 0.420 (harmful 0.800, harmless 0.040)
+[2026-09-11 18:43:06] [INFO]   L13: magnitude-matched random KL (harmless) by alpha 0.25:0.0059, 0.5:0.0212, 1.0:0.0875, 2.0:0.3560, 4.0:1.5661
+[2026-09-11 18:52:10] [INFO]   L13: 2800 cells
+[2026-09-11 18:52:24] [INFO]   L17: baseline refusal rate 0.420 (harmful 0.800, harmless 0.040)
+[2026-09-11 18:52:38] [INFO]   L17: magnitude-matched random KL (harmless) by alpha 0.25:0.0154, 0.5:0.0678, 1.0:0.2909, 2.0:1.1330, 4.0:4.8109
+[2026-09-11 19:01:43] [INFO]   L17: 2000 cells
+[2026-09-11 19:01:57] [INFO]   L18: baseline refusal rate 0.420 (harmful 0.800, harmless 0.040)
+[2026-09-11 19:02:11] [INFO]   L18: magnitude-matched random KL (harmless) by alpha 0.25:0.0173, 0.5:0.0709, 1.0:0.3249, 2.0:1.5770, 4.0:6.8640
+[2026-09-11 19:11:18] [INFO]   L18: 1800 cells
+[2026-09-11 19:11:32] [INFO]   L20: baseline refusal rate 0.420 (harmful 0.800, harmless 0.040)
+[2026-09-11 19:11:46] [INFO]   L20: magnitude-matched random KL (harmless) by alpha 0.25:0.0249, 0.5:0.0978, 1.0:0.4016, 2.0:1.9801, 4.0:6.5191
+[2026-09-11 19:20:55] [INFO]   L20: 1400 cells
+[2026-09-11 19:21:09] [INFO]   L23: baseline refusal rate 0.420 (harmful 0.800, harmless 0.040)
+[2026-09-11 19:21:23] [INFO]   L23: magnitude-matched random KL (harmless) by alpha 0.25:0.0096, 0.5:0.0359, 1.0:0.1554, 2.0:0.7844, 4.0:4.6507
+[2026-09-11 19:30:27] [INFO]   L23: 800 cells
+[2026-09-11 19:30:41] [INFO]   L24: baseline refusal rate 0.420 (harmful 0.800, harmless 0.040)
+[2026-09-11 19:30:55] [INFO]   L24: magnitude-matched random KL (harmless) by alpha 0.25:0.0076, 0.5:0.0292, 1.0:0.1209, 2.0:0.7109, 4.0:4.1245
+[2026-09-11 19:39:59] [INFO]   L24: 600 cells
+[2026-09-11 19:40:13] [INFO]   L25: baseline refusal rate 0.420 (harmful 0.800, harmless 0.040)
+[2026-09-11 19:40:27] [INFO]   L25: magnitude-matched random KL (harmless) by alpha 0.25:0.0057, 0.5:0.0238, 1.0:0.1326, 2.0:0.8241, 4.0:4.9636
+[2026-09-11 19:49:33] [INFO]   L25: 400 cells
+[2026-09-11 19:49:46] [INFO]   L26: baseline refusal rate 0.420 (harmful 0.800, harmless 0.040)
+[2026-09-11 19:50:00] [INFO]   L26: magnitude-matched random KL (harmless) by alpha 0.25:0.0061, 0.5:0.0242, 1.0:0.1155, 2.0:0.5637, 4.0:3.6503
+[2026-09-11 19:59:08] [INFO]   L26: 200 cells
+[2026-09-11 19:59:09] [INFO]   KL_harmless <= 0.1 : n_live=2385 G1 0.8302 G2 103/287 G3 77 -> PASS
+[2026-09-11 19:59:10] [INFO]   KL_harmless <= 0.25: n_live=3114 G1 0.8468 G2 120/416 G3 128 -> PASS
+[2026-09-11 19:59:12] [INFO]   KL_harmless <= 0.5 : n_live=3708 G1 0.8552 G2 179/521 G3 171 -> PASS
+[2026-09-11 19:59:13] [INFO]   KL_harmless <= 1.0 : n_live=4119 G1 0.8696 G2 191/573 G3 212 -> PASS
+[2026-09-11 19:59:15] [INFO]   KL_harmless <= 2.0 : n_live=4728 G1 0.8769 G2 219/667 G3 264 -> PASS
+[2026-09-11 19:59:15] [INFO] [qwen2.5-7b] GATE 1 — PASS (testable at bounds [0.1, 0.25, 0.5, 1.0, 2.0])

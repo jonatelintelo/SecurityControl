@@ -1,0 +1,42 @@
+[2026-09-11 13:05:28] [INFO] 440 question_ids; 440 complete and disjoint from the frozen corpus; probing 60
+[2026-09-11 13:05:31] [INFO] Loading Qwen/Qwen3.5-9B: {'model_id': 'Qwen/Qwen3.5-9B', 'architecture': 'Qwen3_5ForConditionalGeneration', 'model_type': 'qwen3_5', 'num_layers': 32, 'hidden_size': 4096, 'num_experts': None, 'is_multimodal': True}
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files: 100%|██████████| 4/4 [00:00<00:00, 1509.56it/s]
+Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:   3%|▎         | 13/427 [00:00<00:03, 126.94it/s]Loading weights:   9%|▊         | 37/427 [00:00<00:02, 189.27it/s]Loading weights:  13%|█▎        | 56/427 [00:00<00:03, 119.29it/s]Loading weights:  17%|█▋        | 71/427 [00:00<00:02, 123.96it/s]Loading weights:  23%|██▎       | 99/427 [00:00<00:01, 164.13it/s]Loading weights:  30%|███       | 129/427 [00:00<00:01, 200.51it/s]Loading weights:  35%|███▌      | 151/427 [00:00<00:01, 177.66it/s]Loading weights:  40%|████      | 172/427 [00:01<00:01, 181.60it/s]Loading weights:  45%|████▍     | 192/427 [00:01<00:01, 171.94it/s]Loading weights:  49%|████▉     | 210/427 [00:01<00:01, 150.33it/s]Loading weights:  53%|█████▎    | 226/427 [00:01<00:01, 152.64it/s]Loading weights:  57%|█████▋    | 242/427 [00:01<00:01, 143.03it/s]Loading weights:  60%|██████    | 257/427 [00:01<00:01, 132.55it/s]Loading weights:  64%|██████▍   | 275/427 [00:01<00:01, 142.08it/s]Loading weights:  68%|██████▊   | 292/427 [00:01<00:00, 148.06it/s]Loading weights:  72%|███████▏  | 308/427 [00:02<00:00, 127.07it/s]Loading weights:  78%|███████▊  | 331/427 [00:02<00:00, 144.13it/s]Loading weights:  81%|████████▏ | 347/427 [00:02<00:00, 128.90it/s]Loading weights:  85%|████████▍ | 361/427 [00:02<00:00, 123.26it/s]Loading weights:  89%|████████▉ | 380/427 [00:02<00:00, 138.83it/s]Loading weights:  93%|█████████▎| 395/427 [00:02<00:00, 136.49it/s]Loading weights:  96%|█████████▌| 410/427 [00:02<00:00, 135.93it/s]Loading weights: 100%|█████████▉| 425/427 [00:02<00:00, 136.04it/s]Loading weights: 100%|██████████| 427/427 [00:02<00:00, 146.39it/s]
+[2026-09-11 13:05:44] [INFO] Decoder stack at 'model.layers' (32 layers)
+[2026-09-11 13:05:44] [INFO] [qwen3.5-9b] base: generating 240 items (60 prompts x 4 roles)
+[2026-09-11 13:05:47] [INFO]     generated 16/240
+[2026-09-11 13:06:23] [INFO] [qwen3.5-9b] evidence-based_persuasion: generating 240 items (60 prompts x 4 roles)
+[2026-09-11 13:06:26] [INFO]     generated 16/240
+[2026-09-11 13:07:02] [INFO] [qwen3.5-9b] expert_endorsement: generating 240 items (60 prompts x 4 roles)
+[2026-09-11 13:07:05] [INFO]     generated 16/240
+[2026-09-11 13:07:41] [INFO] [qwen3.5-9b] logical_appeal: generating 240 items (60 prompts x 4 roles)
+[2026-09-11 13:07:43] [INFO]     generated 16/240
+[2026-09-11 13:08:19] [INFO] [qwen3.5-9b] misrepresentation: generating 240 items (60 prompts x 4 roles)
+[2026-09-11 13:08:21] [INFO]     generated 16/240
+[2026-09-11 13:08:57] [INFO] Loading guard meta-llama/Llama-Guard-3-8B (torch.bfloat16)
+Loading weights:   0%|          | 0/291 [00:00<?, ?it/s]Loading weights:   7%|▋         | 20/291 [00:00<00:01, 191.42it/s]Loading weights:  14%|█▎        | 40/291 [00:00<00:01, 160.44it/s]Loading weights:  20%|█▉        | 57/291 [00:00<00:02, 109.36it/s]Loading weights:  24%|██▍       | 70/291 [00:00<00:02, 94.08it/s] Loading weights:  28%|██▊       | 81/291 [00:00<00:02, 93.35it/s]Loading weights:  31%|███▏      | 91/291 [00:00<00:02, 89.96it/s]Loading weights:  35%|███▍      | 101/291 [00:01<00:02, 80.82it/s]Loading weights:  38%|███▊      | 110/291 [00:01<00:02, 81.34it/s]Loading weights:  41%|████      | 119/291 [00:01<00:02, 81.69it/s]Loading weights:  44%|████▍     | 128/291 [00:01<00:01, 82.73it/s]Loading weights:  47%|████▋     | 137/291 [00:01<00:01, 83.49it/s]Loading weights:  50%|█████     | 146/291 [00:01<00:01, 83.97it/s]Loading weights:  53%|█████▎    | 155/291 [00:01<00:01, 84.95it/s]Loading weights:  56%|█████▋    | 164/291 [00:01<00:01, 85.61it/s]Loading weights:  59%|█████▉    | 173/291 [00:01<00:01, 85.98it/s]Loading weights:  63%|██████▎   | 184/291 [00:02<00:01, 85.98it/s]Loading weights:  66%|██████▋   | 193/291 [00:02<00:01, 81.01it/s]Loading weights:  70%|██████▉   | 203/291 [00:02<00:01, 80.41it/s]Loading weights:  73%|███████▎  | 212/291 [00:02<00:00, 82.77it/s]Loading weights:  76%|███████▌  | 221/291 [00:02<00:00, 84.56it/s]Loading weights:  79%|███████▉  | 230/291 [00:02<00:00, 85.89it/s]Loading weights:  82%|████████▏ | 239/291 [00:02<00:00, 86.53it/s]Loading weights:  85%|████████▌ | 248/291 [00:02<00:00, 87.36it/s]Loading weights:  88%|████████▊ | 257/291 [00:02<00:00, 88.10it/s]Loading weights:  92%|█████████▏| 267/291 [00:02<00:00, 90.65it/s]Loading weights:  95%|█████████▌| 277/291 [00:03<00:00, 93.30it/s]Loading weights:  99%|█████████▉| 289/291 [00:03<00:00, 99.70it/s]Loading weights: 100%|██████████| 291/291 [00:03<00:00, 91.23it/s]
+[transformers] Ignoring clean_up_tokenization_spaces=True for BPE tokenizer TokenizersBackend. The clean_up_tokenization post-processing step is designed for WordPiece tokenizers and is destructive for BPE (it strips spaces before punctuation). Set clean_up_tokenization_spaces=False to suppress this warning, or set clean_up_tokenization_spaces_for_bpe_even_though_it_will_corrupt_output=True to force cleanup anyway.
+[2026-09-11 13:09:08] [INFO] [qwen3.5-9b] guard: 303/304 complied rows reclassified to undetermined (no harmful content)
+[2026-09-11 13:09:09] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 13:09:09] [INFO] [qwen3.5-9b] COMPLIANT CELL by style (Guard-verified; `instr` is what the cluster bootstrap counts)
+Traceback (most recent call last):
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 3812, in get_loc
+    return self._engine.get_loc(casted_key)
+  File "pandas/_libs/index.pyx", line 167, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 196, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7088, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7096, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: False
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/experiments/probe_jailbreak_corpus.py", line 191, in <module>
+    raise SystemExit(main())
+  File "/home/b6aj/jtelintelo.b6aj/SecurityControl/experiments/probe_jailbreak_corpus.py", line 150, in main
+    s = df[df.style == style]
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/pandas/core/frame.py", line 4113, in __getitem__
+    indexer = self.columns.get_loc(key)
+  File "/home/b6aj/jtelintelo.b6aj/miniforge3/envs/venv_causal_safety/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 3819, in get_loc
+    raise KeyError(key) from err
+KeyError: False

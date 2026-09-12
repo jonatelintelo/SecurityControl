@@ -1,5 +1,0 @@
-model,variant,position,layer,cos_with_pooled_harm,split_half_floor,pooled_harm_uncontaminated,cos_R_control_refctrl,cos_R_control_pooled,cos_R_control_harmless_refctrl,cos_R_control_harmless_pooled
-qwen2.5-7b,R_harm_in_refused,t_inst,11,0.9151983261108398,0.9935179948806764,False,,,,
-qwen2.5-7b,R_harm_in_refused_at_post,t_post_inst,8,0.9273580312728882,0.9973994493484496,False,0.256771445274353,0.14797042310237885,0.6918940544128418,0.38827773928642273
-qwen2.5-7b,R_harm_in_complied,t_inst,11,0.6853399276733398,0.9935179948806764,False,,,,
-qwen2.5-7b,R_harm_in_complied_at_post,t_post_inst,21,0.41607362031936646,0.9973994493484496,False,0.22304753959178925,0.7919074892997742,0.09611745923757553,0.6944665908813477

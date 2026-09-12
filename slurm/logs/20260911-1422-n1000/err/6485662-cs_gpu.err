@@ -1,0 +1,90 @@
+[2026-09-11 19:29:18] [INFO] pipeline rq1: ['labels', 'extract', 'nulls', 'geometry', 'projections', 'dimensionality', 'harm_controls', 'dim_behavioural', 'geometry_subspace', 'emergence', 'style', 'style_level2', 'fidelity', 'causal']
+[2026-09-11 19:29:18] [INFO] [labels/nemotron-3-nano-30b-a3b] already complete (2 artifacts) — skipping
+[2026-09-11 19:29:18] [INFO] [extract/nemotron-3-nano-30b-a3b] already complete (5 artifacts) — skipping
+[2026-09-11 19:29:18] [INFO] [nulls/nemotron-3-nano-30b-a3b] already complete (1 artifacts) — skipping
+[2026-09-11 19:29:18] [INFO] [geometry/nemotron-3-nano-30b-a3b] already complete (2 artifacts) — skipping
+[2026-09-11 19:29:18] [INFO] [projections/nemotron-3-nano-30b-a3b] already complete (2 artifacts) — skipping
+[2026-09-11 19:29:18] [INFO] [dimensionality/nemotron-3-nano-30b-a3b] already complete (1 artifacts) — skipping
+[2026-09-11 19:29:18] [INFO] [harm_controls/nemotron-3-nano-30b-a3b] already complete (2 artifacts) — skipping
+[2026-09-11 19:29:18] [INFO] [dim_behavioural/nemotron-3-nano-30b-a3b] already complete (2 artifacts) — skipping
+[2026-09-11 19:29:18] [INFO] [geometry_subspace/nemotron-3-nano-30b-a3b] already complete (2 artifacts) — skipping
+[2026-09-11 19:29:18] [INFO] [emergence/nemotron-3-nano-30b-a3b] already complete (2 artifacts) — skipping
+[2026-09-11 19:29:18] [INFO] [style/nemotron-3-nano-30b-a3b] already complete (3 artifacts) — skipping
+[2026-09-11 19:29:18] [INFO] [style_level2/nemotron-3-nano-30b-a3b] already complete (2 artifacts) — skipping
+[2026-09-11 19:29:18] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 19:29:18] [INFO] [fidelity/nemotron-3-nano-30b-a3b] E1.1 — pre_mlp fidelity + cross-corpus transfer (dropped in the first consolidation)
+[2026-09-11 19:29:41] [INFO] Loading nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16: {'model_id': 'nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16', 'architecture': 'NemotronHForCausalLM', 'model_type': 'nemotron_h', 'num_layers': 52, 'hidden_size': 2688, 'num_experts': None, 'is_multimodal': False}
+Loading weights:   0%|          | 0/401 [00:00<?, ?it/s]Loading weights:   3%|▎         | 11/401 [00:00<00:12, 32.11it/s]Loading weights:   7%|▋         | 27/401 [00:00<00:11, 31.92it/s]Loading weights:  12%|█▏        | 48/401 [00:01<00:10, 34.62it/s]Loading weights:  16%|█▌        | 64/401 [00:01<00:10, 32.93it/s]Loading weights:  20%|█▉        | 80/401 [00:02<00:10, 30.87it/s]Loading weights:  25%|██▌       | 101/401 [00:03<00:08, 33.73it/s]Loading weights:  29%|██▉       | 117/401 [00:03<00:08, 32.46it/s]Loading weights:  33%|███▎      | 133/401 [00:04<00:08, 33.18it/s]Loading weights:  38%|███▊      | 154/401 [00:04<00:07, 34.70it/s]Loading weights:  42%|████▏     | 170/401 [00:05<00:07, 32.84it/s]Loading weights:  46%|████▋     | 186/401 [00:05<00:06, 31.49it/s]Loading weights:  52%|█████▏    | 207/401 [00:06<00:05, 33.36it/s]Loading weights:  56%|█████▌    | 223/401 [00:06<00:05, 31.98it/s]Loading weights:  60%|█████▉    | 239/401 [00:07<00:05, 31.75it/s]Loading weights:  65%|██████▍   | 260/401 [00:07<00:04, 33.61it/s]Loading weights:  69%|██████▉   | 276/401 [00:08<00:03, 32.84it/s]Loading weights:  73%|███████▎  | 292/401 [00:08<00:03, 31.25it/s]Loading weights:  77%|███████▋  | 308/401 [00:09<00:03, 25.95it/s]Loading weights:  82%|████████▏ | 329/401 [00:10<00:02, 25.79it/s]Loading weights:  86%|████████▌ | 345/401 [00:11<00:02, 23.32it/s]Loading weights:  90%|█████████ | 361/401 [00:12<00:01, 22.50it/s]Loading weights:  94%|█████████▍| 377/401 [00:13<00:01, 21.07it/s]Loading weights:  98%|█████████▊| 393/401 [00:14<00:00, 19.80it/s]Loading weights:  99%|█████████▉| 396/401 [00:14<00:00, 19.80it/s]Loading weights: 100%|██████████| 401/401 [00:14<00:00, 28.08it/s]
+[2026-09-11 19:30:03] [INFO] Decoder stack at 'model.layers' (52 layers)
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 19:30:05] [WARNING] [nemotron-3-nano-30b-a3b] pre_mlp fidelity NOT APPLICABLE: NemotronHBlock has no post_attention_layernorm — this architecture has no post-attention site to read
+[2026-09-11 19:30:05] [INFO] [nemotron-3-nano-30b-a3b] continuing to the cross-corpus transfer check, which reads the residual stream and is unaffected
+[2026-09-11 19:30:05] [INFO]   transfer corpus: 150 C4 passages x 4 roles = 600 items (frozen at E1.0b)
+[2026-09-11 19:37:59] [INFO]   transfer @L46: ours->constant-content 0.715, theirs->our corpus 0.740 (chance 0.250)
+[2026-09-11 19:37:59] [INFO] ------------------------------------------------------------------------------
+[2026-09-11 19:37:59] [INFO] [causal/nemotron-3-nano-30b-a3b] E1.6 — causal distinguishability; GO/NO-GO GATE 1
+/home/b6aj/jtelintelo.b6aj/SecurityControl/core/io_utils.py:69: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load(path, map_location="cpu")
+[2026-09-11 19:38:00] [INFO] [nemotron-3-nano-30b-a3b] control variable: R_control_harmless (variant='over', requested 'over')
+[2026-09-11 19:38:00] [INFO] [nemotron-3-nano-30b-a3b] probe sets: train 80, test 100 (balanced harmful/harmless)
+[2026-09-11 19:38:01] [INFO] Loading nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16: {'model_id': 'nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16', 'architecture': 'NemotronHForCausalLM', 'model_type': 'nemotron_h', 'num_layers': 52, 'hidden_size': 2688, 'num_experts': None, 'is_multimodal': False}
+Loading weights:   0%|          | 0/401 [00:00<?, ?it/s]Loading weights:   3%|▎         | 11/401 [00:00<00:11, 32.76it/s]Loading weights:   7%|▋         | 27/401 [00:00<00:11, 33.59it/s]Loading weights:  12%|█▏        | 48/401 [00:01<00:09, 35.43it/s]Loading weights:  16%|█▌        | 64/401 [00:01<00:09, 36.55it/s]Loading weights:  20%|█▉        | 80/401 [00:02<00:09, 32.84it/s]Loading weights:  25%|██▌       | 101/401 [00:02<00:07, 38.15it/s]Loading weights:  29%|██▉       | 117/401 [00:03<00:08, 34.80it/s]Loading weights:  33%|███▎      | 133/401 [00:03<00:06, 38.31it/s]Loading weights:  38%|███▊      | 154/401 [00:03<00:05, 48.00it/s]Loading weights:  42%|████▏     | 170/401 [00:04<00:05, 39.93it/s]Loading weights:  46%|████▋     | 186/401 [00:05<00:05, 36.36it/s]Loading weights:  52%|█████▏    | 207/401 [00:05<00:05, 36.65it/s]Loading weights:  56%|█████▌    | 223/401 [00:06<00:05, 35.42it/s]Loading weights:  60%|█████▉    | 239/401 [00:06<00:04, 33.66it/s]Loading weights:  65%|██████▍   | 260/401 [00:07<00:04, 34.96it/s]Loading weights:  69%|██████▉   | 276/401 [00:07<00:03, 35.37it/s]Loading weights:  73%|███████▎  | 292/401 [00:08<00:03, 31.49it/s]Loading weights:  77%|███████▋  | 308/401 [00:09<00:03, 26.45it/s]Loading weights:  82%|████████▏ | 329/401 [00:09<00:02, 26.90it/s]Loading weights:  86%|████████▌ | 345/401 [00:10<00:02, 24.07it/s]Loading weights:  90%|█████████ | 361/401 [00:11<00:01, 25.19it/s]Loading weights:  94%|█████████▍| 377/401 [00:11<00:00, 26.09it/s]Loading weights:  98%|█████████▊| 393/401 [00:12<00:00, 23.52it/s]Loading weights:  99%|█████████▉| 396/401 [00:12<00:00, 23.36it/s]Loading weights: 100%|██████████| 401/401 [00:12<00:00, 31.34it/s]
+[2026-09-11 19:38:15] [INFO] Decoder stack at 'model.layers' (52 layers)
+[2026-09-11 19:39:19] [INFO]   sanity @L23: determinism KL 0.0e+00 (ok); raw_norm 24.26
+[2026-09-11 19:39:19] [INFO]     alpha=0.5: real KL 0.0859 vs magnitude-matched random 0.0073 (content gap +0.0786)
+[2026-09-11 19:39:19] [INFO]     alpha=1.0: real KL 0.4716 vs magnitude-matched random 0.0248 (content gap +0.4468)
+[2026-09-11 19:39:19] [INFO]     alpha=2.0: real KL 2.1556 vs magnitude-matched random 0.1082 (content gap +2.0474)
+[2026-09-11 19:39:19] [INFO] [nemotron-3-nano-30b-a3b] stage A: layer profile on train, all 52 layers, alpha=+/-1
+[2026-09-11 20:01:27] [INFO]   stage A top-3/source [26, 29, 31, 44, 48, 49, 50]; sensitivity depths [12, 25, 38]; steering at [12, 25, 26, 29, 31, 38, 44, 48, 49, 50]
+[2026-09-11 20:01:27] [INFO] [nemotron-3-nano-30b-a3b] stage B: alpha x token-position profile on train, 10 layers x 10 alpha x 4 token sets
+[2026-09-11 20:10:19] [INFO]     L12: 120 cells
+[2026-09-11 20:19:09] [INFO]     L25: 120 cells
+[2026-09-11 20:27:59] [INFO]     L26: 120 cells
+[2026-09-11 20:36:49] [INFO]     L29: 120 cells
+[2026-09-11 20:45:49] [INFO]     L31: 120 cells
+[2026-09-11 20:54:49] [INFO]     L38: 120 cells
+[2026-09-11 21:04:03] [INFO]     L44: 120 cells
+[2026-09-11 21:13:00] [INFO]     L48: 120 cells
+[2026-09-11 21:21:58] [INFO]     L49: 120 cells
+[2026-09-11 21:30:55] [INFO]     L50: 120 cells
+[2026-09-11 21:30:55] [INFO]   stage B all_real           mean |margin shift| 3.6335  mean KL 1.3833
+[2026-09-11 21:30:55] [INFO]   stage B instruction_span   mean |margin shift| 0.2726  mean KL 0.0194
+[2026-09-11 21:30:55] [INFO]   stage B post_instruction   mean |margin shift| 3.5024  mean KL 1.3222
+[2026-09-11 21:30:55] [INFO]   stage B t_inst_only        mean |margin shift| 0.0782  mean KL 0.0020
+[2026-09-11 21:31:51] [INFO]   L12: baseline refusal rate 0.490 (harmful 0.900, harmless 0.080)
+[2026-09-11 21:35:51] [INFO]   L12: magnitude-matched random KL (harmless) by alpha 0.25:0.0031, 0.5:0.0047, 1.0:0.0103, 2.0:0.0283, 4.0:0.1084
+[2026-09-11 22:12:53] [INFO]   L12: 7800 cells
+[2026-09-11 22:13:49] [INFO]   L25: baseline refusal rate 0.490 (harmful 0.900, harmless 0.080)
+[2026-09-11 22:17:48] [INFO]   L25: magnitude-matched random KL (harmless) by alpha 0.25:0.0051, 0.5:0.0151, 1.0:0.0587, 2.0:0.2959, 4.0:1.7045
+[2026-09-11 22:54:00] [INFO]   L25: 5200 cells
+[2026-09-11 22:54:56] [INFO]   L26: baseline refusal rate 0.490 (harmful 0.900, harmless 0.080)
+[2026-09-11 22:58:54] [INFO]   L26: magnitude-matched random KL (harmless) by alpha 0.25:0.0058, 0.5:0.0166, 1.0:0.0659, 2.0:0.3545, 4.0:2.0155
+[2026-09-11 23:34:56] [INFO]   L26: 5000 cells
+[2026-09-11 23:35:52] [INFO]   L29: baseline refusal rate 0.490 (harmful 0.900, harmless 0.080)
+[2026-09-11 23:39:49] [INFO]   L29: magnitude-matched random KL (harmless) by alpha 0.25:0.0080, 0.5:0.0282, 1.0:0.1177, 2.0:0.5658, 4.0:2.1838
+[2026-09-12 00:15:53] [INFO]   L29: 4400 cells
+[2026-09-12 00:16:49] [INFO]   L31: baseline refusal rate 0.490 (harmful 0.900, harmless 0.080)
+[2026-09-12 00:20:46] [INFO]   L31: magnitude-matched random KL (harmless) by alpha 0.25:0.0087, 0.5:0.0310, 1.0:0.1242, 2.0:0.5329, 4.0:2.1758
+[2026-09-12 00:56:51] [INFO]   L31: 4000 cells
+[2026-09-12 00:57:46] [INFO]   L38: baseline refusal rate 0.490 (harmful 0.900, harmless 0.080)
+[2026-09-12 01:01:31] [INFO]   L38: magnitude-matched random KL (harmless) by alpha 0.25:0.0097, 0.5:0.0347, 1.0:0.1642, 2.0:1.0606, 4.0:3.0156
+[2026-09-12 01:37:07] [INFO]   L38: 2600 cells
+[2026-09-12 01:38:01] [INFO]   L44: baseline refusal rate 0.490 (harmful 0.900, harmless 0.080)
+[2026-09-12 01:41:46] [INFO]   L44: magnitude-matched random KL (harmless) by alpha 0.25:0.0082, 0.5:0.0307, 1.0:0.1375, 2.0:0.6804, 4.0:3.4118
+[2026-09-12 02:17:23] [INFO]   L44: 1400 cells
+[2026-09-12 02:18:17] [INFO]   L48: baseline refusal rate 0.490 (harmful 0.900, harmless 0.080)
+[2026-09-12 02:22:03] [INFO]   L48: magnitude-matched random KL (harmless) by alpha 0.25:0.0085, 0.5:0.0324, 1.0:0.1384, 2.0:0.5703, 4.0:3.3928
+[2026-09-12 02:57:46] [INFO]   L48: 600 cells
+[2026-09-12 02:58:40] [INFO]   L49: baseline refusal rate 0.490 (harmful 0.900, harmless 0.080)
+[2026-09-12 03:02:26] [INFO]   L49: magnitude-matched random KL (harmless) by alpha 0.25:0.0080, 0.5:0.0297, 1.0:0.1214, 2.0:0.5252, 4.0:3.0675
+[2026-09-12 03:38:18] [INFO]   L49: 400 cells
+[2026-09-12 03:39:13] [INFO]   L50: baseline refusal rate 0.490 (harmful 0.900, harmless 0.080)
+[2026-09-12 03:42:59] [INFO]   L50: magnitude-matched random KL (harmless) by alpha 0.25:0.0110, 0.5:0.0398, 1.0:0.1572, 2.0:0.6739, 4.0:3.6795
+[2026-09-12 04:18:42] [INFO]   L50: 200 cells
+[2026-09-12 04:18:44] [INFO]   KL_harmless <= 0.1 : n_live=5520 G1 0.756 G2 259/664 G3 519 -> PASS
+[2026-09-12 04:18:47] [INFO]   KL_harmless <= 0.25: n_live=7773 G1 0.7557 G2 366/944 G3 788 -> PASS
+[2026-09-12 04:18:50] [INFO]   KL_harmless <= 0.5 : n_live=9195 G1 0.7302 G2 538/1203 G3 924 -> PASS
+[2026-09-12 04:18:53] [INFO]   KL_harmless <= 1.0 : n_live=10713 G1 0.7289 G2 635/1418 G3 1073 -> PASS
+[2026-09-12 04:18:57] [INFO]   KL_harmless <= 2.0 : n_live=11865 G1 0.7204 G2 745/1568 G3 1240 -> PASS
+[2026-09-12 04:18:57] [INFO] [nemotron-3-nano-30b-a3b] GATE 1 — PASS (testable at bounds [0.1, 0.25, 0.5, 1.0, 2.0])

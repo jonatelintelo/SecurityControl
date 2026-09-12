@@ -1,0 +1,54 @@
+=== 2026-09-11T14:31:13+00:00 [cpu] tests/smoke_roles.py  ===
+RESULTS_ROOT=./results FAST_DEV=0 SEED=0
+RQ1 roster under test:
+  qwen2.5-7b                 Qwen     qwen2.5    dense  roles=default(4)
+  qwen3.5-9b                 Qwen     qwen3.5    dense  roles=default(4)
+  llama3.1-8b                Meta     llama3.1   dense  roles=default(4)
+  yi-6b-chat                 01-AI    yi         dense  roles=default(4)
+  qwen3.5-35b-a3b            Qwen     qwen3.5    moe    roles=default(4)
+  nemotron-3-nano-30b-a3b    NVIDIA   nemotron3  moe    roles=default(4)
+  => 6 models; 4 vendors (01-AI, Meta, NVIDIA, Qwen); 5 template families (llama3.1, nemotron3, qwen2.5, qwen3.5, yi); architectures: dense, moe
+
+[ok  ] qwen2.5-7b: all 4 roles x 2 designs resolve
+         roles=system,user,tool,assistant  bleed: {'tool/fixed_slot': ('', '\n'), 'tool/natural_slot': ('', '\n')}
+[ok  ] qwen2.5-7b/fixed_slot: every role renders distinctly
+         4 distinct role renderings
+[ok  ] qwen2.5-7b/natural_slot: every role renders distinctly
+         4 distinct role renderings
+[ok  ] qwen3.5-9b: all 4 roles x 2 designs resolve
+         roles=system,user,tool,assistant  no bleed
+[ok  ] qwen3.5-9b/fixed_slot: every role renders distinctly
+         4 distinct role renderings
+[ok  ] qwen3.5-9b/natural_slot: every role renders distinctly
+         4 distinct role renderings
+[ok  ] llama3.1-8b: all 4 roles x 2 designs resolve
+         roles=system,user,tool,assistant  bleed: {'tool/fixed_slot': ('', '"'), 'tool/natural_slot': ('', '"')}
+[ok  ] llama3.1-8b/fixed_slot: every role renders distinctly
+         4 distinct role renderings
+[ok  ] llama3.1-8b/natural_slot: every role renders distinctly
+         4 distinct role renderings
+[ok  ] yi-6b-chat: all 4 roles x 2 designs resolve
+         roles=system,user,tool,assistant  no bleed
+[ok  ] yi-6b-chat/fixed_slot: every role renders distinctly
+         4 distinct role renderings
+[ok  ] yi-6b-chat/natural_slot: every role renders distinctly
+         4 distinct role renderings
+[ok  ] qwen3.5-35b-a3b: all 4 roles x 2 designs resolve
+         roles=system,user,tool,assistant  no bleed
+[ok  ] qwen3.5-35b-a3b/fixed_slot: every role renders distinctly
+         4 distinct role renderings
+[ok  ] qwen3.5-35b-a3b/natural_slot: every role renders distinctly
+         4 distinct role renderings
+[ok  ] nemotron-3-nano-30b-a3b: all 4 roles x 2 designs resolve
+         roles=system,user,tool,assistant  bleed: {'tool/fixed_slot': ('', '\n'), 'tool/natural_slot': ('', '\n')}
+[ok  ] nemotron-3-nano-30b-a3b/fixed_slot: every role renders distinctly
+         4 distinct role renderings
+[ok  ] nemotron-3-nano-30b-a3b/natural_slot: every role renders distinctly
+         4 distinct role renderings
+[ok  ] ROLES is the vetted closed set
+         ROLES=('system', 'user', 'tool', 'assistant')
+[ok  ] unvetted role names are rejected by render()
+         cot/thinking/analysis/reasoning/developer all rejected
+
+PASS - every roster model expresses every role class it claims
+=== 2026-09-11T14:31:54+00:00 done rc=0 ===

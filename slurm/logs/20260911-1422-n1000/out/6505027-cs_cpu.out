@@ -1,0 +1,575 @@
+=== 2026-09-12T15:20:22+00:00 [cpu] tests/verify_rq1_run.py  ===
+RESULTS_ROOT=./results FAST_DEV=0 SEED=0
+[ok  ] corpus: no train/test leakage by instruction
+         {'train': 751, 'test': 249}
+[ok  ] corpus: every instruction rendered under every (role, design)
+         llama3.1-8b: 4 roles (assistant,system,tool,user) x 2 designs = 8; per instruction min=8 max=8
+         nemotron-3-nano-30b-a3b: 4 roles (assistant,system,tool,user) x 2 designs = 8; per instruction min=8 max=8
+         qwen2.5-7b: 4 roles (assistant,system,tool,user) x 2 designs = 8; per instruction min=8 max=8
+         qwen3.5-35b-a3b: 4 roles (assistant,system,tool,user) x 2 designs = 8; per instruction min=8 max=8
+         qwen3.5-9b: 4 roles (assistant,system,tool,user) x 2 designs = 8; per instruction min=8 max=8
+         yi-6b-chat: 4 roles (assistant,system,tool,user) x 2 designs = 8; per instruction min=8 max=8
+
+Roster under verification:
+  qwen2.5-7b                 Qwen     qwen2.5    dense  roles=default(4)
+  qwen3.5-9b                 Qwen     qwen3.5    dense  roles=default(4)
+  llama3.1-8b                Meta     llama3.1   dense  roles=default(4)
+  yi-6b-chat                 01-AI    yi         dense  roles=default(4)
+  qwen3.5-35b-a3b            Qwen     qwen3.5    moe    roles=default(4)
+  nemotron-3-nano-30b-a3b    NVIDIA   nemotron3  moe    roles=default(4)
+  => 6 models; 4 vendors (01-AI, Meta, NVIDIA, Qwen); 5 template families (llama3.1, nemotron3, qwen2.5, qwen3.5, yi); architectures: dense, moe
+[ok  ] roster: every registered RQ1 model was rendered
+         expected ['qwen2.5-7b', 'qwen3.5-9b', 'llama3.1-8b', 'yi-6b-chat', 'qwen3.5-35b-a3b', 'nemotron-3-nano-30b-a3b']
+         rendered ['llama3.1-8b', 'nemotron-3-nano-30b-a3b', 'qwen2.5-7b', 'qwen3.5-35b-a3b', 'qwen3.5-9b', 'yi-6b-chat']
+[ok  ] roster: spans more than one vendor and both architectures
+         vendors=['01-AI', 'Meta', 'NVIDIA', 'Qwen'] architectures=['dense', 'moe']
+[ok  ] roster: R_role is the same class set on every model
+         all 6 models carry ('assistant', 'system', 'tool', 'user')
+[ok  ] corpus: template bleed is structurally bounded (tool role, <=1 char)
+         llama3.1-8b/tool/fixed_slot ['"'] harmful=0.438 harmless=0.924 |d|=0.486
+         llama3.1-8b/tool/natural_slot ['"'] harmful=0.438 harmless=0.924 |d|=0.486
+         nemotron-3-nano-30b-a3b/tool/fixed_slot ['\n'] harmful=0.408 harmless=0.920 |d|=0.512
+         nemotron-3-nano-30b-a3b/tool/natural_slot ['\n'] harmful=0.408 harmless=0.920 |d|=0.512
+         qwen2.5-7b/tool/fixed_slot ['\n'] harmful=0.408 harmless=0.922 |d|=0.514
+         qwen2.5-7b/tool/natural_slot ['\n'] harmful=0.408 harmless=0.922 |d|=0.514
+         qwen3.5-35b-a3b/tool/fixed_slot ['\n'] harmful=0.000 harmless=0.002 |d|=0.002
+         qwen3.5-35b-a3b/tool/natural_slot ['\n'] harmful=0.000 harmless=0.002 |d|=0.002
+         qwen3.5-9b/tool/fixed_slot ['\n'] harmful=0.000 harmless=0.002 |d|=0.002
+         qwen3.5-9b/tool/natural_slot ['\n'] harmful=0.000 harmless=0.002 |d|=0.002
+[info] bleed by-label rate difference is REPORTED, not gated — it tracks source punctuation and is covered by the surface baseline
+[ok  ] E1.7 L2: every base appears in every register
+         generated per base {3} (expect {3}), template per base {6} (expect {6})
+[ok  ] E1.7 L2: both arms cover the same bases
+         the template arm is the control for the generated arm, so it must hold the same requests
+[ok  ] E1.7 L2: corpus declared usable
+         92 complete bases (floor 40)
+[ok  ] E1.7 L2: content coverage recorded per item
+         median 1.000, min 0.286 over 276 generated rewrites — report this, do not assume it
+[info] qwen2.5-7b: train-selected vs test-argmax layer per concept — 4/7 coincide: R_harm: L16/L16, R_harm_user: L17/L17, R_control: L20/L18, R_harm_at_post: L16/L16, R_control_harmless: L26/L21
+[ok  ] qwen2.5-7b: fit/eval instruction sets disjoint
+         train=751 test=249 overlap=0
+[ok  ] qwen2.5-7b: every direction beats its length-only baseline
+[ok  ] qwen2.5-7b: R_control fit excludes the undetermined pool (E is held out)
+         fit counts {'n_positive': 2167, 'n_negative': 174, 'n_test_pos': 709, 'n_test_neg': 63} vs labels {'n_positive': 2167, 'n_negative': 174, 'n_test_pos': 709, 'n_test_neg': 63}; 887 undetermined items are in neither class
+[ok  ] qwen2.5-7b: every reported CI has >= 20 MINORITY-class test items
+         R_control minority=63, R_control_harmless minority=68, R_control_preguard minority=291, R_control_unbalanced minority=63, R_harm minority=992, R_harm_at_post minority=992, R_harm_user minority=248
+[ok  ] qwen2.5-7b: every reported CI has >= 20 test instructions (union, weaker check)
+         min n_test_instructions = 114 across 196 direction-layer fits
+[ok  ] qwen2.5-7b: activation cache is present where the run recorded it
+         /scratch/b6aj/jtelintelo.b6aj/rq1-activation-cache/results-fcbf856b/rq1/qwen2.5-7b/activations.pt
+[ok  ] qwen2.5-7b: activations finite, fp16 storage has headroom
+         absmax=364.0 (fp16 max 65504, 180x headroom), nan=0 inf=0
+[ok  ] qwen2.5-7b: cached activation index aligns with refusal labels
+         n_cached=8000 n_labels=8000
+[ok  ] qwen2.5-7b: E1.1d variants are role-balanced
+         4 variant-position fits; role TV before balancing: [0.235, 0.235, 0.075, 0.075]
+[ok  ] qwen2.5-7b: E1.1d variants beat their length-only baseline
+         AUC vs length-only: R_harm_in_refused@t_inst 0.996 vs 0.622; R_harm_in_refused_at_post@t_post_inst 0.997 vs 0.622; R_harm_in_complied@t_inst 0.979 vs 0.770; R_harm_in_complied_at_post@t_post_inst 0.991 vs 0.770
+[ok  ] qwen2.5-7b: E1.7 Level 2 has both arms
+         arms present: ['generated', 'template'] — `generated` is the real test, `template` upper-bounds how detectable register can be
+[ok  ] qwen2.5-7b: E1.7 Level 2 cosines carry a split-half floor
+         1008 rows; median floor 0.903
+[ok  ] qwen2.5-7b: every variant run is supported by this run's labels
+         ran ['over', 'under']; labels support ['over', 'under']
+[ok  ] qwen2.5-7b: skipped variants are ones the labels call unusable
+         skipped -; labels support ['over', 'under']
+[ok  ] qwen2.5-7b: no usable control contrast was left unrun
+         ran every supported variant: ['over', 'under']
+[ok  ] qwen2.5-7b: matched cross-model arm 'over' was run
+         causal_gate__over.json present
+[ok  ] qwen2.5-7b: gate artifacts present
+         ['causal_gate__over.json', 'causal_gate__under.json'] / ['causal_matrix__over.csv', 'causal_matrix__under.csv']
+[ok  ] qwen2.5-7b__over: no gate verdict from an untested criterion
+         bounds reporting a verdict with 0 pairs tested: []
+[ok  ] qwen2.5-7b__over: G2 is FDR-corrected
+         BH q=0.05 over the asymmetry family, as pre-registered
+[ok  ] qwen2.5-7b__over: every null band is finite and positive (G3-bug guard)
+         all bands finite across 5 capability bounds
+[ok  ] qwen2.5-7b__over: every alpha in the matrix has a behavioural null band
+         alphas [0.25, 0.5, 1.0, 2.0, 4.0] all covered
+         liveness qwen2.5-7b__over bound=0.1: G2 tested=287 ci_disjoint=187 beyond_null=136 fdr=204 -> holds=True | G3 holds=None n=None
+         liveness qwen2.5-7b__over bound=0.25: G2 tested=435 ci_disjoint=298 beyond_null=215 fdr=319 -> holds=True | G3 holds=None n=None
+         liveness qwen2.5-7b__over bound=0.5: G2 tested=521 ci_disjoint=349 beyond_null=268 fdr=376 -> holds=True | G3 holds=None n=None
+         liveness qwen2.5-7b__over bound=1.0: G2 tested=573 ci_disjoint=390 beyond_null=304 fdr=418 -> holds=True | G3 holds=None n=None
+         liveness qwen2.5-7b__over bound=2.0: G2 tested=684 ci_disjoint=459 beyond_null=357 fdr=494 -> holds=True | G3 holds=None n=None
+[ok  ] qwen2.5-7b__under: no gate verdict from an untested criterion
+         bounds reporting a verdict with 0 pairs tested: []
+[ok  ] qwen2.5-7b__under: G2 is FDR-corrected
+         BH q=0.05 over the asymmetry family, as pre-registered
+[ok  ] qwen2.5-7b__under: every null band is finite and positive (G3-bug guard)
+         all bands finite across 5 capability bounds
+[ok  ] qwen2.5-7b__under: every alpha in the matrix has a behavioural null band
+         alphas [0.25, 0.5, 1.0, 2.0, 4.0] all covered
+         liveness qwen2.5-7b__under bound=0.1: G2 tested=287 ci_disjoint=220 beyond_null=128 fdr=237 -> holds=True | G3 holds=None n=None
+         liveness qwen2.5-7b__under bound=0.25: G2 tested=416 ci_disjoint=295 beyond_null=186 fdr=314 -> holds=True | G3 holds=None n=None
+         liveness qwen2.5-7b__under bound=0.5: G2 tested=521 ci_disjoint=375 beyond_null=252 fdr=396 -> holds=True | G3 holds=None n=None
+         liveness qwen2.5-7b__under bound=1.0: G2 tested=573 ci_disjoint=393 beyond_null=288 fdr=416 -> holds=True | G3 holds=None n=None
+         liveness qwen2.5-7b__under bound=2.0: G2 tested=667 ci_disjoint=435 beyond_null=331 fdr=459 -> holds=True | G3 holds=None n=None
+[ok  ] qwen2.5-7b__over: steering readout is calibrated (delta_AA ~= alpha)
+         median |delta/alpha - 1| = 0.098 at the first read layer
+[ok  ] qwen2.5-7b__over: behavioural readout is generation-based
+         refusal rate under intervention, labelled with the published rule
+[ok  ] qwen2.5-7b__over: every downstream layer is read
+         21 distinct read layers over 9 steer layers
+[ok  ] qwen2.5-7b__over: gate family is the pre-registered read layers
+         gate read layers per steer layer: [1, 2, 3] (expected <= 3); profile keeps 21 for description
+[ok  ] qwen2.5-7b__over: both read positions present
+         ['t_inst', 't_post_inst']
+[ok  ] qwen2.5-7b__under: steering readout is calibrated (delta_AA ~= alpha)
+         median |delta/alpha - 1| = 0.102 at the first read layer
+[ok  ] qwen2.5-7b__under: behavioural readout is generation-based
+         refusal rate under intervention, labelled with the published rule
+[ok  ] qwen2.5-7b__under: every downstream layer is read
+         21 distinct read layers over 9 steer layers
+[ok  ] qwen2.5-7b__under: gate family is the pre-registered read layers
+         gate read layers per steer layer: [1, 2, 3] (expected <= 3); profile keeps 21 for description
+[ok  ] qwen2.5-7b__under: both read positions present
+         ['t_inst', 't_post_inst']
+[ok  ] qwen2.5-7b: stage B swept the steered positions
+         token sets present: ['all_real', 'instruction_span', 'post_instruction', 't_inst_only'] (pre-registered: all_real, instruction_span, t_inst_only, post_instruction; a set is skipped only where its span is empty)
+[ok  ] qwen2.5-7b: steered-token set changes the intervention
+         mean KL by token set: all_real=2.1695, instruction_span=0.1272, post_instruction=2.0211, t_inst_only=0.0203
+[ok  ] qwen2.5-7b: stage B swept the steered positions
+         token sets present: ['all_real', 'instruction_span', 'post_instruction', 't_inst_only'] (pre-registered: all_real, instruction_span, t_inst_only, post_instruction; a set is skipped only where its span is empty)
+[ok  ] qwen2.5-7b: steered-token set changes the intervention
+         mean KL by token set: all_real=2.4237, instruction_span=0.1582, post_instruction=2.2415, t_inst_only=0.0253
+[info] qwen3.5-9b: train-selected vs test-argmax layer per concept — 3/5 coincide: R_harm: L15/L15, R_harm_user: L15/L15, R_harm_at_post: L28/L11, R_control_harmless: L30/L28, R_control_preguard: L30/L30
+[ok  ] qwen3.5-9b: fit/eval instruction sets disjoint
+         train=751 test=249 overlap=0
+[ok  ] qwen3.5-9b: every direction beats its length-only baseline
+[ok  ] qwen3.5-9b: every reported CI has >= 20 MINORITY-class test items
+         R_control_harmless minority=81, R_control_preguard minority=62, R_harm minority=992, R_harm_at_post minority=992, R_harm_user minority=248
+[ok  ] qwen3.5-9b: every reported CI has >= 20 test instructions (union, weaker check)
+         min n_test_instructions = 124 across 160 direction-layer fits
+[ok  ] qwen3.5-9b: activation cache is present where the run recorded it
+         /scratch/b6aj/jtelintelo.b6aj/rq1-activation-cache/results-fcbf856b/rq1/qwen3.5-9b/activations.pt
+[ok  ] qwen3.5-9b: activations finite, fp16 storage has headroom
+         absmax=228.0 (fp16 max 65504, 287x headroom), nan=0 inf=0
+[ok  ] qwen3.5-9b: cached activation index aligns with refusal labels
+         n_cached=8000 n_labels=8000
+[ok  ] qwen3.5-9b: E1.1d variants are role-balanced
+         2 variant-position fits; role TV before balancing: [0.181, 0.181]
+[ok  ] qwen3.5-9b: E1.1d variants beat their length-only baseline
+         AUC vs length-only: R_harm_in_refused@t_inst 0.999 vs 0.644; R_harm_in_refused_at_post@t_post_inst 0.992 vs 0.644
+[ok  ] qwen3.5-9b: E1.7 Level 2 has both arms
+         arms present: ['generated', 'template'] — `generated` is the real test, `template` upper-bounds how detectable register can be
+[ok  ] qwen3.5-9b: E1.7 Level 2 cosines carry a split-half floor
+         1152 rows; median floor 0.856
+[ok  ] qwen3.5-9b: every variant run is supported by this run's labels
+         ran ['over']; labels support ['over']
+[ok  ] qwen3.5-9b: skipped variants are ones the labels call unusable
+         skipped ['under']; labels support ['over']
+[ok  ] qwen3.5-9b: no usable control contrast was left unrun
+         ran every supported variant: ['over'] (skipped, unusable: ['under'])
+[ok  ] qwen3.5-9b: matched cross-model arm 'over' was run
+         causal_gate__over.json present
+[ok  ] qwen3.5-9b: gate artifacts present
+         ['causal_gate__over.json'] / ['causal_matrix__over.csv']
+[ok  ] qwen3.5-9b__over: no gate verdict from an untested criterion
+         bounds reporting a verdict with 0 pairs tested: []
+[ok  ] qwen3.5-9b__over: G2 is FDR-corrected
+         BH q=0.05 over the asymmetry family, as pre-registered
+[ok  ] qwen3.5-9b__over: every null band is finite and positive (G3-bug guard)
+         all bands finite across 5 capability bounds
+[ok  ] qwen3.5-9b__over: every alpha in the matrix has a behavioural null band
+         alphas [0.25, 0.5, 1.0, 2.0, 4.0] all covered
+         liveness qwen3.5-9b__over bound=0.1: G2 tested=364 ci_disjoint=283 beyond_null=249 fdr=293 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-9b__over bound=0.25: G2 tested=466 ci_disjoint=365 beyond_null=317 fdr=380 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-9b__over bound=0.5: G2 tested=632 ci_disjoint=520 beyond_null=452 fdr=539 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-9b__over bound=1.0: G2 tested=732 ci_disjoint=607 beyond_null=515 fdr=627 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-9b__over bound=2.0: G2 tested=792 ci_disjoint=659 beyond_null=544 fdr=680 -> holds=True | G3 holds=None n=None
+[ok  ] qwen3.5-9b__over: steering readout is calibrated (delta_AA ~= alpha)
+         median |delta/alpha - 1| = 0.069 at the first read layer
+[ok  ] qwen3.5-9b__over: behavioural readout is generation-based
+         refusal rate under intervention, labelled with the published rule
+[ok  ] qwen3.5-9b__over: every downstream layer is read
+         24 distinct read layers over 9 steer layers
+[ok  ] qwen3.5-9b__over: gate family is the pre-registered read layers
+         gate read layers per steer layer: [1, 2, 3] (expected <= 3); profile keeps 24 for description
+[ok  ] qwen3.5-9b__over: both read positions present
+         ['t_inst', 't_post_inst']
+[ok  ] qwen3.5-9b: stage B swept the steered positions
+         token sets present: ['all_real', 'instruction_span', 'post_instruction', 't_inst_only'] (pre-registered: all_real, instruction_span, t_inst_only, post_instruction; a set is skipped only where its span is empty)
+[ok  ] qwen3.5-9b: steered-token set changes the intervention
+         mean KL by token set: all_real=1.7358, instruction_span=0.0141, post_instruction=1.6515, t_inst_only=0.0016
+[info] llama3.1-8b: train-selected vs test-argmax layer per concept — 2/7 coincide: R_harm: L11/L11, R_harm_user: L11/L12, R_control: L31/L30, R_harm_at_post: L13/L30, R_control_harmless: L30/L30
+[ok  ] llama3.1-8b: fit/eval instruction sets disjoint
+         train=751 test=249 overlap=0
+[ok  ] llama3.1-8b: every direction beats its length-only baseline
+[ok  ] llama3.1-8b: R_control fit excludes the undetermined pool (E is held out)
+         fit counts {'n_positive': 2734, 'n_negative': 79, 'n_test_pos': 903, 'n_test_neg': 27} vs labels {'n_positive': 2734, 'n_negative': 79, 'n_test_pos': 903, 'n_test_neg': 27}; 257 undetermined items are in neither class
+[ok  ] llama3.1-8b: every reported CI has >= 20 MINORITY-class test items
+         R_control minority=27, R_control_harmless minority=88, R_control_preguard minority=97, R_control_unbalanced minority=27, R_harm minority=992, R_harm_at_post minority=992, R_harm_user minority=248
+[ok  ] llama3.1-8b: every reported CI has >= 20 test instructions (union, weaker check)
+         min n_test_instructions = 123 across 224 direction-layer fits
+[ok  ] llama3.1-8b: activation cache is present where the run recorded it
+         /scratch/b6aj/jtelintelo.b6aj/rq1-activation-cache/results-fcbf856b/rq1/llama3.1-8b/activations.pt
+[ok  ] llama3.1-8b: activations finite, fp16 storage has headroom
+         absmax=29.5 (fp16 max 65504, 2220x headroom), nan=0 inf=0
+[ok  ] llama3.1-8b: cached activation index aligns with refusal labels
+         n_cached=8000 n_labels=8000
+[ok  ] llama3.1-8b: E1.1d variants are role-balanced
+         4 variant-position fits; role TV before balancing: [0.083, 0.083, 0.13, 0.13]
+[ok  ] llama3.1-8b: E1.1d variants beat their length-only baseline
+         AUC vs length-only: R_harm_in_refused@t_inst 1.000 vs 0.660; R_harm_in_refused_at_post@t_post_inst 0.998 vs 0.660; R_harm_in_complied@t_inst 0.982 vs 0.788; R_harm_in_complied_at_post@t_post_inst 0.997 vs 0.788
+[ok  ] llama3.1-8b: E1.7 Level 2 has both arms
+         arms present: ['generated', 'template'] — `generated` is the real test, `template` upper-bounds how detectable register can be
+[ok  ] llama3.1-8b: E1.7 Level 2 cosines carry a split-half floor
+         1152 rows; median floor 0.910
+[ok  ] llama3.1-8b: every variant run is supported by this run's labels
+         ran ['over', 'under']; labels support ['over', 'under']
+[ok  ] llama3.1-8b: skipped variants are ones the labels call unusable
+         skipped -; labels support ['over', 'under']
+[ok  ] llama3.1-8b: no usable control contrast was left unrun
+         ran every supported variant: ['over', 'under']
+[ok  ] llama3.1-8b: matched cross-model arm 'over' was run
+         causal_gate__over.json present
+[ok  ] llama3.1-8b: gate artifacts present
+         ['causal_gate__over.json', 'causal_gate__under.json'] / ['causal_matrix__over.csv', 'causal_matrix__under.csv']
+[ok  ] llama3.1-8b__over: no gate verdict from an untested criterion
+         bounds reporting a verdict with 0 pairs tested: []
+[ok  ] llama3.1-8b__over: G2 is FDR-corrected
+         BH q=0.05 over the asymmetry family, as pre-registered
+[ok  ] llama3.1-8b__over: every null band is finite and positive (G3-bug guard)
+         all bands finite across 5 capability bounds
+[ok  ] llama3.1-8b__over: every alpha in the matrix has a behavioural null band
+         alphas [0.25, 0.5, 1.0, 2.0, 4.0] all covered
+         liveness llama3.1-8b__over bound=0.1: G2 tested=381 ci_disjoint=304 beyond_null=227 fdr=321 -> holds=True | G3 holds=None n=None
+         liveness llama3.1-8b__over bound=0.25: G2 tested=681 ci_disjoint=578 beyond_null=388 fdr=605 -> holds=True | G3 holds=None n=None
+         liveness llama3.1-8b__over bound=0.5: G2 tested=822 ci_disjoint=705 beyond_null=496 fdr=739 -> holds=True | G3 holds=None n=None
+         liveness llama3.1-8b__over bound=1.0: G2 tested=997 ci_disjoint=861 beyond_null=549 fdr=905 -> holds=True | G3 holds=None n=None
+         liveness llama3.1-8b__over bound=2.0: G2 tested=1254 ci_disjoint=1109 beyond_null=750 fdr=1160 -> holds=True | G3 holds=None n=None
+[ok  ] llama3.1-8b__under: no gate verdict from an untested criterion
+         bounds reporting a verdict with 0 pairs tested: []
+[ok  ] llama3.1-8b__under: G2 is FDR-corrected
+         BH q=0.05 over the asymmetry family, as pre-registered
+[ok  ] llama3.1-8b__under: every null band is finite and positive (G3-bug guard)
+         all bands finite across 5 capability bounds
+[ok  ] llama3.1-8b__under: every alpha in the matrix has a behavioural null band
+         alphas [0.25, 0.5, 1.0, 2.0, 4.0] all covered
+         liveness llama3.1-8b__under bound=0.1: G2 tested=327 ci_disjoint=212 beyond_null=163 fdr=228 -> holds=True | G3 holds=None n=None
+         liveness llama3.1-8b__under bound=0.25: G2 tested=726 ci_disjoint=503 beyond_null=419 fdr=539 -> holds=True | G3 holds=None n=None
+         liveness llama3.1-8b__under bound=0.5: G2 tested=805 ci_disjoint=548 beyond_null=470 fdr=599 -> holds=True | G3 holds=None n=None
+         liveness llama3.1-8b__under bound=1.0: G2 tested=1035 ci_disjoint=755 beyond_null=574 fdr=826 -> holds=True | G3 holds=None n=None
+         liveness llama3.1-8b__under bound=2.0: G2 tested=1270 ci_disjoint=922 beyond_null=763 fdr=1018 -> holds=True | G3 holds=None n=None
+[ok  ] llama3.1-8b__over: steering readout is calibrated (delta_AA ~= alpha)
+         median |delta/alpha - 1| = 0.104 at the first read layer
+[ok  ] llama3.1-8b__over: behavioural readout is generation-based
+         refusal rate under intervention, labelled with the published rule
+[ok  ] llama3.1-8b__over: every downstream layer is read
+         25 distinct read layers over 11 steer layers
+[ok  ] llama3.1-8b__over: gate family is the pre-registered read layers
+         gate read layers per steer layer: [1, 2, 3] (expected <= 3); profile keeps 25 for description
+[ok  ] llama3.1-8b__over: both read positions present
+         ['t_inst', 't_post_inst']
+[ok  ] llama3.1-8b__under: steering readout is calibrated (delta_AA ~= alpha)
+         median |delta/alpha - 1| = 0.129 at the first read layer
+[ok  ] llama3.1-8b__under: behavioural readout is generation-based
+         refusal rate under intervention, labelled with the published rule
+[ok  ] llama3.1-8b__under: every downstream layer is read
+         25 distinct read layers over 10 steer layers
+[ok  ] llama3.1-8b__under: gate family is the pre-registered read layers
+         gate read layers per steer layer: [2, 3] (expected <= 3); profile keeps 25 for description
+[ok  ] llama3.1-8b__under: both read positions present
+         ['t_inst', 't_post_inst']
+[ok  ] llama3.1-8b: stage B swept the steered positions
+         token sets present: ['all_real', 'instruction_span', 'post_instruction', 't_inst_only'] (pre-registered: all_real, instruction_span, t_inst_only, post_instruction; a set is skipped only where its span is empty)
+[ok  ] llama3.1-8b: steered-token set changes the intervention
+         mean KL by token set: all_real=1.8275, instruction_span=0.0946, post_instruction=1.6668, t_inst_only=0.0094
+[ok  ] llama3.1-8b: stage B swept the steered positions
+         token sets present: ['all_real', 'instruction_span', 'post_instruction', 't_inst_only'] (pre-registered: all_real, instruction_span, t_inst_only, post_instruction; a set is skipped only where its span is empty)
+[ok  ] llama3.1-8b: steered-token set changes the intervention
+         mean KL by token set: all_real=1.9197, instruction_span=0.1228, post_instruction=1.7899, t_inst_only=0.0111
+[info] yi-6b-chat: train-selected vs test-argmax layer per concept — 4/7 coincide: R_harm: L17/L17, R_harm_user: L17/L17, R_control: L31/L27, R_harm_at_post: L19/L19, R_control_harmless: L29/L29
+[ok  ] yi-6b-chat: fit/eval instruction sets disjoint
+         train=751 test=249 overlap=0
+[ok  ] yi-6b-chat: every direction beats its length-only baseline
+[ok  ] yi-6b-chat: R_control fit excludes the undetermined pool (E is held out)
+         fit counts {'n_positive': 2202, 'n_negative': 433, 'n_test_pos': 712, 'n_test_neg': 183} vs labels {'n_positive': 2202, 'n_negative': 433, 'n_test_pos': 712, 'n_test_neg': 183}; 470 undetermined items are in neither class
+[ok  ] yi-6b-chat: every reported CI has >= 20 MINORITY-class test items
+         R_control minority=183, R_control_harmless minority=164, R_control_preguard minority=286, R_control_unbalanced minority=183, R_harm minority=992, R_harm_at_post minority=992, R_harm_user minority=248
+[ok  ] yi-6b-chat: every reported CI has >= 20 test instructions (union, weaker check)
+         min n_test_instructions = 117 across 224 direction-layer fits
+[ok  ] yi-6b-chat: activation cache is present where the run recorded it
+         /scratch/b6aj/jtelintelo.b6aj/rq1-activation-cache/results-fcbf856b/rq1/yi-6b-chat/activations.pt
+[ok  ] yi-6b-chat: activations finite, fp16 storage has headroom
+         absmax=528.0 (fp16 max 65504, 124x headroom), nan=0 inf=0
+[ok  ] yi-6b-chat: cached activation index aligns with refusal labels
+         n_cached=8000 n_labels=8000
+[ok  ] yi-6b-chat: E1.1d variants are role-balanced
+         4 variant-position fits; role TV before balancing: [0.061, 0.061, 0.099, 0.099]
+[ok  ] yi-6b-chat: E1.1d variants beat their length-only baseline
+         AUC vs length-only: R_harm_in_refused@t_inst 0.999 vs 0.695; R_harm_in_refused_at_post@t_post_inst 0.993 vs 0.695; R_harm_in_complied@t_inst 0.951 vs 0.722; R_harm_in_complied_at_post@t_post_inst 0.953 vs 0.722
+[ok  ] yi-6b-chat: E1.7 Level 2 has both arms
+         arms present: ['generated', 'template'] — `generated` is the real test, `template` upper-bounds how detectable register can be
+[ok  ] yi-6b-chat: E1.7 Level 2 cosines carry a split-half floor
+         1152 rows; median floor 0.591
+[ok  ] yi-6b-chat: every variant run is supported by this run's labels
+         ran ['over', 'under']; labels support ['over', 'under']
+[ok  ] yi-6b-chat: skipped variants are ones the labels call unusable
+         skipped -; labels support ['over', 'under']
+[ok  ] yi-6b-chat: no usable control contrast was left unrun
+         ran every supported variant: ['over', 'under']
+[ok  ] yi-6b-chat: matched cross-model arm 'over' was run
+         causal_gate__over.json present
+[ok  ] yi-6b-chat: gate artifacts present
+         ['causal_gate__over.json', 'causal_gate__under.json'] / ['causal_matrix__over.csv', 'causal_matrix__under.csv']
+[ok  ] yi-6b-chat__over: no gate verdict from an untested criterion
+         bounds reporting a verdict with 0 pairs tested: []
+[ok  ] yi-6b-chat__over: G2 is FDR-corrected
+         BH q=0.05 over the asymmetry family, as pre-registered
+[ok  ] yi-6b-chat__over: every null band is finite and positive (G3-bug guard)
+         all bands finite across 5 capability bounds
+[ok  ] yi-6b-chat__over: every alpha in the matrix has a behavioural null band
+         alphas [0.25, 0.5, 1.0, 2.0, 4.0] all covered
+         liveness yi-6b-chat__over bound=0.1: G2 tested=1116 ci_disjoint=877 beyond_null=433 fdr=933 -> holds=True | G3 holds=None n=None
+         liveness yi-6b-chat__over bound=0.25: G2 tested=1279 ci_disjoint=1010 beyond_null=485 fdr=1070 -> holds=True | G3 holds=None n=None
+         liveness yi-6b-chat__over bound=0.5: G2 tested=1430 ci_disjoint=1151 beyond_null=597 fdr=1214 -> holds=True | G3 holds=None n=None
+         liveness yi-6b-chat__over bound=1.0: G2 tested=1489 ci_disjoint=1192 beyond_null=619 fdr=1258 -> holds=True | G3 holds=None n=None
+         liveness yi-6b-chat__over bound=2.0: G2 tested=1632 ci_disjoint=1302 beyond_null=730 fdr=1376 -> holds=True | G3 holds=None n=None
+[ok  ] yi-6b-chat__under: no gate verdict from an untested criterion
+         bounds reporting a verdict with 0 pairs tested: []
+[ok  ] yi-6b-chat__under: G2 is FDR-corrected
+         BH q=0.05 over the asymmetry family, as pre-registered
+[ok  ] yi-6b-chat__under: every null band is finite and positive (G3-bug guard)
+         all bands finite across 5 capability bounds
+[ok  ] yi-6b-chat__under: every alpha in the matrix has a behavioural null band
+         alphas [0.25, 0.5, 1.0, 2.0, 4.0] all covered
+         liveness yi-6b-chat__under bound=0.1: G2 tested=1114 ci_disjoint=872 beyond_null=409 fdr=924 -> holds=True | G3 holds=None n=None
+         liveness yi-6b-chat__under bound=0.25: G2 tested=1264 ci_disjoint=1004 beyond_null=459 fdr=1057 -> holds=True | G3 holds=None n=None
+         liveness yi-6b-chat__under bound=0.5: G2 tested=1410 ci_disjoint=1137 beyond_null=550 fdr=1195 -> holds=True | G3 holds=None n=None
+         liveness yi-6b-chat__under bound=1.0: G2 tested=1474 ci_disjoint=1190 beyond_null=588 fdr=1252 -> holds=True | G3 holds=None n=None
+         liveness yi-6b-chat__under bound=2.0: G2 tested=1594 ci_disjoint=1289 beyond_null=684 fdr=1358 -> holds=True | G3 holds=None n=None
+[ok  ] yi-6b-chat__over: steering readout is calibrated (delta_AA ~= alpha)
+         median |delta/alpha - 1| = 0.078 at the first read layer
+[ok  ] yi-6b-chat__over: behavioural readout is generation-based
+         refusal rate under intervention, labelled with the published rule
+[ok  ] yi-6b-chat__over: every downstream layer is read
+         24 distinct read layers over 10 steer layers
+[ok  ] yi-6b-chat__over: gate family is the pre-registered read layers
+         gate read layers per steer layer: [1, 2, 3] (expected <= 3); profile keeps 24 for description
+[ok  ] yi-6b-chat__over: both read positions present
+         ['t_inst', 't_post_inst']
+[ok  ] yi-6b-chat__under: steering readout is calibrated (delta_AA ~= alpha)
+         median |delta/alpha - 1| = 0.104 at the first read layer
+[ok  ] yi-6b-chat__under: behavioural readout is generation-based
+         refusal rate under intervention, labelled with the published rule
+[ok  ] yi-6b-chat__under: every downstream layer is read
+         24 distinct read layers over 9 steer layers
+[ok  ] yi-6b-chat__under: gate family is the pre-registered read layers
+         gate read layers per steer layer: [1, 2, 3] (expected <= 3); profile keeps 24 for description
+[ok  ] yi-6b-chat__under: both read positions present
+         ['t_inst', 't_post_inst']
+[ok  ] yi-6b-chat: stage B swept the steered positions
+         token sets present: ['all_real', 'instruction_span', 'post_instruction', 't_inst_only'] (pre-registered: all_real, instruction_span, t_inst_only, post_instruction; a set is skipped only where its span is empty)
+[ok  ] yi-6b-chat: steered-token set changes the intervention
+         mean KL by token set: all_real=0.8211, instruction_span=0.0359, post_instruction=0.7904, t_inst_only=0.0051
+[ok  ] yi-6b-chat: stage B swept the steered positions
+         token sets present: ['all_real', 'instruction_span', 'post_instruction', 't_inst_only'] (pre-registered: all_real, instruction_span, t_inst_only, post_instruction; a set is skipped only where its span is empty)
+[ok  ] yi-6b-chat: steered-token set changes the intervention
+         mean KL by token set: all_real=0.7751, instruction_span=0.0353, post_instruction=0.7423, t_inst_only=0.0046
+[info] qwen3.5-35b-a3b: train-selected vs test-argmax layer per concept — 3/7 coincide: R_harm: L27/L27, R_harm_user: L27/L27, R_control: L34/L28, R_harm_at_post: L39/L39, R_control_harmless: L39/L34
+[ok  ] qwen3.5-35b-a3b: fit/eval instruction sets disjoint
+         train=751 test=249 overlap=0
+[ok  ] qwen3.5-35b-a3b: every direction beats its length-only baseline
+[ok  ] qwen3.5-35b-a3b: R_control fit excludes the undetermined pool (E is held out)
+         fit counts {'n_positive': 2891, 'n_negative': 21, 'n_test_pos': 945, 'n_test_neg': 3} vs labels {'n_positive': 2891, 'n_negative': 21, 'n_test_pos': 945, 'n_test_neg': 3}; 140 undetermined items are in neither class
+[FAIL] qwen3.5-35b-a3b: every reported CI has >= 20 MINORITY-class test items
+         R_control@L34 minority=3 (pos=945, neg=3), R_control_unbalanced@L36 minority=3 (pos=945, neg=3)
+[ok  ] qwen3.5-35b-a3b: every reported CI has >= 20 test instructions (union, weaker check)
+         min n_test_instructions = 121 across 280 direction-layer fits
+[ok  ] qwen3.5-35b-a3b: activation cache is present where the run recorded it
+         /scratch/b6aj/jtelintelo.b6aj/rq1-activation-cache/results-fcbf856b/rq1/qwen3.5-35b-a3b/activations.pt
+[ok  ] qwen3.5-35b-a3b: activations finite, fp16 storage has headroom
+         absmax=13.9 (fp16 max 65504, 4700x headroom), nan=0 inf=0
+[ok  ] qwen3.5-35b-a3b: cached activation index aligns with refusal labels
+         n_cached=8000 n_labels=8000
+[ok  ] qwen3.5-35b-a3b: E1.1d variants are role-balanced
+         2 variant-position fits; role TV before balancing: [0.186, 0.186]
+[ok  ] qwen3.5-35b-a3b: E1.1d variants beat their length-only baseline
+         AUC vs length-only: R_harm_in_refused@t_inst 0.999 vs 0.692; R_harm_in_refused_at_post@t_post_inst 0.973 vs 0.692
+[ok  ] qwen3.5-35b-a3b: E1.7 Level 2 has both arms
+         arms present: ['generated', 'template'] — `generated` is the real test, `template` upper-bounds how detectable register can be
+[ok  ] qwen3.5-35b-a3b: E1.7 Level 2 cosines carry a split-half floor
+         1440 rows; median floor 0.824
+[FAIL] qwen3.5-35b-a3b: every variant run is supported by this run's labels
+         ran ['over', 'over.superseded', 'under', 'under.superseded']; labels support ['over']  UNSUPPORTED: ['over.superseded', 'under', 'under.superseded']
+[ok  ] qwen3.5-35b-a3b: skipped variants are ones the labels call unusable
+         skipped -; labels support ['over']
+[ok  ] qwen3.5-35b-a3b: no usable control contrast was left unrun
+         ran every supported variant: ['over', 'over.superseded', 'under', 'under.superseded']
+[ok  ] qwen3.5-35b-a3b: matched cross-model arm 'over' was run
+         causal_gate__over.json present
+[ok  ] qwen3.5-35b-a3b: gate artifacts present
+         ['causal_gate__over.json', 'causal_gate__over.superseded.json', 'causal_gate__under.json', 'causal_gate__under.superseded.json'] / ['causal_matrix__over.csv', 'causal_matrix__under.csv']
+[ok  ] qwen3.5-35b-a3b__over: no gate verdict from an untested criterion
+         bounds reporting a verdict with 0 pairs tested: []
+[ok  ] qwen3.5-35b-a3b__over: G2 is FDR-corrected
+         BH q=0.05 over the asymmetry family, as pre-registered
+[FAIL] qwen3.5-35b-a3b__over: every null band is finite and positive (G3-bug guard)
+         bound 0.1: null_band_behaviour[0.25]=0.0; bound 0.25: null_band_behaviour[0.25]=0.0; bound 0.5: null_band_behaviour[0.25]=0.0; bound 1.0: null_band_behaviour[0.25]=0.0; bound 2.0: null_band_behaviour[0.25]=0.0
+[ok  ] qwen3.5-35b-a3b__over: every alpha in the matrix has a behavioural null band
+         alphas [0.25, 0.5, 1.0, 2.0, 4.0] all covered
+         liveness qwen3.5-35b-a3b__over bound=0.1: G2 tested=394 ci_disjoint=306 beyond_null=136 fdr=337 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-35b-a3b__over bound=0.25: G2 tested=570 ci_disjoint=454 beyond_null=196 fdr=493 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-35b-a3b__over bound=0.5: G2 tested=618 ci_disjoint=500 beyond_null=222 fdr=540 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-35b-a3b__over bound=1.0: G2 tested=717 ci_disjoint=593 beyond_null=258 fdr=639 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-35b-a3b__over bound=2.0: G2 tested=851 ci_disjoint=716 beyond_null=321 fdr=765 -> holds=True | G3 holds=None n=None
+[ok  ] qwen3.5-35b-a3b__over.superseded: no gate verdict from an untested criterion
+         bounds reporting a verdict with 0 pairs tested: []
+[ok  ] qwen3.5-35b-a3b__over.superseded: G2 is FDR-corrected
+         BH q=0.05 over the asymmetry family, as pre-registered
+[FAIL] qwen3.5-35b-a3b__over.superseded: every null band is finite and positive (G3-bug guard)
+         bound 0.1: null_band_behaviour[0.25]=0.0; bound 0.25: null_band_behaviour[0.25]=0.0; bound 0.5: null_band_behaviour[0.25]=0.0; bound 1.0: null_band_behaviour[0.25]=0.0; bound 2.0: null_band_behaviour[0.25]=0.0
+[ok  ] qwen3.5-35b-a3b__over.superseded: every alpha in the matrix has a behavioural null band
+         alphas [] all covered
+         liveness qwen3.5-35b-a3b__over.superseded bound=0.1: G2 tested=394 ci_disjoint=306 beyond_null=136 fdr=337 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-35b-a3b__over.superseded bound=0.25: G2 tested=570 ci_disjoint=454 beyond_null=196 fdr=493 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-35b-a3b__over.superseded bound=0.5: G2 tested=618 ci_disjoint=500 beyond_null=222 fdr=540 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-35b-a3b__over.superseded bound=1.0: G2 tested=717 ci_disjoint=593 beyond_null=258 fdr=639 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-35b-a3b__over.superseded bound=2.0: G2 tested=851 ci_disjoint=716 beyond_null=321 fdr=765 -> holds=True | G3 holds=None n=None
+[ok  ] qwen3.5-35b-a3b__under: no gate verdict from an untested criterion
+         bounds reporting a verdict with 0 pairs tested: []
+[ok  ] qwen3.5-35b-a3b__under: G2 is FDR-corrected
+         BH q=0.05 over the asymmetry family, as pre-registered
+[FAIL] qwen3.5-35b-a3b__under: every null band is finite and positive (G3-bug guard)
+         bound 0.1: null_band_behaviour[0.25]=0.0; bound 0.25: null_band_behaviour[0.25]=0.0; bound 0.5: null_band_behaviour[0.25]=0.0; bound 1.0: null_band_behaviour[0.25]=0.0; bound 2.0: null_band_behaviour[0.25]=0.0
+[ok  ] qwen3.5-35b-a3b__under: every alpha in the matrix has a behavioural null band
+         alphas [0.25, 0.5, 1.0, 2.0, 4.0] all covered
+         liveness qwen3.5-35b-a3b__under bound=0.1: G2 tested=362 ci_disjoint=223 beyond_null=100 fdr=240 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-35b-a3b__under bound=0.25: G2 tested=573 ci_disjoint=377 beyond_null=203 fdr=403 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-35b-a3b__under bound=0.5: G2 tested=657 ci_disjoint=441 beyond_null=256 fdr=471 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-35b-a3b__under bound=1.0: G2 tested=764 ci_disjoint=519 beyond_null=319 fdr=552 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-35b-a3b__under bound=2.0: G2 tested=948 ci_disjoint=664 beyond_null=398 fdr=701 -> holds=True | G3 holds=None n=None
+[ok  ] qwen3.5-35b-a3b__under.superseded: no gate verdict from an untested criterion
+         bounds reporting a verdict with 0 pairs tested: []
+[ok  ] qwen3.5-35b-a3b__under.superseded: G2 is FDR-corrected
+         BH q=0.05 over the asymmetry family, as pre-registered
+[FAIL] qwen3.5-35b-a3b__under.superseded: every null band is finite and positive (G3-bug guard)
+         bound 0.1: null_band_behaviour[0.25]=0.0; bound 0.25: null_band_behaviour[0.25]=0.0; bound 0.5: null_band_behaviour[0.25]=0.0; bound 1.0: null_band_behaviour[0.25]=0.0; bound 2.0: null_band_behaviour[0.25]=0.0
+[ok  ] qwen3.5-35b-a3b__under.superseded: every alpha in the matrix has a behavioural null band
+         alphas [] all covered
+         liveness qwen3.5-35b-a3b__under.superseded bound=0.1: G2 tested=362 ci_disjoint=223 beyond_null=100 fdr=240 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-35b-a3b__under.superseded bound=0.25: G2 tested=573 ci_disjoint=377 beyond_null=203 fdr=403 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-35b-a3b__under.superseded bound=0.5: G2 tested=657 ci_disjoint=441 beyond_null=256 fdr=471 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-35b-a3b__under.superseded bound=1.0: G2 tested=764 ci_disjoint=519 beyond_null=319 fdr=552 -> holds=True | G3 holds=None n=None
+         liveness qwen3.5-35b-a3b__under.superseded bound=2.0: G2 tested=948 ci_disjoint=664 beyond_null=398 fdr=701 -> holds=True | G3 holds=None n=None
+[ok  ] qwen3.5-35b-a3b__over: steering readout is calibrated (delta_AA ~= alpha)
+         median |delta/alpha - 1| = 0.067 at the first read layer
+[ok  ] qwen3.5-35b-a3b__over: behavioural readout is generation-based
+         refusal rate under intervention, labelled with the published rule
+[ok  ] qwen3.5-35b-a3b__over: every downstream layer is read
+         30 distinct read layers over 9 steer layers
+[ok  ] qwen3.5-35b-a3b__over: gate family is the pre-registered read layers
+         gate read layers per steer layer: [1, 2, 3] (expected <= 3); profile keeps 30 for description
+[ok  ] qwen3.5-35b-a3b__over: both read positions present
+         ['t_inst', 't_post_inst']
+[ok  ] qwen3.5-35b-a3b__under: steering readout is calibrated (delta_AA ~= alpha)
+         median |delta/alpha - 1| = 0.073 at the first read layer
+[ok  ] qwen3.5-35b-a3b__under: behavioural readout is generation-based
+         refusal rate under intervention, labelled with the published rule
+[ok  ] qwen3.5-35b-a3b__under: every downstream layer is read
+         30 distinct read layers over 10 steer layers
+[ok  ] qwen3.5-35b-a3b__under: gate family is the pre-registered read layers
+         gate read layers per steer layer: [2, 3] (expected <= 3); profile keeps 30 for description
+[ok  ] qwen3.5-35b-a3b__under: both read positions present
+         ['t_inst', 't_post_inst']
+[ok  ] qwen3.5-35b-a3b: stage B swept the steered positions
+         token sets present: ['all_real', 'instruction_span', 'post_instruction', 't_inst_only'] (pre-registered: all_real, instruction_span, t_inst_only, post_instruction; a set is skipped only where its span is empty)
+[ok  ] qwen3.5-35b-a3b: steered-token set changes the intervention
+         mean KL by token set: all_real=1.7185, instruction_span=0.0174, post_instruction=1.6487, t_inst_only=0.0020
+[ok  ] qwen3.5-35b-a3b: stage B swept the steered positions
+         token sets present: ['all_real', 'instruction_span', 'post_instruction', 't_inst_only'] (pre-registered: all_real, instruction_span, t_inst_only, post_instruction; a set is skipped only where its span is empty)
+[ok  ] qwen3.5-35b-a3b: steered-token set changes the intervention
+         mean KL by token set: all_real=2.2665, instruction_span=0.0257, post_instruction=2.2041, t_inst_only=0.0024
+[info] nemotron-3-nano-30b-a3b: train-selected vs test-argmax layer per concept — 4/7 coincide: R_harm: L25/L24, R_harm_user: L25/L25, R_control: L50/L38, R_harm_at_post: L19/L19, R_control_harmless: L41/L41
+[ok  ] nemotron-3-nano-30b-a3b: fit/eval instruction sets disjoint
+         train=751 test=249 overlap=0
+[ok  ] nemotron-3-nano-30b-a3b: every direction beats its length-only baseline
+[ok  ] nemotron-3-nano-30b-a3b: R_control fit excludes the undetermined pool (E is held out)
+         fit counts {'n_positive': 2799, 'n_negative': 48, 'n_test_pos': 912, 'n_test_neg': 18} vs labels {'n_positive': 2799, 'n_negative': 48, 'n_test_pos': 912, 'n_test_neg': 18}; 223 undetermined items are in neither class
+[FAIL] nemotron-3-nano-30b-a3b: every reported CI has >= 20 MINORITY-class test items
+         R_control@L50 minority=18 (pos=912, neg=18), R_control_unbalanced@L50 minority=18 (pos=912, neg=18)
+[ok  ] nemotron-3-nano-30b-a3b: every reported CI has >= 20 test instructions (union, weaker check)
+         min n_test_instructions = 122 across 364 direction-layer fits
+[ok  ] nemotron-3-nano-30b-a3b: activation cache is present where the run recorded it
+         /scratch/b6aj/jtelintelo.b6aj/rq1-activation-cache/results-fcbf856b/rq1/nemotron-3-nano-30b-a3b/activations.pt
+[ok  ] nemotron-3-nano-30b-a3b: activations finite, fp16 storage has headroom
+         absmax=636.0 (fp16 max 65504, 103x headroom), nan=0 inf=0
+[ok  ] nemotron-3-nano-30b-a3b: cached activation index aligns with refusal labels
+         n_cached=8000 n_labels=8000
+[ok  ] nemotron-3-nano-30b-a3b: E1.1d variants are role-balanced
+         4 variant-position fits; role TV before balancing: [0.244, 0.244, 0.093, 0.093]
+[ok  ] nemotron-3-nano-30b-a3b: E1.1d variants beat their length-only baseline
+         AUC vs length-only: R_harm_in_refused@t_inst 1.000 vs 0.754; R_harm_in_refused_at_post@t_post_inst 0.999 vs 0.754; R_harm_in_complied@t_inst 0.997 vs 0.825; R_harm_in_complied_at_post@t_post_inst 1.000 vs 0.825
+[ok  ] nemotron-3-nano-30b-a3b: E1.7 Level 2 has both arms
+         arms present: ['generated', 'template'] — `generated` is the real test, `template` upper-bounds how detectable register can be
+[ok  ] nemotron-3-nano-30b-a3b: E1.7 Level 2 cosines carry a split-half floor
+         1872 rows; median floor 0.896
+[ok  ] nemotron-3-nano-30b-a3b: every variant run is supported by this run's labels
+         ran ['over', 'under']; labels support ['over', 'under']
+[ok  ] nemotron-3-nano-30b-a3b: skipped variants are ones the labels call unusable
+         skipped -; labels support ['over', 'under']
+[ok  ] nemotron-3-nano-30b-a3b: no usable control contrast was left unrun
+         ran every supported variant: ['over', 'under']
+[ok  ] nemotron-3-nano-30b-a3b: matched cross-model arm 'over' was run
+         causal_gate__over.json present
+[ok  ] nemotron-3-nano-30b-a3b: gate artifacts present
+         ['causal_gate__over.json', 'causal_gate__under.json'] / ['causal_matrix__over.csv', 'causal_matrix__under.csv']
+[ok  ] nemotron-3-nano-30b-a3b__over: no gate verdict from an untested criterion
+         bounds reporting a verdict with 0 pairs tested: []
+[ok  ] nemotron-3-nano-30b-a3b__over: G2 is FDR-corrected
+         BH q=0.05 over the asymmetry family, as pre-registered
+[ok  ] nemotron-3-nano-30b-a3b__over: every null band is finite and positive (G3-bug guard)
+         all bands finite across 5 capability bounds
+[ok  ] nemotron-3-nano-30b-a3b__over: every alpha in the matrix has a behavioural null band
+         alphas [0.25, 0.5, 1.0, 2.0, 4.0] all covered
+         liveness nemotron-3-nano-30b-a3b__over bound=0.1: G2 tested=664 ci_disjoint=510 beyond_null=265 fdr=538 -> holds=True | G3 holds=None n=None
+         liveness nemotron-3-nano-30b-a3b__over bound=0.25: G2 tested=944 ci_disjoint=738 beyond_null=372 fdr=791 -> holds=True | G3 holds=None n=None
+         liveness nemotron-3-nano-30b-a3b__over bound=0.5: G2 tested=1203 ci_disjoint=966 beyond_null=544 fdr=1025 -> holds=True | G3 holds=None n=None
+         liveness nemotron-3-nano-30b-a3b__over bound=1.0: G2 tested=1418 ci_disjoint=1173 beyond_null=641 fdr=1237 -> holds=True | G3 holds=None n=None
+         liveness nemotron-3-nano-30b-a3b__over bound=2.0: G2 tested=1568 ci_disjoint=1320 beyond_null=751 fdr=1385 -> holds=True | G3 holds=None n=None
+[ok  ] nemotron-3-nano-30b-a3b__under: no gate verdict from an untested criterion
+         bounds reporting a verdict with 0 pairs tested: []
+[ok  ] nemotron-3-nano-30b-a3b__under: G2 is FDR-corrected
+         BH q=0.05 over the asymmetry family, as pre-registered
+[ok  ] nemotron-3-nano-30b-a3b__under: every null band is finite and positive (G3-bug guard)
+         all bands finite across 5 capability bounds
+[ok  ] nemotron-3-nano-30b-a3b__under: every alpha in the matrix has a behavioural null band
+         alphas [0.25, 0.5, 1.0, 2.0, 4.0] all covered
+         liveness nemotron-3-nano-30b-a3b__under bound=0.1: G2 tested=593 ci_disjoint=436 beyond_null=267 fdr=451 -> holds=True | G3 holds=None n=None
+         liveness nemotron-3-nano-30b-a3b__under bound=0.25: G2 tested=842 ci_disjoint=630 beyond_null=406 fdr=654 -> holds=True | G3 holds=None n=None
+         liveness nemotron-3-nano-30b-a3b__under bound=0.5: G2 tested=1133 ci_disjoint=905 beyond_null=626 fdr=937 -> holds=True | G3 holds=None n=None
+         liveness nemotron-3-nano-30b-a3b__under bound=1.0: G2 tested=1307 ci_disjoint=1070 beyond_null=722 fdr=1107 -> holds=True | G3 holds=None n=None
+         liveness nemotron-3-nano-30b-a3b__under bound=2.0: G2 tested=1495 ci_disjoint=1253 beyond_null=893 fdr=1292 -> holds=True | G3 holds=None n=None
+[ok  ] nemotron-3-nano-30b-a3b__over: steering readout is calibrated (delta_AA ~= alpha)
+         median |delta/alpha - 1| = 0.021 at the first read layer
+[ok  ] nemotron-3-nano-30b-a3b__over: behavioural readout is generation-based
+         refusal rate under intervention, labelled with the published rule
+[ok  ] nemotron-3-nano-30b-a3b__over: every downstream layer is read
+         39 distinct read layers over 10 steer layers
+[ok  ] nemotron-3-nano-30b-a3b__over: gate family is the pre-registered read layers
+         gate read layers per steer layer: [1, 2, 3] (expected <= 3); profile keeps 39 for description
+[ok  ] nemotron-3-nano-30b-a3b__over: both read positions present
+         ['t_inst', 't_post_inst']
+[ok  ] nemotron-3-nano-30b-a3b__under: steering readout is calibrated (delta_AA ~= alpha)
+         median |delta/alpha - 1| = 0.030 at the first read layer
+[ok  ] nemotron-3-nano-30b-a3b__under: behavioural readout is generation-based
+         refusal rate under intervention, labelled with the published rule
+[ok  ] nemotron-3-nano-30b-a3b__under: every downstream layer is read
+         39 distinct read layers over 9 steer layers
+[ok  ] nemotron-3-nano-30b-a3b__under: gate family is the pre-registered read layers
+         gate read layers per steer layer: [1, 2, 3] (expected <= 3); profile keeps 39 for description
+[ok  ] nemotron-3-nano-30b-a3b__under: both read positions present
+         ['t_inst', 't_post_inst']
+[ok  ] nemotron-3-nano-30b-a3b: stage B swept the steered positions
+         token sets present: ['all_real', 'instruction_span', 'post_instruction', 't_inst_only'] (pre-registered: all_real, instruction_span, t_inst_only, post_instruction; a set is skipped only where its span is empty)
+[ok  ] nemotron-3-nano-30b-a3b: steered-token set changes the intervention
+         mean KL by token set: all_real=1.3833, instruction_span=0.0194, post_instruction=1.3222, t_inst_only=0.0020
+[ok  ] nemotron-3-nano-30b-a3b: stage B swept the steered positions
+         token sets present: ['all_real', 'instruction_span', 'post_instruction', 't_inst_only'] (pre-registered: all_real, instruction_span, t_inst_only, post_instruction; a set is skipped only where its span is empty)
+[ok  ] nemotron-3-nano-30b-a3b: steered-token set changes the intervention
+         mean KL by token set: all_real=1.6234, instruction_span=0.0249, post_instruction=1.5675, t_inst_only=0.0022
+
+======================================================================
+233/240 checks passed

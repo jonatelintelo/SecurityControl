@@ -1,4 +1,0 @@
-model,concept_a,concept_b,position,layer_a,layer_b,same_layer,k_a,k_b,projection_metric,null_p97_5,null_mean,beyond_null,smallest_angle_deg,largest_angle_deg,cos_principal_angles,data_cca,data_cca_max,degenerate_rank_one
-qwen2.5-7b,R_control,R_control_harmless,t_post_inst,20,22,False,3,1,0.2680729925632477,0.002580067841336131,0.0007743696914985776,True,58.81804426397058,58.81804426397058,0.5178,0.9763,0.9762932062149048,False
-qwen2.5-7b,R_control,R_harm_at_post,t_post_inst,20,16,False,3,1,0.03314686566591263,0.002580067841336131,0.0007743696914985776,True,79.51006820357836,79.51006820357836,0.1821,0.8830,0.8829519152641296,False
-qwen2.5-7b,R_control_harmless,R_harm_at_post,t_post_inst,22,16,False,1,1,0.010530572384595871,0.0012514060363173485,0.0002575136022642255,True,84.11002302466352,84.11002302466352,0.1026,0.7762,0.77616947889328,True

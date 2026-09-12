@@ -31,6 +31,26 @@ from core.positions import Rendered, batch_positions
 SITES = ("residual", "pre_mlp")
 
 
+def has_site(layer: nn.Module, site: str) -> bool:
+    """Can this architecture expose `site` at all?
+
+    Not every decoder block has a `post_attention_layernorm`. NVIDIA's
+    Nemotron-H is a Mamba/attention hybrid whose layer pattern is
+    `MEMEM*EMEM...` — most layers are Mamba or MLP blocks, and every block
+    exposes only `norm` and `mixer`. There is no post-attention layernorm
+    because most layers have no attention.
+
+    Callers use this to record "not applicable on this architecture" instead of
+    dying. The distinction matters: a reproduction check that CANNOT be run is a
+    scope limit to report, while one that runs and disagrees is a finding.
+    """
+    try:
+        _site_module(layer, site)
+        return True
+    except AttributeError:
+        return False
+
+
 def _site_module(layer: nn.Module, site: str) -> nn.Module:
     if site == "residual":
         return layer
