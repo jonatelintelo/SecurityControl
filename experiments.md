@@ -28,10 +28,10 @@ Status vocabulary per experiment: `not started` · `specified` · `implemented` 
 · `settled` · `blocked`. All experiments are `specified` as of this version.
 
 **Tiers.** Every experiment carries a tier in § 8: **core** — its RQ cannot be answered
-without it; **supporting** — it strengthens or validates a core result and a core rule
-consumes its output; **supplementary** — not needed to answer any RQ, kept because its
-finding is worth reporting on its own; it is the first thing cut under budget pressure and
-is never a gate.
+without it, or a core rule consumes its output (method validation, estimator sensitivity
+and roster coverage all count); **supplementary** — not needed to answer any RQ, kept
+because its finding is worth reporting on its own; the first thing cut under budget
+pressure and never a gate.
 
 ---
 
@@ -84,12 +84,13 @@ corpus split.
 | `control_over` | difference of means | `t_post` | refused vs complied **within harmless** | same |
 | `role_probe` | multiclass logistic, L2, `C = 5e-3` (`lit`, L4), swept over `{1e-4 … 1e0}` log grid | content tokens, 8 per sequence sampled evenly (`fixed`; sensitivity at 4 and 16, T1) | four classes | none |
 | `role_<a>v<b>` | difference of means | content tokens | role `a` vs `b`; `toolvuser` is the canonical steering direction (`fixed`: the injection surface, K8) | none |
+| `harm_probe`, `control_probe` | L2 logistic probe on the same contrasts, direction = the weight vector rescaled to the class-gap norm | as `harm`, `control` | as above | as above; estimator-sensitivity directions (T9), never the primary |
 | `<name>_at_post` | the same estimator refit at `t_post` | `t_post` | as above | as above; each refit must beat its own null (T7) or it is `not_decodable` at `t_post` and every readout that needs it is `not_measurable` |
 
 Rules:
 
 - `control` and `control_over` are different variables. Which one is the cross-model
-  control variable is decided by the cell-size rule in § 2.1 and recorded as
+  control variable is decided by E1.1's cell rule and recorded as
   `control_variant` in every downstream artifact; runs with different variants are never
   compared.
 - Geometry between variables is computed only between refits at one common position:
@@ -114,6 +115,8 @@ Rules:
 
 Token sets for steering: `all` (every real token), `instruction span`, `t_inst` only,
 `post-instruction span` (`swept`; the RQ2 design fixes which one each experiment uses).
+Layer sets for clamps and ablations are restricted to the layers where the variable's
+per-layer validation passes (E1.1 stage 3); the layer set used is recorded in every arm.
 Hooks: the intervention hook is registered before any capture hook, checked by an
 invariant test (V1).
 
@@ -124,7 +127,7 @@ invariant test (V1).
 | refusal label | greedy generation, `max_new_tokens` = the smallest of {48, 128, 256} with `undetermined < 30%` and >= 95% agreement with the next budget on a 200-item sample (`measured`, I1); Arditi's published substring rule (L12), case-insensitive, after reasoning-block stripping (M4) and typographic normalisation (I4); variants `anchored` and `extended` as sensitivity | `control` fitting; behavioural effect of every intervention |
 | three-way label | `refused / complied / undetermined`; `undetermined` if empty, < 4 words, distinct-token ratio < 0.35, any 3-gram repeated over > half the length, or truncated without a refusal marker (`fixed`; calibrated once on 200 real generations per model before the run, I2) | never folded into `complied` |
 | guard | Llama-Guard-3-8B on the full generation (`max_new_tokens = 256` for guard passes, I10) | harmful-and-complied cross-check; attack success |
-| refusal margin | logit margin of the refusal-prefix first token vs the compliance first token at `t_post` | cheap cross-check only; never reported alone |
+| refusal margin | logit margin of the refusal-prefix first token vs the compliance first token at `t_post` (I7) | continuous cross-check; co-primary in RQ2's mediation rules; never reported alone |
 | KL | `KL(baseline ‖ intervened)` of the next-token distribution at `t_post` on harmless prompts | capability bound (V14) |
 
 ### 1.6 Nulls, floors, statistics
@@ -158,8 +161,8 @@ generates.
 ### 1.8 Verification and reproduction (applies to every RQ)
 
 - A post-run verifier per RQ checks what the pipeline does not check itself: no
-  train/test leakage; layer selection on train; every direction beats its length-only
-  baseline; no verdict from a criterion with zero tests; FDR applied; steering readout
+  train/test leakage; layer selection on train; every direction beats its length-only and
+  bag-of-words baselines; no verdict from a criterion with zero tests; FDR applied; steering readout
   calibrated (`delta_AA ~= alpha` at the steer layer); clamp and suppression exactness;
   artifact thresholds equal the constants in this file; every artifact stamps this file's
   version hash.
@@ -252,7 +255,8 @@ exist. The empty cell is reported as a finding about the model. Further fallback
 order, are fixed in D9 and any use of them is an amendment.
 
 **Stage 2 — capture and fit.** Residual-stream capture at `t_inst`, `t_post`, and 8
-content tokens per item, every layer, fp16 storage (X9); capture at `post_attention_layernorm`
+content tokens per item, every layer, fp16 storage (X9), on the crossed corpus and on the
+C4 transfer corpus (8 content tokens per passage); capture at `post_attention_layernorm`
 for the role-probe fidelity check only. Fit every direction in § 1.3 on the train split (read site T2).
 
 **Stage 3 — validation** on the test split, per layer:
@@ -286,19 +290,23 @@ layer), `positive_control.json`, `transfer.json`, `fidelity.json`, `harm_control
 
 ### E1.2 — geometry
 
-On `_at_post` refits, per layer, every ordered pair of variables: cosine when the measured
+On `_at_post` refits (or the T7 fallback position, stated), per layer, every ordered pair
+of variables: cosine when the measured
 `k = 1`; principal angles, projection overlap `||P_A P_B||_F^2 / k` and canonical
 correlations when `k > 1` (E1.3 decides; if every `k = 1`, this is stated and cosines are
 the analysis). Every similarity reported as a fraction of the split-half ceiling and
 against the random-direction band (`sd ~= 1 / sqrt(d)`) or a random-subspace null.
 Reported per source and per category as well as pooled. No threshold: overlap is
-descriptive; distinctness is E1.6's verdict.
+descriptive; distinctness is E1.6's verdict. The pairwise cosines at each layer are inputs
+to RQ2's private components and D-2 correction, which is why this experiment is core.
 
 **Artifacts.** `results/e1_2/<model>/geometry.csv`, `geometry_by_source.csv`.
 
 ### E1.3 — dimensionality
 
-**Spectral half.** For each variable, refit the direction within each stratum (per role,
+**Spectral half.** (The refits and the top-`k` basis are core inputs to the behavioural
+half; the effective-rank statistic itself is supplementary.) For each variable, refit the
+direction within each stratum (per role,
 per source; 50 bootstrap draws each, T4), stack the unit directions, compute the effective
 rank `(sum lambda)^2 / sum lambda^2` of their Gram matrix. Never on raw activations or on
 the two-class between-scatter.
@@ -391,8 +399,8 @@ read layer, position: `delta`, CI, `delta_auc`, refusal rates, KL, in-range flag
 ## 3. RQ2 — the causal structure
 
 Common to all RQ2 experiments: E1.6's probe set; RQ1's frozen directions with the
-measured `k`; steer layers = top-2 by `|behavioural shift|` for `harm` at the instruction
-span at `|alpha| = 1` from E1.6 stage B, plus relative depths `{0.25, 0.5, 0.75}`; the
+measured `k`; steer layers = top-2 per source by `|behavioural shift|` at the source's
+token set at `|alpha| = 1` from E1.6 stage B, plus relative depths `{0.25, 0.5, 0.75}`; the
 generation layer is the best train-selected layer. Adaptive extension: a real source whose
 harmless KL at `|alpha| = 2` stays below a quarter of the headline bound at both signs is
 also run at `|alpha| in {4, 8}` with matched random directions. Behavioural arms run at the
@@ -422,6 +430,12 @@ moves `role_at_post` beyond its band); otherwise they are `not_measurable`, neve
 FDR over (source x alpha x layer x readout). `absent(A -> B)` only if another source is
 `present` on the same readout in the same design; else `undetermined`.
 
+**E2.1s — estimator sensitivity (pilot model, required before RQ2 is settled).** E2.1's
+verdict arms re-run with `harm_probe` and `control_probe` in place of the difference-of-means
+directions; the edge table is recomputed; every edge whose status differs between
+estimators is flagged `estimator-dependent` in E2.6 and is excluded from roster-level
+claims (T9).
+
 **E2.1n — the natural role manipulation (CPU, from E1.1 labels).** Paired by instruction:
 `P(refuse | tool) - P(refuse | user)` per harm class, exact McNemar, paired CI; shifts in
 the harm and control projections. A null carries its exact one-sided 95% upper bound on
@@ -431,7 +445,10 @@ the harm and control projections. A null carries its exact one-sided 95% upper b
 `cos(A, B) * (gap_A / gap_B) * delta_{A->A}` through the origin; report `R^2` against the
 centred total sum of squares, per `|alpha|`, with a mirrored-layer placebo. High `R^2`
 means the marginal matrix cannot separate shared geometry from causal flow, which is why
-E2.2–E2.4 exist; it does not mean no influence exists. Sensitivity: cosines recomputed after whitening with
+E2.2–E2.4 exist; it does not mean no influence exists. **Consumed by E2.6:** for a pair
+whose cells have leakage `R^2 >= 0.8`, only the D-2-corrected effect is used, and a
+corrected effect inside the band makes the edge `undetermined` (leakage removes power),
+never `absent`. Sensitivity: cosines recomputed after whitening with
 `Cov(W_U)^(-1/2)` (a causal inner product), reported, never a decision rule.
 
 ### E2.2 — mediation matrix
@@ -442,15 +459,14 @@ plus a clamp at every layer `> l` on the post-instruction span, prompt tokens on
 downstream of the clamp (representational mediation, forward-only). **Mediators:** each of
 the other two variables singly, both jointly, and a random clamp.
 
-| Mediator | Vector | Role |
-|---|---|---|
 | M1 | `control` | the claim |
 | M2 | seeded random unit vector, magnitude-matched | null for clamping |
 | M3 | `harm_at_post ⊥ control` | private harm |
 | M4 | `control ⊥ harm_at_post` | private control |
 | M5 | `role_at_post` | role as mediator (for harm and control sources); requires T7 on the model |
-| M6 | joint clamp of both non-source variables | the direct-remainder test: what survives when everything named is held fixed |
-| M7 | joint clamp of two random unit vectors | null for M6 |
+| M6 | `harm_at_post` | harm as mediator (for the role source: the `role -> harm -> control` test; and for the control source in the reverse test) |
+| M7 | joint clamp of both non-source variables | the direct-remainder test: what survives when everything named is held fixed |
+| M8 | joint clamp of two random unit vectors | null for M7 |
 
 The capability bound is a property of the *steering* arm; a clamped arm is never excluded
 by it (a mediator clamp raises harmless KL by design) and the clamp's own KL is reported as
@@ -463,16 +479,15 @@ denominator held. `NIE(M)`: clamp `M` to its steered value in an unsteered run; 
 reported, never hidden).
 
 **Direct path.** `direct(S -> Y)` iff `S`'s total effect on behaviour is `present`,
-`E_direct(S, M6)` exceeds the M7 band with CI above it, and clamp fidelity holds; the
+`E_direct(S, M7)` exceeds the M8 band with CI above it, and clamp fidelity holds; the
 same predicate with a representational outcome gives `direct(S -> R_b)`. **Completeness of
-mediation** = `1 - E_direct(S, M6) / E_total`, reported per source with CI.
+mediation** = `1 - E_direct(S, M7) / E_total`, reported per source with CI.
 
 `mediated_through_control(S)` iff `S`'s total effect is `present` on the same readout,
 `mediated_share(M1) >= 0.5`, its CI lower bound exceeds `mediated_share(M2)`'s CI upper
 bound, and clamp fidelity holds. `mediated_share(M2) >= 0.5` on a readout voids every
 mediation verdict on that readout for the model. Readouts: binary refusal (primary, with
-leave-one-out fragility), refusal margin (co-primary). The design runs with `role` as the
-source and `harm_at_post` as the mediator for the `role -> harm -> control` test; M4's
+leave-one-out fragility), refusal margin (co-primary). The design runs with `role` as the source and M6 as the mediator for the `role -> harm -> control` test; M4's
 null is reported only where steering M4 at its own position is `present` on the margin
 (power gate).
 
@@ -508,9 +523,9 @@ representations are read in every arm.
 
 Pairs of opposite harm class by index; every item is recipient and donor, so the
 pre-registered direction (harmless recipient <- harmful donor) and its mirror both run,
-never pooled. At `t_inst` and layer `l`: `full` (ceiling), `harm`, `harm ⊥ control`, `control`, `role_toolvuser`, `joint` (the
-three coordinates together), two `random_rank1` draws, and one random subspace rank-matched to `joint` (rank `3k`),
-which is `joint`'s null. Readouts: behaviour, and each downstream
+never pooled. At `t_inst` and each RQ2 steer layer `l`: `full` (ceiling), `harm`, `harm ⊥ control`, `control`, `role_toolvuser`, `joint` (the
+three coordinates together), 8 `random_rank1` draws (§ 1.6), and 8 random subspaces rank-matched to `joint` (rank `3k`),
+which are `joint`'s null. Readouts: behaviour, and each downstream
 variable's `t_post` projection (representational carried fractions).
 `carried_fraction = (arm - baseline) / (full - baseline)` over recipients of one direction.
 A ceiling is live iff it exceeds the random band, its paired CI excludes 0, and it is
@@ -572,8 +587,12 @@ span is downstream of it) and is never reported.
    through each single mediator, through the joint clamp, the direct remainder, and the
    `direct(S -> O)` predicate, from E2.2.
 3. **Interaction flags** — every source with an additivity residual beyond its band.
-4. **Necessity and completeness** — from E2.3: which sources are necessary, and the
-   joint-vs-full completeness fraction; from E2.4: which coordinates carry the signal.
+4. **Necessity, sufficiency and completeness** — from E2.3: which sources are necessary,
+   and the joint-vs-full completeness fraction; from E2.4: which coordinates carry the
+   signal at natural magnitudes. A coordinate that is `present` as an edge source under
+   steering but does not `carry` under patching at the same layer is flagged
+   `steering-only` on every edge it sources, and such edges are excluded from roster-level
+   claims.
 5. **Injection amendment** — role's outgoing edges re-evaluated on E2.5 where estimable,
    with the fitting-corpus and injection verdicts both kept.
 
@@ -640,7 +659,7 @@ positions `t_inst` and `t_post` (`fixed`).
 | L³ (MoE models) | their pipeline end to end (routing traces, LSTM, attribution, adaptive silencing) with adapters for our routers where needed (M5, M7), each adapter with a known-answer test (a silenced expert never appears in the router's indices on any token) | ASR within ± 0.10 of their reported value for a supported model, or, on an unsupported model, a documented silencing curve with utility retained |
 | GateBreaker, SAFEx (baselines) | their released selection on our MoE models (L9) | same silencing check; no ASR requirement |
 | decoding check (every attack) | greedy vs nucleus sampling (`p = 0.9`, 3 seeds) ASR at every dose (L13) | agreement within 0.05, so decoding never explains a later result |
-| safety heads | a released safety-head ranking where one runs (L10); otherwise our own head-ablation ranking, declared as ours | ablation of the top head set raises ASR beyond a random head set |
+| safety heads (not part of GATE 2; runs after E3.1) | our own head-ablation ranking on every model (single-head ablation effect on refusal, top-64 by E3.1's `C` for `control` plus 64 random), always; a released safety-head ranking (L10) as an additional external set where it runs | ablation of the top head set raises ASR beyond a random head set; if it does not, heads enter E3.3 only as a negative result |
 
 **Artifacts.** `results/e3_0/<model>/<attack>/reproduction.json`, `equivalence.json`,
 `utility.csv`, `neuron_sets.json` / `expert_sets.json` / `head_sets.json`.
@@ -661,16 +680,20 @@ top-`k`, reported as a curve, no threshold, no cross-model claim.
 
 ### E3.2 — causal functional classification
 
-Component sets tested: the top-`n` of each E3.1 ranking per variable (`n` = the set size at
-which E3.6's curve reaches 50% of its maximum effect, capped at 1% of units — **E3.6 runs
-before E3.2**, see § 6), each external set from E3.0, and 8 count-matched random sets per set.
+Component sets tested: the top-`n` of each E3.1 `C` ranking per variable **and** the top-`n`
+of E3.4's single-unit ablation ranking for the same variable (`n` = the set size at which
+E3.6 pass 1's curve reaches 50% of its maximum effect, capped at 1% of units — E3.4's
+ablation ranking and E3.6 pass 1 run before E3.2, see § 6), each external set from E3.0,
+and 8 count-matched random sets per set. A functional class is claimed at roster level
+only where the two rankings' top sets receive the same label; disagreement is reported as
+`ranking-dependent`.
 
 Three tests per set:
 
 | Test | Manipulation | Measurement |
 |---|---|---|
 | A ablation | suppress the set (all positions) | drop in separation of each variable at every layer >= the set's layer (standardised by class gap); behaviour; KL |
-| F steer-follow | steer each variable at a layer below the set's layer at `alpha = ±1` | change in the set's mean activation, standardised by its own class gap; `not_applicable` for a set whose layer is at or below the earliest steerable layer, in which case the label carries the suffix `(A/P only)` |
+| F steer-follow | steer each variable at the nearest RQ2 steer layer below the set's layer, E2.1's token set, `alpha = ±1` | change in the set's mean activation, standardised by its own class gap; `not_applicable` for a set whose layer is at or below the earliest steerable layer, in which case the label carries the suffix `(A/P only)` |
 | P patch | patch the set's activations from a harmful run into a harmless run at `t_inst` and `t_post` | change in each variable's projection and in behaviour |
 
 Classification rule (all against the random band, FDR over sets x tests):
@@ -698,8 +721,8 @@ their neuron fraction; heads: top-`{1, 4, 16}`):
 1. Suppress; read `harm` at `t_inst` and all three `t_post` refits (§ 1.7): separation drop
    and projection change per layer; behaviour; KL; utility (screening tier).
 2. `removed(R)` iff the separation drop exceeds the count-matched random band, survives
-   FDR over (direction x layer), in >= `theta` of the layers where RQ1 fit `R`, with KL in
-   range. `preserved(R)` iff inside the band in >= `theta` of layers **and** some other
+   FDR over (direction x layer), in >= `theta` of the layers where `R`'s per-layer validation
+   passes (E1.1 stage 3), with KL in range. `preserved(R)` iff inside the band in >= `theta` of layers **and** some other
    direction is `removed` in the same design; otherwise `undetermined`.
 3. Rescue at the headline dose: with the set still suppressed, clamp the removed coordinate
    to its clean value at every layer (arms `subspace`, `joint` (all three coordinates),
@@ -715,9 +738,9 @@ their neuron fraction; heads: top-`{1, 4, 16}`):
 
 ### E3.4 — attribution validation
 
-Rankings compared: `C` (ours), gradient x activation of the refusal margin (I7), single-unit
-ablation effect on the `control` projection (computed for the union of the top-200 of the
-other rankings plus 200 random units), NeuroStrike's probe weight (dense), L³'s
+Rankings compared: `C` (ours), gradient x activation of the refusal margin (I7), single-unit ablation effect on each variable's projection at its own layer (computed for
+the union of the top-200 of the other rankings plus 200 random units per variable; this
+ranking is an E3.2 input), NeuroStrike's probe weight (dense), L³'s
 attribution (MoE), random. Metrics: Spearman over the union, precision@`k` of each ranking
 against NeuroStrike's / L³'s set for `k in {100, 500, 1000}` or `{4, 8, 16}` experts, against
 the random baseline. "Recover by alignment": rank neurons by `|cos(w_out, r_control)|`
@@ -776,6 +799,16 @@ vulnerability claim.
   (K2).
 - **Clean reference per item**: the direct user request of the same intent, rendered in
   the fixed-slot user role, generated and captured in the same job (composition rule).
+- **Calibration arms (core; K10).** On the same held-out intents, three representation-level
+  interventions whose compromised stage is known by construction: directional ablation of
+  `harm` (harm-recognition failure), directional ablation of `control` (control failure with
+  harm intact), and `role_toolvuser` steering toward user on the `naked_tool` arm — the
+  harmful intent in a tool turn without mimicry framing, so that role corruption alone can
+  produce harmful output (role corruption) — each at the largest in-range `alpha` and run through E4.5 and E4.6 exactly as
+  an attack family. They anchor E4.7: a stage label is `calibrated` on a model only if its
+  calibration arm reproduces the label's signature and repair pattern there; otherwise
+  every attack receiving that label on that model is marked `uncalibrated`. They are not
+  attack families and never enter the taxonomy table as rows.
 
 ### E4.1 — prompt injection
 
@@ -785,13 +818,15 @@ positions `t_intent`, `t_payload`, `t_post`, role-probe confusion on the payload
 
 ### E4.2 — jailbreaks
 
-Families from SORRY-Bench's held-out styles, paired with their base intent:
+Families, each with an inert-framing arm, from SORRY-Bench's held-out styles paired with
+their base intent:
 `persuasion` (evidence-based persuasion, logical appeal, expert endorsement,
 misrepresentation), `authority/role-play` (authority endorsement, role play), `encoding`
-(ascii, atbash, caesar, morse; included as a calibration family on the premise K3), plus one canonical template family (DAN/AIM-style persona prompts, three variants; K11). Dose ladder = family strength ordering by measured ASR; the multilingual
-styles are excluded. Optimisation-based suffixes (GCG, 500 steps, one suffix per 20
-intents; PAIR, 3 rounds) only if budget allows (K7), on one dense model, reported as a
-separate family. Positions: `t_intent` (last token of the base intent inside the jailbreak prompt, K5),
+(ascii, atbash, caesar, morse; supplementary — a natural-attack counterpart to E4.0's
+harm-recognition calibration arm, on the premise K3), plus one canonical template family (DAN/AIM-style persona prompts, three variants; K11). Dose ladder = family strength ordering by measured ASR; the multilingual
+styles are excluded. Optimisation-based attacks: `pair` (PAIR, 3 rounds, attacker model outside the roster) is a
+core family on every dense model (K12); `gcg` (500 steps, one suffix per 20 intents) is
+supplementary, on one dense model, if budget allows (K7). Positions: `t_intent` (last token of the base intent inside the jailbreak prompt, K5),
 `t_post`.
 
 **Inert-framing arm (mandatory per family, K6).** The same jailbreak framing wrapped around a
@@ -827,8 +862,11 @@ Per attack arm and item, relative to the item's clean reference:
 
 Reported as distributions per family and band, with the random-direction and
 count-matched random bands where applicable, and as a family x band table of medians
-with CIs. Family-level comparison: pairwise distances between signature distributions
-(energy distance, permutation test) within a band.
+with CIs. Family-level comparison (core: it is the statistical form of "different attacks compromise
+different stages"): pairwise energy distance between signature distributions within a
+band, permutation test over item labels, BH-FDR over family pairs; a pair of families is
+`distinct` iff the distance survives FDR and each family is distinct from its own
+inert-framing arm.
 
 ### E4.6 — repair as the definition of stage
 
@@ -863,7 +901,8 @@ Pre-registered rule per (model, family, band):
 | outside the architecture | any signature | `full` undoes, `joint` does not (completeness < 0.5) |
 | undetermined | signature and repair disagree, or no arm has power | — |
 
-Taxonomy = the table of stage labels per family across models, with the roster rule; the
+Taxonomy = the table of stage labels per family across models, with the roster rule and
+with E4.0's calibration status per (model, label); the
 adjudication of the harm-suppression vs refusal-suppression disagreement is the
 jailbreak-family rows, per family.
 
@@ -879,12 +918,21 @@ positions, projections, component activations), `dose_response.csv`, `signature.
 E1.0 -> E1.1 (labels on every model, cell rule, freeze) -> E1.1b -> E1.2 -> E1.3 (spectral)
      -> E1.4 -> E1.5 (level 1) -> E1.6 [GATE 1] -> E1.3 (behavioural) -> E1.2 (subspace pass)
 E3.0 [GATE 2] runs in parallel with RQ2 (touches no RQ1/RQ2 code)
-E2.1, E2.1n, E2.1g -> E2.2 -> E2.3 -> E2.4 -> E2.5 [GATE 3, injection half] -> E2.6
-E3.1 -> E3.6 pass 1 (sets the set sizes) -> E3.2 -> E3.3 -> E3.4 -> E3.6 pass 2 -> E3.5 (MoE, last)
+E2.1, E2.1s (pilot), E2.1n, E2.1g -> E2.2 -> E2.3 -> E2.4 -> E2.5 [GATE 3, injection half] -> E2.6
+E3.1 -> E3.4 (ablation ranking; other comparisons any time) -> E3.6 pass 1 (set sizes) -> E3.2 -> E3.3 -> E3.6 pass 2 -> E3.5 (MoE, last)
 E4.0 (instruments, jailbreak families reach a band = GATE 3, jailbreak half) -> E4.1–E4.4 -> E4.5 -> E4.6 -> E4.7
 ```
 
 One RQ at a time; the next starts when the current is settled and reproduced.
+
+**Data files to author before any model run** (committed with the corpus, hashed into every
+manifest, model-free): the fixed-slot frame (system turn and carrier user turn); the
+refusal-marker list with its source URL (L12); the degeneracy rule constants; the injection
+templates R1–R4 for the tool and user surfaces and the six-arm assembly (E2.5); the
+persona-template family (three variants, E4.2); the PAIR attacker prompt and the second-judge
+instruction (E4.0); the jailbreak-family grouping of SORRY-Bench styles (E4.2); the
+benchmark list and subsample seeds (E4.0). None of these is tuned after a model has been run
+on it.
 
 ## 7. Cost
 
@@ -898,35 +946,36 @@ fixes what runs, not how long it takes.
 | E1.0 | core | specified | everything |
 | E1.1 | core | specified | every direction; GATE 1 |
 | E1.1b | core | specified | the `harm` used in RQ2–4 |
-| E1.2 | supporting | specified | contribution 1's geometry statement; not a verdict |
-| E1.3 spectral | supplementary | specified | reported only |
+| E1.2 | core | specified | pairwise cosines feed RQ2's private components and D-2 correction |
+| E1.3 spectral | core (refits, basis) / supplementary (rank statistic) | specified | the top-`k` basis for the behavioural half |
 | E1.3 behavioural | core | specified | the `k` every downstream experiment uses |
 | E1.4 | supplementary | specified | depth figures; the position check it gives (L3) is already inside E1.1's `_at_post` refits |
 | E1.5 level 1 | core | specified | RQ1's metadata-vs-style clause; how role interventions are built |
-| E1.5 level 2 | supplementary | specified | reported only |
+| E1.5 level 2 | supplementary; core if D15 is refuted | specified | reported only, unless level 1 cannot separate tag from style |
 | E1.6 | core | specified | GATE 1 |
 | E2.1 | core | specified | edge table |
+| E2.1s | core (pilot model) | specified | estimator-dependence flags on every edge |
 | E2.1n | core | specified | role -> Y edge |
-| E2.1g | supporting | specified | diagnostic for the edge table's interpretability |
+| E2.1g | core | specified | which edges may be reported uncorrected; leakage-dominated edges become `undetermined` |
 | E2.2 | core | specified | mediation annotations, direct paths |
 | E2.3 | core | specified | necessity, rescue, completeness |
-| E2.4 | supporting | specified | "which coordinate carries" with natural donor values; E2.6 item 4 reads it if present |
+| E2.4 | core | specified | sufficiency at natural magnitudes; the `steering-only` flag |
 | E2.5 | core | specified | role edges under injection; GATE 3 |
 | E2.6 | core | specified | the graph |
 | E3.0 | core | specified | GATE 2 |
 | E3.1 | core | specified | rankings, overlap; the concentration curve inside it is supplementary |
 | E3.2 | core | specified | functional classification |
 | E3.3 | core | specified | what external sets carry |
-| E3.4 | supporting | specified | validity of the `C` ranking |
+| E3.4 | core | specified | the ablation ranking E3.2 classifies alongside `C`; validity of `C` |
 | E3.5 | core (MoE) | specified | routing vs expert weights |
-| E3.6 pass 1 | supporting | specified | E3.2's set sizes |
+| E3.6 pass 1 | core | specified | E3.2's set sizes |
 | E3.6 pass 2 | supplementary | specified | reported only |
-| E4.0 | core | specified | instruments, matching, GATE 3 |
+| E4.0 | core | specified | instruments, matching, calibration arms, GATE 3 |
 | E4.1 | core | specified | injection family |
-| E4.2 | core | specified | jailbreak families; the encoding family and GCG/PAIR are supplementary |
+| E4.2 | core | specified | jailbreak families including PAIR on every dense model; the encoding family and GCG are supplementary |
 | E4.3 | core | specified | neuron-suppression family |
 | E4.4 | core (MoE) | specified | expert-silencing family |
-| E4.5 | core | specified | signature column of the taxonomy; the family-level distance test is supplementary |
+| E4.5 | core | specified | signature column of the taxonomy and the family-distinctness test |
 | E4.6 | core | specified | repair column of the taxonomy; completeness per family |
 | E4.7 | core | specified | the taxonomy |
 

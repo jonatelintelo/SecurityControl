@@ -397,8 +397,7 @@ which class is positive.
 **Nulls and floors.** (i) A 1000-draw random-direction null, magnitude-matched, for every
 separation and every steering effect, matched on `alpha`, layer, position and readout;
 (ii) the split-half stability distribution as the noise floor for every cross-concept
-similarity — nothing is compared to zero; (iii) a length-only classifier every direction
-must beat; (iv) count-matched random component sets for every component ablation;
+similarity — nothing is compared to zero; (iii) length-only and bag-of-words classifiers every direction must beat (T6); (iv) count-matched random component sets for every component ablation;
 (v) rank-matched random subspaces for every patching and rescue arm. Every claim on the
 paper carries a bootstrap CI (resampled by instruction) and Benjamini–Hochberg FDR over
 the family of layers/cells tested, with the family size stated.
@@ -434,7 +433,7 @@ Amendments are dated and never retroactive.
 | # | Experiment | Establishes | Manipulation / measurement | Controls | Reading |
 |---|---|---|---|---|---|
 | **E1.0** | Corpus build and freeze | the substrate every RQ shares | offline; the crossed corpus, held-out pools, transfer corpus, per-item length and tokenisation checks corpus-wide | — | freeze only after E1.1's labelling on every roster model |
-| **E1.1** | The three variables are recoverable | held-out separation per layer per variable; role probe accuracy; refusal labelling and the 2x2 | diff-of-means, role probe/contrast; residual stream; every layer | random-direction null, length-only baseline, split-half floor, cross-corpus role transfer, Zhao and role-paper replications as anchors | a variable that does not beat its nulls is not recoverable; stop and fix extraction |
+| **E1.1** | The three variables are recoverable | held-out separation per layer per variable; role probe accuracy; refusal labelling and the 2x2 | diff-of-means, role probe/contrast; residual stream; every layer | random-direction null, length-only and bag-of-words baselines, split-half floor, cross-corpus role transfer, positive control, Zhao and role-paper replications as anchors | a variable that does not beat its nulls is not recoverable; stop and fix extraction |
 | **E1.1b** | `R_harm` with refusal held constant | that harm is not refusal renamed | refit harm within refused items and within complied items, role-balanced | compare to pooled fit against the split-half floor | if controlled and pooled fits differ, the pooled one carries refusal and the controlled one is used downstream |
 | **E1.2** | Geometry | overlap between variables at a common position, per layer | cosine (k = 1) or principal angles / canonical correlations (k > 1), on `t_post` refits | split-half floor, random-subspace null | overlap is reported as "fraction of the split-half ceiling"; high overlap does *not* refute distinctness — E1.6 does |
 | **E1.3** | Dimensionality | the `k` each variable needs | spectral effective rank over stratified refits; **behavioural `k`** = smallest subspace reproducing >= 90% of the full subspace's steering effect | random subspaces | the behavioural `k` is what the paper reports and what RQ2–4 use |
@@ -456,12 +455,12 @@ test split, with the RQ1 nulls and capability bound.
 
 | # | Experiment | Question | Manipulation | Readout | Verdict rule (sketch) |
 |---|---|---|---|---|---|
-| **E2.1** | Directed reach | does steering `A` at the instruction move `B` at the decision point, for every ordered pair, and behaviour? | position-restricted steering at the instruction span, read at `t_post` and later tokens, corrected for the steered vector's own arrival at the read position | standardised projection change on each of the three variables (role included, via its `t_post` refit); behaviour | `present(A -> B)` iff the corrected effect exceeds the random band with sign tracking `alpha` in >= theta of in-range cells, FDR-surviving; `absent` only with power (another edge present in the same design) |
+| **E2.1** (+ E2.1s, E2.1n, E2.1g) | Directed reach, with estimator sensitivity, the natural role manipulation and the leakage audit | does steering `A` at the instruction move `B` at the decision point, for every ordered pair, and behaviour? | position-restricted steering at the instruction span, read at `t_post` and later tokens, corrected for the steered vector's own arrival at the read position | standardised projection change on each of the three variables (role included, via its `t_post` refit); behaviour | `present(A -> B)` iff the corrected effect exceeds the random band with sign tracking `alpha` in >= theta of in-range cells, FDR-surviving; `absent` only with power (another edge present in the same design) |
 | **E2.2** | Mediation matrix | for every source and every outcome (each downstream variable and behaviour): which other variables, singly or jointly, carry the effect, and is there a direct remainder? | steer the source; clamp one or both other variables to their clean value at every layer past the steer layer (natural direct effect); clamp to the steered value in an unsteered run (indirect effect) | `TE`, `NDE`, `NIE`, mediated share per mediator and for the joint clamp, additivity residual (interaction) | mediated iff share >= 0.5 with CI above the random-clamp share; a direct path to `Y` iff the joint clamp leaves a remainder beyond the band; private components separate shared geometry from causal flow |
 | **E2.3** | Necessity, rescue, completeness | is the instruction-side signal *necessary*? does restoring one coordinate return behaviour? how much of the full effect do the three coordinates jointly span? | directional ablation of `A` at prompt positions; then restore one coordinate, or all three jointly | refusal on harmful prompts; all three representations | necessary iff refusal drops beyond the random-ablation band; rescue iff the refusal left missing is < half of what ablation removed, with a full-restore ceiling and a random-subspace floor; completeness = joint-restore recovery as a fraction of full-restore recovery |
 | **E2.4** | Which coordinate carries the signal | interchange patching at `t_inst` | patch the full residual (ceiling), `harm`, `harm ⊥ control`, `control`, `role`, the three jointly, rank-matched random subspaces, from a harmful donor into a harmless recipient and the mirror | carried fraction of the ceiling, on behaviour and on each downstream variable | a coordinate carries iff fraction >= 0.5 with CI above every random draw; a random draw reaching 0.5 voids the cell |
 | **E2.5** | **The role edge under injection** (the named experiment of both drafts) | under a *successful* injection, does repairing only role restore harm recognition, control and safe behaviour, whereas strengthening control alone restores behaviour but not harm recognition? | injection corpus: benign user task + hostile tool payload (indirect) and user-turn injection (direct); role repair on the payload span; control strengthening on the post-instruction span; harm steering as positive control | role-probe confusion, harm and control projections, guard-judged behaviour | role present and control absent on the harm readout -> ordering evidence for `role -> harm`; both present -> no ordering claimed; requires GATE 3 |
-| **E2.6** | Graph estimate | what the architecture *is* | none (CPU adjudication of E2.1–E2.5) | the estimated graph over `{role, harm, control, Y}`: edge status per ordered pair, mediation annotation per path, interaction flags, completeness; then a pattern label | edges and annotations from pre-registered predicates; labels {sequential, parallel, role-direct, partially overlapping, control-upstream, disconnected role, undecidable} assigned to the graph afterwards for readability and never in place of it; role's edges adjudicated on the fitting corpus *and* under injection, injection primary where estimable; roster-level rule 4 of 5 applies to edges |
+| **E2.6** | Graph estimate | what the architecture *is* | none (CPU adjudication of E2.1–E2.5) | the estimated graph over `{role, harm, control, Y}`: edge status per ordered pair, mediation annotation per path, interaction flags, completeness; then a pattern label | edges and annotations from pre-registered predicates; labels {sequential, parallel, role-direct, partially overlapping, control-upstream, disconnected role, incomplete, undecidable} assigned to the graph afterwards for readability and never in place of it; role's edges adjudicated on the fitting corpus *and* under injection, injection primary where estimable; roster-level rule 4 of 5 applies to edges |
 
 Edges into role (`harm -> role`, `control -> role`) are measurable only at `t_post`, through
 role's `t_post` refit, when the source is steered upstream of it — and only on models where
@@ -499,17 +498,18 @@ MLP-only it says so.
 
 | # | Experiment | Content |
 |---|---|---|
-| **E4.0** | **Instruments and matching** | ASR = Llama-Guard judges the response unsafe *and* the response is not degenerate; the refusal-prefix rule and NeuroStrike's own rule reported beside it; a second model judge for the disagreement set, reported as agreement not correctness. Utility at every intervention: the six NeuroStrike benchmarks (L11) plus IFEval. **Behavioural matching:** every family is run on a dose ladder (injection template strength, jailbreak style, pruning fraction, silenced experts) and signatures are compared at matched ASR bands on the *same* held-out intents; a difference in signature at unmatched ASR is attack strength, not stage |
+| **E4.0** | **Instruments, matching, calibration** | ASR = Llama-Guard judges the response unsafe *and* the response is not degenerate; the refusal-prefix rule and NeuroStrike's own rule reported beside it; a second model judge for the disagreement set, reported as agreement not correctness. Utility at every intervention: the six NeuroStrike benchmarks (L11) plus IFEval. **Behavioural matching:** every family is run on a dose ladder (injection template strength, jailbreak style, pruning fraction, silenced experts) and signatures are compared at matched ASR bands on the *same* held-out intents; a difference in signature at unmatched ASR is attack strength, not stage. **Calibration arms:** representation-level ablation of harm, of control, and role steering on inert payloads are run as if they were attacks; each stage label is `calibrated` on a model only if its arm reproduces that label's signature and repair pattern there |
 | **E4.1** | Prompt injection | indirect (benign user task + hostile tool payload) and direct (hostile content in the user turn under a benign task), template rungs of increasing role mimicry; tag forging excluded from the headline |
-| **E4.2** | Jailbreaks | SORRY-Bench's held-out styles grouped into persuasion, role-play/authority, and encoding families; one canonical template family (e.g. DAN/AIM; K11); optimisation-based suffixes (GCG/PAIR) only if budget allows (K7). Every family carries an *inert-framing* arm (the same framing around a harmless request) so a signature is read against the framing, not against a short clean prompt |
+| **E4.2** | Jailbreaks | SORRY-Bench's held-out styles grouped into persuasion, role-play/authority, and encoding families; one canonical template family (e.g. DAN/AIM; K11); PAIR on every dense model (K12); GCG only if budget allows (K7). Every family carries an *inert-framing* arm (the same framing around a harmless request) so a signature is read against the framing, not against a short clean prompt |
 | **E4.3** | Neuron suppression | NeuroStrike, dose ladder over layer prefix and z-threshold |
 | **E4.4** | Expert silencing | L³ (routing mask) and GateBreaker (expert-neuron pruning) on the MoE models, dose ladder |
 | **E4.5** | Stage signature | per attack, per item, the change in `R_role` (probe confusion), `R_harm` (separation and projection at `t_inst` and `t_post`), `R_control` (projection at `t_post`), and in the activation of RQ3's classified component sets; signature vectors compared within and across families at matched ASR |
 | **E4.6** | **Repair as the definition of stage** | for each attack at matched ASR, apply each representation-level repair from RQ2 (restore role, restore harm, restore control, all three jointly, full restore, random) and measure recovery of safe behaviour and of the other representations; the stage an attack compromises is the coordinate whose restoration recovers it; the joint arm against the full arm says whether the three variables span the attack's effect at all; a repair that fixes family A but not family B is the evidence that they compromise different stages |
-| **E4.7** | Taxonomy | pre-registered decision rule from E4.5/E4.6 to {role corruption, harm-recognition failure, control failure, component bypass with variables intact, mixed}; per model and family; roster-level rule |
+| **E4.7** | Taxonomy | pre-registered decision rule from E4.5/E4.6 to {role corruption, harm-recognition failure, control failure with harm intact, component bypass with variables intact, mixed, outside the architecture, undetermined}; each label `calibrated` or not per model from E4.0's calibration arms; per model and family; roster-level rule |
 
 Dropped: representation steering as an "attack family" (it is our instrument, so its
-diagnosis is circular; it appears only as the calibration reference in E4.6) and
+diagnosis is circular; representation-level interventions appear only as E4.0's calibration
+arms, which never enter the taxonomy as rows) and
 safety-removing fine-tuning (parameter-level routes are covered by 2604.18510 and carry
 confounds we cannot control).
 
@@ -567,18 +567,19 @@ across RQs: the injection condition (E2.5 needs it, E4.1 extends it) and GATE 2 
 attack reproductions can run in parallel with RQ2 since they touch no RQ1/RQ2 code path).
 
 **Tiers.** Every experiment is tiered in `experiments.md` § 8: *core* (its RQ cannot be
-answered without it), *supporting* (validates or strengthens a core result and is consumed
-by a core rule), *supplementary* (not needed for any RQ; kept because the finding is worth
-reporting; first to be cut, never a gate). Supplementary items: E1.3's spectral rank, E1.4,
-E1.5 level 2, E3.1's concentration curve, E3.6 pass 2, the encoding jailbreak family, the
-optimisation-based suffixes, E4.5's family-level distance test.
+answered without it or a core rule consumes its output), *supplementary* (not needed for
+any RQ; kept because the finding is worth reporting; first to be cut, never a gate). The
+test applied to every item was whether it could change a main result — through method
+validation, estimator dependence, or roster coverage — and anything that could is core.
+Supplementary items: E1.3's effective-rank statistic, E1.4, E1.5 level 2 (core if D15
+fails), E3.1's concentration curve, E3.6 pass 2, the encoding jailbreak family, GCG.
 
 **Minimum viable paper** (the drafts' "minimum core", restated for RQ1–4): every core
 experiment, on all five models for RQ1–RQ2, with E2.5 on the injectable models; RQ3's
 core with NeuroStrike on the dense models and L³ on at least one MoE; RQ4's core with
 injection, one jailbreak family and neuron suppression on the dense models. **Full paper**
-adds the supporting tier everywhere, expert silencing on both MoE models, all jailbreak
-families, and the roster-level taxonomy. Supplementary items go in as an appendix if run.
+adds expert silencing on both MoE models, all jailbreak families, and the roster-level
+taxonomy. Supplementary items go in as an appendix if run.
 
 Scheduling and compute figures are not part of this plan. Compute estimates are ledger
 entries (`assumptions.md` B1–B3) because they are measurements.
