@@ -113,7 +113,7 @@ RQ1–RQ4. **Assessment: agree, and for reasons that go beyond confounds.**
 |---|---|
 | **RQ5 — structure predicts vulnerability** | (a) A prediction claim across models needs a roster of well over ten models with the *full* RQ1–3 pipeline run on each; with 5–7 models any "architecture → attack budget" relation is an anecdote. (b) The dependent variable is ill-defined: the minimum attack budget `k*` depends on the attack's *own* selection method (NeuroStrike's probe, L³'s LSTM, GateBreaker's gate profile) at least as much as on the model, so `k*` measures the attack. (c) Models differ in safety-training recipe, data, and refusal style in ways we cannot observe or control, which confounds every cross-model comparison of "vulnerability". (d) The structural measures (`C_R`, `N_eff`, `r_eff`, `k_50`) each depend on the attribution method chosen, giving a garden of forking paths on a handful of points. |
 | **RQ6 — context-dependent reorganisation** | A separate paper. Refitting directions and component sets per context on thin per-context cells is underpowered; the role-confusion and prompt-feature papers already show mechanisms differ by framing; and it would double the intervention programme. Its cleanest fragment — "the same harmful intent under a jailbreak framing" — is *exactly* RQ4's jailbreak family and is covered there. |
-| **RQ7 — redundancy-based hardening** | Now done by others: Distributed Safety Alignment (2608.01414) and NeuronGuard (2608.23959) redistribute safety across neurons and report robustness gains against neuron-level white-box attacks. A proof-of-concept here would be neither novel nor decisive, and it presupposes RQ5. |
+| **RQ7 — redundancy-based hardening** | Now done by others (L15): Distributed Safety Alignment (2608.01414) and NeuronGuard (2608.23959) redistribute safety across neurons and report robustness gains against neuron-level white-box attacks. A proof-of-concept here would be neither novel nor decisive, and it presupposes RQ5. |
 
 **What survives from RQ5–7, in descriptive form only.** RQ3's ablation curves produce, for
 free, *how many* components of a given ranking must be removed before a variable's
@@ -158,11 +158,21 @@ the full subspace is measured (RQ1), and every downstream experiment uses the me
 R_role  ->  R_harm  ->  R_control  ->  Y
 ```
 
-is the simplest candidate. It is **tested, never assumed**. Alternatives that the design
-must be able to distinguish: role and harm contribute to control independently
-(parallel); role reaches control both directly and through harm (partially overlapping);
-role is disconnected from behaviour on the fitting distribution and matters only under
-injection; control is not downstream of harm at all.
+is the simplest candidate. It is **tested, never assumed**, and it is one point in a
+larger space. `Y` is a fourth node, not a synonym for `R_control`: the control
+representation is read before any token is generated, behaviour is what follows, and the
+two can dissociate. **The object RQ2 estimates is the directed graph over
+`{R_role, R_harm, R_control, Y}`**: which edges are present, which paths are mediated by
+which other variables (singly and jointly), where effects interact rather than add, and
+how much of the full causal effect the three named coordinates jointly account for
+(completeness). Named patterns in that space — sequential, parallel, role-direct, control
+upstream, disconnected role — are labels for regions of it, used for readability; the
+graph is the result even when no label fits. Alternatives the design must be able to
+distinguish include: role and harm contributing to control independently (parallel); role
+reaching control both directly and through harm; direct paths from role or harm to `Y`
+that bypass control; role disconnected on the fitting distribution and active only under
+injection; control not downstream of harm at all; and a large unexplained remainder, which
+would mean the three variables are not the whole architecture.
 
 At the computational level:
 
@@ -174,10 +184,16 @@ and components are classified by *what they consume and what they produce*:
 
 | Functional role | Mapping | Meaning |
 |---|---|---|
-| **Detector** | `x -> R_harm` (or `x -> R_role`) | turns input features into a security variable |
-| **Transformer** | `R_harm -> R_control` | converts one security variable into another |
-| **Writer** | `f_i(h) -> R_control` | its output contributes directly to the target subspace |
-| **Reader** | `R_control -> Y` | consumes a security variable and produces logits/behaviour |
+| **Detector** | `x -> R` for each `R in {R_role, R_harm, R_control}` | turns input features into a security variable. A detector of `R_control` (`x -> R_control`) triggers the refusal decision from surface features without passing through harm recognition: the shallow-alignment pathway that keyword-driven over-refusal and template jailbreaks would exploit |
+| **Transformer** | `R_a -> R_b` for every ordered pair the structure allows: `R_role -> R_harm`, `R_role -> R_control`, `R_harm -> R_control`, and the reverse of any edge RQ2 establishes | converts one security variable into another. Which transformer classes exist is itself evidence about the architecture: `R_role -> R_control` transformers with no `R_role -> R_harm` ones is the component-level signature of a role-direct structure |
+| **Writer** | `f_i(h) -> R` for each `R` | its output contributes directly to the target subspace |
+| **Reader** | `R -> Y` for each `R` | consumes a security variable and produces logits or behaviour. A reader of `R_harm` or `R_role` is a direct path to behaviour that bypasses `R_control`, and is reported as such |
+
+The taxonomy is stated for every variable and every ordered pair, not only for the
+sequential chain, because the chain is a hypothesis: the functional classes RQ3 finds must
+be able to describe whichever structure RQ2 returns. The classes are assigned by
+intervention (ablation, patching, and whether a component's activation follows steering of
+an upstream variable), never by correlation alone.
 
 A central goal is to stop treating all "safety neurons" as the same thing.
 
@@ -206,14 +222,16 @@ random-direction null), dimensionality, emergence and persistence across depth, 
 whether role is carried by metadata or by style — on every roster model, dense and MoE.
 *Deliverable:* validated directions/subspaces per variable per layer, and GATE 1.
 
-**RQ2 — What causal architecture connects the three variables?**
-We intervene on each variable and measure the effect on the others and on behaviour,
+**RQ2 — What causal architecture connects the three variables and behaviour?**
+We intervene on each variable and read *all three* variables and behaviour downstream,
 using position-restricted steering, mediator clamping (natural direct and indirect
-effects), directional ablation with rescue, and interchange patching — plus the named
-test the drafts single out: under a successful prompt injection, repair *only* role and
-see whether harm recognition, control and safe behaviour return, versus strengthening
-control while leaving role corrupted. *Deliverable:* a per-model causal structure verdict
-(sequential / parallel / partially overlapping / other) from a pre-registered rule.
+effects, single and joint mediators), directional ablation with rescue, and interchange
+patching — plus the named test the drafts single out: under a successful prompt injection,
+repair *only* role and see whether harm recognition, control and safe behaviour return,
+versus strengthening control while leaving role corrupted. *Deliverable:* per model, an
+estimated causal graph over `{R_role, R_harm, R_control, Y}` — edge set, mediation
+annotations, interaction flags and a completeness estimate — from pre-registered rules,
+with the named architectures as labels for the region the graph falls in.
 
 **RQ3 — Which computational components implement each variable?**
 We attribute MLP neurons, attention heads and (for MoE) experts and routing decisions to
@@ -239,6 +257,9 @@ harm-suppression vs refusal-suppression disagreement in the literature.
 ## 6. Related work and novelty
 
 ### 6.1 What is already established (and is therefore replication, not contribution)
+
+Each row below is a reading of a paper and is audited against the paper's text before
+submission (L16); rows the design depends on have their own ledger entries (L1–L14).
 
 | Established result | Source | Our use |
 |---|---|---|
@@ -295,9 +316,11 @@ harm-suppression vs refusal-suppression disagreement in the literature.
 1. **Causal decomposition of LLM safety.** Role perception, harmfulness recognition and
    behavioural control are separable, recoverable latent variables that dissociate under
    intervention, across five models from four vendors including two MoE architectures.
-2. **A causal safety map.** The directed structure among the three variables, established
-   by cross-intervention, mediation, rescue and patching, with the candidate chain
-   `role -> harm -> control` tested as one hypothesis among several.
+2. **A causal safety map.** The estimated directed graph among the three variables and
+   behaviour, established by cross-intervention, mediation, rescue and patching, with the
+   candidate chain `role -> harm -> control -> Y` located inside it as one hypothesis
+   among several, and with an estimate of how much of the causal effect the three
+   variables jointly account for.
 3. **Representation-to-circuit mapping.** Which neurons, heads, experts and routing
    decisions detect, transform, write or read each variable — including a functional
    classification of the components NeuroStrike and L³/GateBreaker exploit.
@@ -341,8 +364,8 @@ instructions x {harmful, harmless} x {system, user, assistant, tool} x {fixed-sl
 - Train/test split **by instruction**, stratified by (label, source), so no instruction's
   renderings straddle the split. Nothing is measured on the prompts used to fit it.
 - **Held out by construction:** attack intents (StrongREJECT, HarmBench) for RQ4 and for
-  the injection/jailbreak conditions of RQ2; SORRY-Bench's 20 non-base styles
-  (persuasion, role-play, authority, encodings, translations) as RQ4 jailbreak material.
+  the injection/jailbreak conditions of RQ2; SORRY-Bench's non-base styles (persuasion, role-play, authority, encodings, translations; D3)
+  as RQ4 jailbreak material.
   None of these ever enters a fitting set, a labelling run or a corpus-widening step.
 - Role classes are four: `tool` stands in for "untrusted external content", on the
   premise that a tool message is how external content reaches the model on every roster
@@ -368,7 +391,7 @@ cross-model control variable, and the empty cell is reported as a finding about 
 probe *and* pairwise difference of means for `R_role` (only the latter can be steered
 with). All on the residual stream so the three share one space. Directions keep their raw
 class-gap norm; steering coefficients are denominated in class-mean separations
-(`alpha = 1` is the published operating point of Arditi and Zhao). Every direction records
+(`alpha = 1` is the published operating point of Arditi and Zhao, L6). Every direction records
 which class is positive.
 
 **Nulls and floors.** (i) A 1000-draw random-direction null, magnitude-matched, for every
@@ -392,9 +415,15 @@ against relative depth are the primary figures; where one layer must be named it
 chosen on the train split by a rule fixed in advance. Directions are never compared
 across models — only quantities are.
 
+**Readout completeness.** Every intervention arm, in every RQ, reads all three latent
+variables at every downstream position where they are defined (`t_post` refits, and
+later tokens where used) *and* behaviour. `R_control` is a latent variable, not a name for
+behaviour: a verdict never rests on one readout shown alone, and dissociations between a
+representation and behaviour are reported as findings about readers, not as noise.
+
 **Cross-model rule.** A roster-level claim requires the same verdict on at least 4 of 5
-models; otherwise the per-model table is the finding. Dense and MoE are reported
-separately as well as pooled.
+models; otherwise the per-model table is the finding. Dense and MoE are reported separately
+as well as pooled.
 
 **Pre-registration.** Every decision rule in this section and in § 8.2–8.5 is written in
 `experiments.md` with its thresholds before the experiment it governs produces a number.
@@ -427,22 +456,25 @@ test split, with the RQ1 nulls and capability bound.
 
 | # | Experiment | Question | Manipulation | Readout | Verdict rule (sketch) |
 |---|---|---|---|---|---|
-| **E2.1** | Directed reach | does steering `A` at the instruction move `B` at the decision point? | position-restricted steering at the instruction span, read at `t_post` and later tokens, corrected for the steered vector's own arrival at the read position | standardised projection change on `B`; behaviour | `present(A -> B)` iff the corrected effect exceeds the random band with sign tracking `alpha` in >= theta of in-range cells, FDR-surviving; `absent` only with power (another edge present in the same design) |
-| **E2.2** | Mediation | does harm's effect on behaviour run *through* control? does control's effect require harm? does role's effect run through harm? | steer the source; clamp the mediator to its clean value at every layer past the steer layer (natural direct effect); clamp the mediator to its steered value in an unsteered run (indirect effect) | `TE`, `NDE`, `NIE`, mediated share, additivity residual | mediated iff share >= 0.5 with CI above the random-clamp share; private components (`A` orthogonalised against `B`) separate shared geometry from causal flow |
-| **E2.3** | Necessity and rescue | is the instruction-side signal *necessary*? does restoring one coordinate return behaviour? | directional ablation of `A` at prompt positions; then restore only `B`'s coordinate | refusal on harmful prompts; representations | necessary iff refusal drops beyond the random-ablation band; rescue iff the refusal left missing is < half of what ablation removed, with a full-restore ceiling and a random-subspace floor |
-| **E2.4** | Which coordinate carries the signal | interchange patching at `t_inst` | patch the full residual (ceiling), `harm`, `harm ⊥ control`, `control`, rank-matched random subspaces, from a harmful donor into a harmless recipient and the mirror | carried fraction of the ceiling | a coordinate carries iff fraction >= 0.5 with CI above every random draw; a random draw reaching 0.5 voids the cell |
+| **E2.1** | Directed reach | does steering `A` at the instruction move `B` at the decision point, for every ordered pair, and behaviour? | position-restricted steering at the instruction span, read at `t_post` and later tokens, corrected for the steered vector's own arrival at the read position | standardised projection change on each of the three variables (role included, via its `t_post` refit); behaviour | `present(A -> B)` iff the corrected effect exceeds the random band with sign tracking `alpha` in >= theta of in-range cells, FDR-surviving; `absent` only with power (another edge present in the same design) |
+| **E2.2** | Mediation matrix | for every source and every outcome (each downstream variable and behaviour): which other variables, singly or jointly, carry the effect, and is there a direct remainder? | steer the source; clamp one or both other variables to their clean value at every layer past the steer layer (natural direct effect); clamp to the steered value in an unsteered run (indirect effect) | `TE`, `NDE`, `NIE`, mediated share per mediator and for the joint clamp, additivity residual (interaction) | mediated iff share >= 0.5 with CI above the random-clamp share; a direct path to `Y` iff the joint clamp leaves a remainder beyond the band; private components separate shared geometry from causal flow |
+| **E2.3** | Necessity, rescue, completeness | is the instruction-side signal *necessary*? does restoring one coordinate return behaviour? how much of the full effect do the three coordinates jointly span? | directional ablation of `A` at prompt positions; then restore one coordinate, or all three jointly | refusal on harmful prompts; all three representations | necessary iff refusal drops beyond the random-ablation band; rescue iff the refusal left missing is < half of what ablation removed, with a full-restore ceiling and a random-subspace floor; completeness = joint-restore recovery as a fraction of full-restore recovery |
+| **E2.4** | Which coordinate carries the signal | interchange patching at `t_inst` | patch the full residual (ceiling), `harm`, `harm ⊥ control`, `control`, `role`, the three jointly, rank-matched random subspaces, from a harmful donor into a harmless recipient and the mirror | carried fraction of the ceiling, on behaviour and on each downstream variable | a coordinate carries iff fraction >= 0.5 with CI above every random draw; a random draw reaching 0.5 voids the cell |
 | **E2.5** | **The role edge under injection** (the named experiment of both drafts) | under a *successful* injection, does repairing only role restore harm recognition, control and safe behaviour, whereas strengthening control alone restores behaviour but not harm recognition? | injection corpus: benign user task + hostile tool payload (indirect) and user-turn injection (direct); role repair on the payload span; control strengthening on the post-instruction span; harm steering as positive control | role-probe confusion, harm and control projections, guard-judged behaviour | role present and control absent on the harm readout -> ordering evidence for `role -> harm`; both present -> no ordering claimed; requires GATE 3 |
-| **E2.6** | Structure verdict | which architecture the edge set implies | none (CPU adjudication of E2.1–E2.5) | verdict per model and arm with sweep label | pre-registered map from edge/mediation predicates to {sequential, parallel, role-direct, partially overlapping, control-upstream, disconnected role, undecidable}; role's edges adjudicated on the fitting corpus *and* under injection, injection primary where estimable; roster-level rule 4 of 5 |
+| **E2.6** | Graph estimate | what the architecture *is* | none (CPU adjudication of E2.1–E2.5) | the estimated graph over `{role, harm, control, Y}`: edge status per ordered pair, mediation annotation per path, interaction flags, completeness; then a pattern label | edges and annotations from pre-registered predicates; labels {sequential, parallel, role-direct, partially overlapping, control-upstream, disconnected role, undecidable} assigned to the graph afterwards for readability and never in place of it; role's edges adjudicated on the fitting corpus *and* under injection, injection primary where estimable; roster-level rule 4 of 5 applies to edges |
 
-Edges into role (`harm -> role`, `control -> role`) are not measurable by token-level
-intervention and are never reported as absent.
+Edges into role (`harm -> role`, `control -> role`) are measurable only at `t_post`, through
+role's `t_post` refit, when the source is steered upstream of it — and only on models where
+that refit is decodable and the role diagonal is steerable there (T7); at the content span
+they are not measurable by token-level intervention and are never reported as absent.
 
 Dropped: "remove fear", "switch persona" (depend on the dropped optional directions).
 
 ### 8.4 RQ3 — implementation by components
 
 Component families: MLP neurons (all dense models; shared and routed expert MLPs on MoE),
-attention heads (all models), MoE experts and routing (MoE models).
+attention heads (all models), MoE experts and routing (MoE models). The component
+definitions presuppose a gated, pre-norm architecture on every roster model (M13).
 
 | # | Experiment | Establishes | Method | Controls |
 |---|---|---|---|---|
@@ -467,13 +499,13 @@ MLP-only it says so.
 
 | # | Experiment | Content |
 |---|---|---|
-| **E4.0** | **Instruments and matching** | ASR = Llama-Guard judges the response unsafe *and* the response is not degenerate; the refusal-prefix rule and NeuroStrike's own rule reported beside it; a second model judge for the disagreement set, reported as agreement not correctness. Utility at every intervention: the six NeuroStrike benchmarks plus IFEval. **Behavioural matching:** every family is run on a dose ladder (injection template strength, jailbreak style, pruning fraction, silenced experts) and signatures are compared at matched ASR bands on the *same* held-out intents; a difference in signature at unmatched ASR is attack strength, not stage |
+| **E4.0** | **Instruments and matching** | ASR = Llama-Guard judges the response unsafe *and* the response is not degenerate; the refusal-prefix rule and NeuroStrike's own rule reported beside it; a second model judge for the disagreement set, reported as agreement not correctness. Utility at every intervention: the six NeuroStrike benchmarks (L11) plus IFEval. **Behavioural matching:** every family is run on a dose ladder (injection template strength, jailbreak style, pruning fraction, silenced experts) and signatures are compared at matched ASR bands on the *same* held-out intents; a difference in signature at unmatched ASR is attack strength, not stage |
 | **E4.1** | Prompt injection | indirect (benign user task + hostile tool payload) and direct (hostile content in the user turn under a benign task), template rungs of increasing role mimicry; tag forging excluded from the headline |
-| **E4.2** | Jailbreaks | SORRY-Bench's held-out styles grouped into persuasion, role-play/authority, and encoding families; one canonical template family (e.g. DAN/AIM); optimisation-based suffixes (GCG/PAIR) only if budget allows. Every family carries an *inert-framing* arm (the same framing around a harmless request) so a signature is read against the framing, not against a short clean prompt |
+| **E4.2** | Jailbreaks | SORRY-Bench's held-out styles grouped into persuasion, role-play/authority, and encoding families; one canonical template family (e.g. DAN/AIM; K11); optimisation-based suffixes (GCG/PAIR) only if budget allows (K7). Every family carries an *inert-framing* arm (the same framing around a harmless request) so a signature is read against the framing, not against a short clean prompt |
 | **E4.3** | Neuron suppression | NeuroStrike, dose ladder over layer prefix and z-threshold |
 | **E4.4** | Expert silencing | L³ (routing mask) and GateBreaker (expert-neuron pruning) on the MoE models, dose ladder |
 | **E4.5** | Stage signature | per attack, per item, the change in `R_role` (probe confusion), `R_harm` (separation and projection at `t_inst` and `t_post`), `R_control` (projection at `t_post`), and in the activation of RQ3's classified component sets; signature vectors compared within and across families at matched ASR |
-| **E4.6** | **Repair as the definition of stage** | for each attack at matched ASR, apply each representation-level repair from RQ2 (restore role, restore harm, restore control, full restore, random) and measure recovery of safe behaviour; the stage an attack compromises is the coordinate whose restoration recovers it; a repair that fixes family A but not family B is the evidence that they compromise different stages |
+| **E4.6** | **Repair as the definition of stage** | for each attack at matched ASR, apply each representation-level repair from RQ2 (restore role, restore harm, restore control, all three jointly, full restore, random) and measure recovery of safe behaviour and of the other representations; the stage an attack compromises is the coordinate whose restoration recovers it; the joint arm against the full arm says whether the three variables span the attack's effect at all; a repair that fixes family A but not family B is the evidence that they compromise different stages |
 | **E4.7** | Taxonomy | pre-registered decision rule from E4.5/E4.6 to {role corruption, harm-recognition failure, control failure, component bypass with variables intact, mixed}; per model and family; roster-level rule |
 
 Dropped: representation steering as an "attack family" (it is our instrument, so its
@@ -494,11 +526,11 @@ exist; (4) text-only where possible, so a vision tower is not an uncontrolled di
 
 | Slot | Candidate | Why |
 |---|---|---|
-| Dense 1 | Qwen2.5-7B-Instruct | NeuroStrike ships probe weights; Zhao-style corpus; the checkpoint where the neuron attack is known to land |
-| Dense 2 | Llama-3.1-8B-Instruct | cross-vendor; used by Zhao, Arditi, 2604.18510, 2509.09708; tool role supported |
-| Dense 3 | one of Gemma-3-12b-it / Phi-4 / Qwen2.5-14B-Instruct | third vendor where the template supports system and tool; NeuroStrike ships weights for all three |
-| MoE 1 | Qwen3-30B-A3B | supported by L³, GateBreaker and the role paper; accessible router |
-| MoE 2 | OLMoE-1B-7B-Instruct (cheap, fully open, L³-supported) or gpt-oss-20b (role paper's primary model; reasoning channel complicates roles and labels) | second MoE vendor |
+| Dense 1 | Qwen2.5-7B-Instruct | NeuroStrike ships probe weights (M6) and reports the attack landing on it (L7); Zhao-style corpus |
+| Dense 2 | Llama-3.1-8B-Instruct | cross-vendor; used by Zhao, Arditi, 2604.18510, 2509.09708 (L16); tool role supported (M2) |
+| Dense 3 | one of Gemma-3-12b-it / Phi-4 / Qwen2.5-14B-Instruct | third vendor where the template supports system and tool (M2); NeuroStrike ships weights for all three (M6) |
+| MoE 1 | Qwen3-30B-A3B | supported by L³ (M7), GateBreaker (L9) and the role paper; accessible router (M5) |
+| MoE 2 | OLMoE-1B-7B-Instruct (cheap, fully open, L³-supported — M7) or gpt-oss-20b (role paper's primary model; reasoning channel complicates roles and labels — M4) | second MoE vendor |
 
 The previous roster's Qwen3.5 checkpoints are not carried forward: they are multimodal
 wrappers with a reasoning block ahead of assistant turns (M4, M12), and no external attack
@@ -534,12 +566,19 @@ current is *settled*, meaning trustworthy, not favourable. Two items are pulled 
 across RQs: the injection condition (E2.5 needs it, E4.1 extends it) and GATE 2 (the
 attack reproductions can run in parallel with RQ2 since they touch no RQ1/RQ2 code path).
 
-**Minimum viable paper** (the drafts' "minimum core", restated for RQ1–4): RQ1 with
-GATE 1 on all five models; RQ2 E2.1–E2.3 and E2.6 on all five, E2.5 on the injectable
-models; RQ3 E3.0–E3.3 with NeuroStrike on the dense models and L³ on at least one MoE;
-RQ4 with injection, one jailbreak family and neuron suppression on the dense models, plus
-E4.6. **Full paper** adds E3.4–E3.6, expert silencing on both MoE models, all jailbreak
-families, and the roster-level taxonomy.
+**Tiers.** Every experiment is tiered in `experiments.md` § 8: *core* (its RQ cannot be
+answered without it), *supporting* (validates or strengthens a core result and is consumed
+by a core rule), *supplementary* (not needed for any RQ; kept because the finding is worth
+reporting; first to be cut, never a gate). Supplementary items: E1.3's spectral rank, E1.4,
+E1.5 level 2, E3.1's concentration curve, E3.6 pass 2, the encoding jailbreak family, the
+optimisation-based suffixes, E4.5's family-level distance test.
+
+**Minimum viable paper** (the drafts' "minimum core", restated for RQ1–4): every core
+experiment, on all five models for RQ1–RQ2, with E2.5 on the injectable models; RQ3's
+core with NeuroStrike on the dense models and L³ on at least one MoE; RQ4's core with
+injection, one jailbreak family and neuron suppression on the dense models. **Full paper**
+adds the supporting tier everywhere, expert silencing on both MoE models, all jailbreak
+families, and the roster-level taxonomy. Supplementary items go in as an appendix if run.
 
 Scheduling and compute figures are not part of this plan. Compute estimates are ledger
 entries (`assumptions.md` B1–B3) because they are measurements.
@@ -550,13 +589,13 @@ entries (`assumptions.md` B1–B3) because they are measurements.
 
 | # | Risk | Mitigation | Whether it works is verified by |
 |---|---|---|---|
-| R1 | The harmful-and-complied cell is empty on strongly aligned models, so `R_control` (under-refusal) is unidentifiable | heterogeneous harmful set including borderline SORRY-Bench items; the over-refusal contrast on benign-sensitive items as the cross-model variable; the empty cell reported as a finding; jailbreaks never used to fill it; an explicit compliance-forcing arm only as a pre-registered amendment of last resort | D4, D9 (E1.1 stage 1 on every model, before the corpus is frozen) |
+| R1 | The harmful-and-complied cell is empty on strongly aligned models, so `R_control` (under-refusal) is unidentifiable | heterogeneous harmful set including borderline SORRY-Bench items; the over-refusal contrast on benign-sensitive items as the cross-model variable; the empty cell reported as a finding; jailbreaks never used to fill it; an explicit compliance-forcing arm only as a pre-registered amendment of last resort | D4, D9, D13, D14 (E1.1 stage 1 on every model, before the corpus is frozen) |
 | R2 | Role has no measurable effect on behaviour on the fitting corpus, so E2.5 is the only place role matters | that is a valid structure verdict; role's edges are adjudicated on the fitting corpus *and* under injection; GATE 3 guards the design | E2.1n and E2.5 (K1) |
 | R3 | No injection template reaches non-trivial success on a model | rungs of increasing role mimicry; a stronger reasoning-channel rung on models that have one; injection-resistant models reported as such | K1 (E2.5) |
 | R4 | External attacks do not reproduce on our pipeline | GATE 2 before any component claim; released weights and code only; never a home-grown selection called theirs | L7–L10, M6, M7, M10 (E3.0) |
-| R5 | Instruments key on features that leak into `R_control` | three-way labels, degeneracy gate, no-guard sensitivity refit, agreement between independent judges | I1–I5, L14 |
-| R6 | Steering effects are geometric leakage rather than causal flow | private components, D-2 correction, mediation with a random-clamp null, interchange patching | V10, E2.1g, E2.2 invalidity checks |
-| R7 | Attack families compared at different strengths look different for that reason alone | dose ladders and matched-ASR comparison; inert-framing arms | K2, K6 (E4.0) |
+| R5 | Instruments key on features that leak into `R_control` | three-way labels, degeneracy gate, no-guard sensitivity refit, agreement between independent judges | I1–I5, I10, I11, L14, T6 |
+| R6 | Steering effects are geometric leakage rather than causal flow | private components, D-2 correction, mediation with a random-clamp null, interchange patching | V10, V13, T7, E2.1g, E2.2 invalidity checks |
+| R7 | Attack families compared at different strengths look different for that reason alone | dose ladders and matched-ASR comparison; inert-framing arms | K2, K6, K11 (E4.0) |
 | R8 | Compute: five models x full intervention grids | staged sweeps; a runner that never repeats a capture; screening subsamples for utility | B1–B3, M11 |
 | R9 | Scope creep of the kind that produced the last codebase | every experiment has an ID, a purpose and a verdict rule; anything without one is not implemented; every assumption has a ledger entry | — |
 
