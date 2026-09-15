@@ -1,3 +1,5 @@
+> **SUPERSEDED — 2026-09-15.** This document belongs to the previous iteration of the project and is kept for archival cross-checking only. Do not use it as a specification, do not derive code from it, and do not treat any number in it as a result or any statement in it as verified. The current documents are `plan.md`, `experiments.md` and `assumptions.md` in the repository root; facts asserted here that the new plan relies on have been re-entered in `assumptions.md` as `unverified`.
+
 # Experiment specifications — RQ1 through RQ4
 
 **Rebuilt 2026-09-08 from `PLAN.md`.** The previous playbook interleaved the plan,

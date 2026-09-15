@@ -12,11 +12,15 @@ doing and *why*. It contains no results.
 | `plan.md` (this file) | Motivation, hypotheses, RQs, related work and novelty, contributions, the experiment programme at design level (what each experiment must establish, its manipulation, readout, controls, and what each outcome means), gates, scope | the science changes |
 | `experiments.md` | The exact operational specification of every experiment named here: datasets and sizes, positions, estimators, parameter values, sweep grids, decision thresholds, artifacts. **No results, ever.** | an experiment's setup changes |
 | `rq1_findings.md` … `rq4_findings.md` | Results, per RQ, against the criteria fixed in `experiments.md` | a run produces evidence |
-| `environment.md` | Verified facts about models, chat templates, datasets, cluster (things we did not produce) | re-verified, never re-decided |
+| `assumptions.md` | Every design assumption and every fact about models, templates, datasets, external code and the cluster that the two files above rely on, each with its origin, where it is used, how it is verified, and a status. **The only planning document that changes as checks come in.** | a check is run |
 
 The split is kept because it is what stopped results from contaminating specifications
-last time. The rule that makes it work: **a number that was measured on a model never
-appears in `plan.md` or `experiments.md`.**
+last time. Two rules make it work: **a number that was measured on a model never appears
+in `plan.md` or `experiments.md`**, and **neither file asserts anything about a model,
+dataset, template, external code base or the cluster** — such statements are ledger
+entries in `assumptions.md`, cited by ID, and are `unverified` until a check says
+otherwise. Where this file gives a reason that rests on such a statement, the ID follows
+it in parentheses.
 
 ---
 
@@ -329,9 +333,9 @@ instructions x {harmful, harmless} x {system, user, assistant, tool} x {fixed-sl
 ```
 
 - Harmful sources: AdvBench, JailbreakBench behaviours, SORRY-Bench *base* prompts only
-  (deliberately heterogeneous in severity, so the "recognises harm but complies" cell
-  exists). Harmless: Alpaca standalone instructions and XSTest *safe* items
-  (benign-but-sensitive, which stops `R_harm` collapsing into a topic detector).
+  (chosen for heterogeneous severity, so that the "recognises harm but complies" cell
+  exists — D4, D9). Harmless: Alpaca standalone instructions and XSTest *safe* items
+  (benign-but-sensitive, intended to stop `R_harm` collapsing into a topic detector — D7).
 - `source` and `category` recorded per instruction; separation reported per source, never
   only pooled.
 - Train/test split **by instruction**, stratified by (label, source), so no instruction's
@@ -340,9 +344,9 @@ instructions x {harmful, harmless} x {system, user, assistant, tool} x {fixed-sl
   the injection/jailbreak conditions of RQ2; SORRY-Bench's 20 non-base styles
   (persuasion, role-play, authority, encodings, translations) as RQ4 jailbreak material.
   None of these ever enters a fitting set, a labelling run or a corpus-widening step.
-- Role classes are four: `tool` stands in for "untrusted external content", because on
-  every chat template a tool message is what external content *is*; chain-of-thought is a
-  channel, not a role, and is out of scope.
+- Role classes are four: `tool` stands in for "untrusted external content", on the
+  premise that a tool message is how external content reaches the model on every roster
+  template (M2); chain-of-thought is a channel, not a role, and is out of scope.
 - Two slot designs: **fixed-slot** (instruction in the same message slot for every role;
   only the marking varies) is primary; **natural-slot** (each role in its natural
   conversational position) is the deployment-realistic secondary. Agreement means role is
@@ -481,8 +485,8 @@ confounds we cannot control).
 
 ## 9. Models, data, attacks, instruments
 
-**Roster (proposed; final choice after template and attack-support checks in
-`environment.md`).** Depth of causal analysis over breadth: five models, four vendors, two
+**Roster (proposed; final choice after the template and attack-support checks M1–M7 and
+L7–L10 in `assumptions.md`).** Depth of causal analysis over breadth: five models, four vendors, two
 MoE architectures. Selection criteria, in order: (1) all four role classes render through
 the model's own template; (2) an external attack set exists or can be produced with the
 attack's released code; (3) evaluated by at least one of the source papers, so anchors
@@ -497,9 +501,9 @@ exist; (4) text-only where possible, so a vision tower is not an uncontrolled di
 | MoE 2 | OLMoE-1B-7B-Instruct (cheap, fully open, L³-supported) or gpt-oss-20b (role paper's primary model; reasoning channel complicates roles and labels) | second MoE vendor |
 
 The previous roster's Qwen3.5 checkpoints are not carried forward: they are multimodal
-wrappers with an empty think block ahead of assistant turns, and no external attack set
-supports them; every attack would have to be re-derived, which weakens the "these are the
-components the attack found" claim.
+wrappers with a reasoning block ahead of assistant turns (M4, M12), and no external attack
+set supports them; every attack would have to be re-derived, which weakens the "these are
+the components the attack found" claim.
 
 **Data.** Fitting: AdvBench, JailbreakBench, SORRY-Bench base, Alpaca, XSTest, C4 (role
 transfer). Held out: StrongREJECT and HarmBench intents (disjointness enforced by exact
@@ -523,7 +527,7 @@ to?), cross-model generalisation.
 
 ---
 
-## 10. Order, minimum viable paper, budget
+## 10. Order and minimum viable paper
 
 **Order.** RQ1 -> RQ2 -> RQ3 -> RQ4, one experiment at a time; the next starts when the
 current is *settled*, meaning trustworthy, not favourable. Two items are pulled forward
@@ -537,35 +541,24 @@ RQ4 with injection, one jailbreak family and neuron suppression on the dense mod
 E4.6. **Full paper** adds E3.4–E3.6, expert silencing on both MoE models, all jailbreak
 families, and the roster-level taxonomy.
 
-**Rough phase budget** (target ICML 2027, full paper 2027-01-22; abstract 2027-01-16):
-
-| Phase | Weeks | Content |
-|---|---|---|
-| 0 | 2 | rebuild: corpus, labelling, `environment.md` verification on the new roster, GATE 2 reproductions |
-| 1 | 3 | RQ1 through GATE 1, five models |
-| 2 | 3 | RQ2, injection condition, structure verdict |
-| 3 | 4 | RQ3: neurons and heads on dense, L³ on MoE, rescue |
-| 4 | 3 | RQ4: families, matching, repair, taxonomy |
-| 5 | 3 | figures, writing, independent reproduction of every headline in a second results root |
-
-Eighteen weeks to the deadline leaves no slack; the minimum viable paper is the fallback
-and its boundary is drawn above so that scaling down is a decision, not an accident.
+Scheduling and compute figures are not part of this plan. Compute estimates are ledger
+entries (`assumptions.md` B1–B3) because they are measurements.
 
 ---
 
 ## 11. Risks
 
-| # | Risk | Mitigation |
-|---|---|---|
-| R1 | The harmful-and-complied cell is empty on strongly aligned models, so `R_control` (under-refusal) is unidentifiable | heterogeneous harmful set including borderline SORRY-Bench items; the over-refusal contrast on benign-sensitive items as the cross-model variable; report the empty cell as a finding; never fill it with jailbreaks |
-| R2 | Role has no measurable effect on behaviour on the fitting corpus (role edges absent), making E2.5 the only place role matters | that is a valid structure verdict ("disconnected on the fitting distribution"); E2.5 and E4.1 test role where it should matter; GATE 3 guards the design |
-| R3 | No injection template reaches non-trivial success on a model | multiple template rungs of increasing role mimicry; the role-confusion paper's CoT-forgery mechanism as a stronger rung on reasoning-capable models; report injection-resistant models as such |
-| R4 | External attacks do not reproduce on our pipeline | GATE 2 before any component claim; ask the authors / use released weights; never substitute a home-grown selection and call it theirs |
-| R5 | Instruments (prefix rule, Llama-Guard) key on features that leak into `R_control` | three-way labels, degeneracy gate, no-guard sensitivity refit, agreement between independent judges reported |
-| R6 | Steering effects are geometric leakage (shared subspace) rather than causal flow | private components, D-2 correction for the steered vector's own arrival, mediation with random-clamp null, interchange patching |
-| R7 | Attack families compared at different strengths look mechanistically different for that reason alone | dose ladders and matched-ASR comparison (E4.0); dose-response signatures reported |
-| R8 | Compute: five models x full intervention grids | staged sweeps (profile on train, refine, verdict on test); stage runner that never repeats a capture; screening subsamples for utility |
-| R9 | Scope creep of the kind that produced the last codebase | every experiment above has an ID, a purpose and a verdict rule; anything without one is not implemented |
+| # | Risk | Mitigation | Whether it works is verified by |
+|---|---|---|---|
+| R1 | The harmful-and-complied cell is empty on strongly aligned models, so `R_control` (under-refusal) is unidentifiable | heterogeneous harmful set including borderline SORRY-Bench items; the over-refusal contrast on benign-sensitive items as the cross-model variable; the empty cell reported as a finding; jailbreaks never used to fill it; an explicit compliance-forcing arm only as a pre-registered amendment of last resort | D4, D9 (E1.1 stage 1 on every model, before the corpus is frozen) |
+| R2 | Role has no measurable effect on behaviour on the fitting corpus, so E2.5 is the only place role matters | that is a valid structure verdict; role's edges are adjudicated on the fitting corpus *and* under injection; GATE 3 guards the design | E2.1n and E2.5 (K1) |
+| R3 | No injection template reaches non-trivial success on a model | rungs of increasing role mimicry; a stronger reasoning-channel rung on models that have one; injection-resistant models reported as such | K1 (E2.5) |
+| R4 | External attacks do not reproduce on our pipeline | GATE 2 before any component claim; released weights and code only; never a home-grown selection called theirs | L7–L10, M6, M7, M10 (E3.0) |
+| R5 | Instruments key on features that leak into `R_control` | three-way labels, degeneracy gate, no-guard sensitivity refit, agreement between independent judges | I1–I5, L14 |
+| R6 | Steering effects are geometric leakage rather than causal flow | private components, D-2 correction, mediation with a random-clamp null, interchange patching | V10, E2.1g, E2.2 invalidity checks |
+| R7 | Attack families compared at different strengths look different for that reason alone | dose ladders and matched-ASR comparison; inert-framing arms | K2, K6 (E4.0) |
+| R8 | Compute: five models x full intervention grids | staged sweeps; a runner that never repeats a capture; screening subsamples for utility | B1–B3, M11 |
+| R9 | Scope creep of the kind that produced the last codebase | every experiment has an ID, a purpose and a verdict rule; anything without one is not implemented; every assumption has a ledger entry | — |
 
 ---
 
